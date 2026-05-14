@@ -662,7 +662,7 @@ namespace Integral.Web {
       } else {
         // Normal running.
 
-        AppRootPath = SystemWeb.ServerMapPath("/").EnsureEndsWith("\\", StringExt.Ensure.IfNotBlank);
+        AppRootPath = SystemWeb.ServerMapPath("/wwwroot").EnsureEndsWith("\\", StringExt.Ensure.IfNotBlank);
       }
 
       IsLiveServer = IsUnitTestRunning ? false : bool.Parse(GetAppSettingRequired("IsLive"));
