@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Threading;
-using System.Web.Hosting;
 using Integral.Web;
 using Integral.Web.Services;
 using Polly;
@@ -9,7 +8,7 @@ using Polly.Timeout;
 
 namespace Integral.Integrations.Amplitude {
 
-  public class AmplitudeWorkerThread : IRegisteredObject {
+  public class AmplitudeWorkerThread {
 
     private readonly int _workerId;
     private readonly Thread _thread;
@@ -49,14 +48,12 @@ namespace Integral.Integrations.Amplitude {
     }
 
     public void Start() {
-      // Register with hosting environment for graceful shutdown
-      HostingEnvironment.RegisterObject(this);
       _thread.Start(_cancellationTokenSource.Token);
 
       LogHelper.DebugWrite($"Amplitude worker {_workerId} started");
     }
 
-    // IRegisteredObject implementation for graceful shutdown
+    // Graceful shutdown — invoked by the host during application shutdown.
     public void Stop(bool immediate) {
       LogHelper.DebugWrite($"Amplitude worker {_workerId} stopping (immediate: {immediate})");
 
@@ -88,8 +85,6 @@ namespace Integral.Integrations.Amplitude {
       // Dispose cancellation token source
       _cancellationTokenSource.Dispose();
 
-      // Unregister from hosting environment
-      HostingEnvironment.UnregisterObject(this);
       LogHelper.DebugWrite($"Amplitude worker {_workerId} stopped");
     }
 

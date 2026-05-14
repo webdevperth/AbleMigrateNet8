@@ -8,14 +8,13 @@ using Polly.Retry;
 using Polly.Timeout;
 using System;
 using System.Threading;
-using System.Web.Hosting;
 
 namespace Integral.Integrations.Intercom {
   /// <summary>
   /// Worker thread for processing Intercom events from the queue.
-  /// Implements IRegisteredObject for graceful shutdown integration with ASP.NET hosting environment.
+  /// Graceful shutdown is wired by the host calling Stop() during application shutdown.
   /// </summary>
-  public class IntercomWorkerThread : IRegisteredObject {
+  public class IntercomWorkerThread {
 
     private readonly int _workerId;
     private readonly Thread _thread;
@@ -71,16 +70,13 @@ namespace Integral.Integrations.Intercom {
     }
 
     public void Start() {
-      // Register with hosting environment for graceful shutdown
-      HostingEnvironment.RegisterObject(this);
       _thread.Start(_cancellationTokenSource.Token);
 
       LogHelper.DebugWrite($"Intercom worker {_workerId} started");
     }
 
     /// <summary>
-    /// IRegisteredObject implementation for graceful shutdown
-    /// Called by ASP.NET when application pool is shutting down
+    /// Graceful shutdown — invoked by the host during application shutdown.
     /// </summary>
     public void Stop(bool immediate) {
       LogHelper.DebugWrite($"Intercom worker {_workerId} stopping (immediate: {immediate})");
@@ -113,8 +109,6 @@ namespace Integral.Integrations.Intercom {
       // Dispose cancellation token source
       _cancellationTokenSource.Dispose();
 
-      // Unregister from hosting environment
-      HostingEnvironment.UnregisterObject(this);
       LogHelper.DebugWrite($"Intercom worker {_workerId} stopped");
     }
 

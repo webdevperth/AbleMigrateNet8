@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.IO;
 using System.Linq;
 using System.Net.Mail;
@@ -370,7 +369,7 @@ namespace Integral.Web {
     public const string AmplitudeEventName_PageViewed = "Page Viewed";
     public const int AmplitudeCacheSize = 128; // LRU cache size for tracking user property changes per session
 
-    private static readonly IConfigSource _configSource;
+    private static IConfigSource _configSource => ServiceLocator.Instance.GetRequiredService<IConfigSource>();
 
     public static string AppRootPath { get; private set; }
     public static string UploadsFolderName { get; private set; }
@@ -660,14 +659,9 @@ namespace Integral.Web {
         UnitTestProjectPath = Regex.Match(AppDomain.CurrentDomain.BaseDirectory, @"^.*AbleWebApp\\").Value + @"UnitTests\";
         UnitTestResourcesPath = UnitTestProjectPath + @"resources\";
 
-        var fileMap = new ExeConfigurationFileMap { ExeConfigFilename = AppRootPath + "web.config" };
-        var testConfiguration = ConfigurationManager.OpenMappedExeConfiguration(fileMap, ConfigurationUserLevel.None);
-        _configSource = new ConfigSource_Framework(testConfiguration);
-
       } else {
-        // Normal running in IIS/Express.
+        // Normal running.
 
-        _configSource = new ConfigSource_Framework();
         AppRootPath = SystemWeb.ServerMapPath("/").EnsureEndsWith("\\", StringExt.Ensure.IfNotBlank);
       }
 

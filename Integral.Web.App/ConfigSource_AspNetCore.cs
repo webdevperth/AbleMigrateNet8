@@ -1,6 +1,4 @@
-﻿#if NET10_0_OR_GREATER
-
-using System;
+﻿using System;
 using Integral.Web.Services;
 using Microsoft.Extensions.Configuration;
 
@@ -35,5 +33,3 @@ namespace Integral.Web {
       _appSettingsSource[key];
   }
 }
-
-#endif

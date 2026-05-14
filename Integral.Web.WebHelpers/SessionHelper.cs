@@ -2,7 +2,7 @@
 using Newtonsoft.Json.Converters;
 using System;
 using System.Collections.Generic;
-using System.Web; // Migration: Replace with Microsoft.AspNetCore.Http
+using Microsoft.AspNetCore.Http;
 using Integral.Web.Services;
 
 namespace Integral.Web {

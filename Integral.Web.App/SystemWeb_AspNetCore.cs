@@ -1,14 +1,14 @@
-﻿#if NET10_0_OR_GREATER
-
-using Integral.Web.Services;
+﻿using Integral.Web.Services;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Extensions.Primitives;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Text;
 
 namespace Integral.Web {
@@ -66,7 +66,7 @@ namespace Integral.Web {
     public string RequestMethod       => Request?.Method;
     public string RequestPhysicalPath => Request == null ? null : ServerMapPath(Request.Path.Value);
     public string RequestUrlHost      => Request?.Host.Host;
-    public string JavaScriptStringEncode(string content) => WebUtility.JavaScriptStringEncode(content);
+    public string JavaScriptStringEncode(string content) => System.Web.HttpUtility.JavaScriptStringEncode(content);
     public Dictionary<string, StringValues> ParseQueryString(string query) => QueryHelpers.ParseQuery(query);
     public string HtmlEncode(string content) => WebUtility.HtmlEncode(content);
     public string UrlEncode(string content) => WebUtility.UrlEncode(content);
@@ -192,7 +192,7 @@ namespace Integral.Web {
 
     // Misc
 
-    public string ApplicationVirtualPath => RequestContext?.PathBase.EnsureEndsWith("/", StringExt.Ensure.IfNotBlank);
+    public string ApplicationVirtualPath => Request?.PathBase.Value.EnsureEndsWith("/", StringExt.Ensure.IfNotBlank);
 
     public string GetRequestBody() {
       try {
@@ -247,5 +247,3 @@ namespace Integral.Web {
     public bool         Shareable { get; set; }
   }
 }
-
-#endif

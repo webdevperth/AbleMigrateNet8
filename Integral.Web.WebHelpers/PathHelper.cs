@@ -6,7 +6,6 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
-using System.Web; // Migration: Replace with Microsoft.AspNetCore.Http
 using static Integral.Web.PathHelper.Content;
 using static Integral.Web.PathHelper.Images;
 using Integral.Web.Services;
@@ -1118,9 +1117,12 @@ namespace Integral.Web {
         return GetUploadFilePath(UploadSubfolders.QuoteSalesPDFs, QuoteSalesPDFFileName(quoteItemInfo), includeDomain, FileNotFoundReturn.EmptyString);
       }
 
-      public static void SavePDFToFile(DbHelper.AbleQuotes.QuoteInfo quoteItemInfo, HttpPostedFile file) {
+      public static void SavePDFToFile(DbHelper.AbleQuotes.QuoteInfo quoteItemInfo, IUploadedFile file) {
         GetPhysicalUploadFilePath(UploadSubfolders.QuoteSalesPDFs, QuoteSalesPDFFileName(quoteItemInfo), out string physicalFilePath, out bool fileExists);
-        file.SaveAs(physicalFilePath);
+        using (var source = file.OpenReadStream())
+        using (var target = File.Create(physicalFilePath)) {
+          source.CopyTo(target);
+        }
       }
     }
 
