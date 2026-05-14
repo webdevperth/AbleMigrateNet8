@@ -69,6 +69,9 @@
     The legacy Web Forms files in Pages/, MasterPages/, UserControls/, ajax/, api/, AppCode/
     are kept on disk pending conversion in later migration steps. Exclude their code-behinds
     and helper files from compilation here so the SDK-style build succeeds in isolation.
+
+    The startup bootstrap files in AppCode/ are explicitly re-included after the bulk Remove
+    because Program.cs invokes them on application start.
   -->
   <ItemGroup>
     <Compile Remove="**\*.aspx.cs" />
@@ -76,6 +79,10 @@
     <Compile Remove="**\*.Master.cs" />
     <Compile Remove="**\*.asax.cs" />
     <Compile Remove="AppCode\**\*.cs" />
+    <Compile Include="AppCode\ApplicationInsightsBootstrap.cs" />
+    <Compile Include="AppCode\IntercomBootstrap.cs" />
+    <Compile Include="AppCode\AmplitudeBootstrap.cs" />
+    <Compile Include="AppCode\AmplitudeHelper.cs" />
   </ItemGroup>
 
 </Project>
