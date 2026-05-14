@@ -1,0 +1,130 @@
+﻿<%@ Page Language="C#" AutoEventWireup="true"
+  MasterPageFile="~/MasterPages/Site.Master"
+  CodeFile="default.aspx.cs"
+  Inherits="Integral.Web.PortalSite.DefaultPage" %>
+
+<%@ Import Namespace="Integral.Web" %>
+
+<asp:Content ContentPlaceHolderID="BodyContent" runat="server">
+
+  <div class="onboarding-wrapper onboarding-login">
+
+    <%= WebHelper.GetLoggedOutAbleLogo() %>
+
+    <div class="content-box">
+
+      <div class="content-box-image" style="background-image: url('/images/onboarding_image.jpg')"></div>
+
+      <div class="content-box-form">
+
+        <h3>Welcome back</h3>
+
+        <form id="formLogin" method="post" action="#" onsubmit="return false;">
+
+          <div class="form-row">
+            <label>Email*</label>
+            <div><input class="form-control" type="email" tabindex="1" name="<%= FormFields.EmailAddress %>" value="<%= GetInitialEmailAddr().HTMLEncode() %>" placeholder="john.smith@email.com" required=""></div>
+          </div>
+
+          <div class="form-row">
+            <label>Password*</label>
+            <div><input class="form-control" tabindex="2" type="password" name="<%= FormFields.Password %>" value="" required=""></div>
+          </div>
+
+          <div class="form-row">
+            <label></label>
+            <div class="flex flex-align-center gap20">
+              <div class="flex1"><a class="focus-underline nowrap" tabindex="4" href="<%= PathHelper.Pages.ResetPassword() %>">Forgot Password?</a></div>
+              <button id="btnLogin" tabindex="3" type="button" class="btn btn-primary flex0">Sign In</button>
+            </div>
+          </div>
+
+          <span class="form-footer">Don't have an account? <a tabindex="5" class="focus-underline" href="<%= PathHelper.Pages.Register() %>">Register</a> for free.</span>
+
+        </form>
+
+      </div>
+    </div>
+
+  </div>
+
+  <script type="text/javascript">
+
+    var $formLogin, $btnLogin;
+
+    $(document).ready(function() {
+
+      $formLogin = $("#formLogin");
+      $btnLogin = $("#btnLogin");
+
+      $btnLogin.click(onSubmit);
+      $formLogin.find("input").keypress(function (e) { if (e.which == 13) onSubmit(); });
+
+      if ($('input[name="<%= FormFields.EmailAddress %>"]').val() == "") {
+        $('input[name="<%= FormFields.EmailAddress %>"]').focus();
+      } else {
+        $('input[name="<%= FormFields.Password %>"]').focus();
+      }
+
+    });
+
+    function onSubmit() {
+
+      AjaxSubmit({
+        form: $formLogin,
+        onSuccess: function (jqXHR, data) { },
+        onFail: function (jqXHR, data) { },
+        onError: function (jqXHR, textStatus, errorThrown) {
+          if (app_isDev) common_InfoDialog(jqXHR.responseText);
+          else common_InfoDialog("A problem occurred logging into your account, please try again later.");
+        },
+        onAlways: function (data_or_jqXHR, textStatus, jqXHR_or_errorThrown) { }
+      });
+    }
+
+    function CheckProvided(fieldName, message) {
+
+      var field = $('input[name="' + fieldName + '"]');
+      if (field.length !== 1) return false;
+      var fieldValue = $.trim(field.val());
+      if (fieldValue == "") {
+        if (message) FieldAlert(fieldName, message);
+        return false;
+      }
+      return true;
+    }
+
+    function CheckValidEmail(fieldName, message) {
+
+      var field = $('input[name="' + fieldName + '"]');
+      if (field.length !== 1) return false;
+      var fieldValue = $.trim(field.val());
+      if (!myTools.IsValidEmailAddress(fieldValue)) {
+        FieldAlert(fieldName, message);
+        return false;
+      }
+      return true;
+    }
+
+    function FieldAlert(fieldName, message) {
+
+      var field = $('input[name="' + fieldName + '"]');
+      if (field.length !== 1) {
+        common_InfoDialog(message, { glyphIcon: "question-sign" });
+        return;
+      }
+
+      var formRow = field.closest(".form-row");
+      if (formRow.length !== 1) return;
+
+      var errorRow = formRow.clone();
+      errorRow.addClass("error-row");
+      errorRow.children().empty();
+      errorRow.children().eq(1).remove();
+      errorRow.append(message);
+      formRow.after(errorRow);
+    }
+
+  </script>
+
+</asp:Content>

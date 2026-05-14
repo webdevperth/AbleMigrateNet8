@@ -1,0 +1,259 @@
+﻿<%@ Page Language="C#" AutoEventWireup="true"
+  CodeFile="SkillsViewer.aspx.cs"
+  Inherits="Integral.Web.PortalSite.Pages_Albert.SkillsViewer"
+  MasterPageFile="~/MasterPages/AdminLTE.Master" %>
+
+<%@ Import Namespace="Integral.Web" %>
+<%@ Import Namespace="Integral.Web.PortalSite.Reports" %>
+
+<asp:Content ID="HeadContent" runat="server" ContentPlaceHolderID="HeadContent">
+  <link rel="stylesheet" type="text/css" href="<%= PathHelper.UrlPath.CSS %>survey-viewer-common.css" />
+</asp:Content>
+
+<asp:Content ID="BodyContent" runat="server" ContentPlaceHolderID="BodyContent">
+
+  <br/>
+
+  <% if (ProjectList.IsNullOrEmpty()) { %>
+
+    <%= WebHelper.GetEmptyStatePageHtml("Capabilities", "No information yet.") %>
+
+  <% } else { %>
+
+    <%= WebHelper.GetPageTabs(
+        new WebHelper.PageTabsInfo() { LastTabFloatRight = true, TabListID = WebHelper.ElementID.ReportTabs },
+        new WebHelper.PageTabItem(PathHelper.SurveyViewerTabEnum.selection.ToString(), "Selection", true) { ItemID = "PageTabSelection" },
+        new WebHelper.PageTabItem(PathHelper.SurveyViewerTabEnum.overview.ToString(), "Overview"),
+        new WebHelper.PageTabItem(PathHelper.SurveyViewerTabEnum.detailed.ToString(), "Detailed"),
+        new WebHelper.PageTabItem(PathHelper.SurveyViewerTabEnum.focus.ToString(), "Focus"),
+        new WebHelper.PageTabItem(PathHelper.SurveyViewerTabEnum.heatmap.ToString(), "Heat Map"),
+        new WebHelper.PageTabItem(PathHelper.SurveyViewerTabEnum.prepost.ToString(), "Pre-Post") { ItemID = "PageTabPrePost" },
+        new WebHelper.PageTabItem() { ItemID = "PageTabBenchSelect" }
+    ) %>
+
+    <div id="divBenchmarkSelect" class="flex flex-align-center pl15" data-appendto="PageTabBenchSelect">
+      <div class="">Benchmark: </div>
+      <div class="ml10">
+        <select id="selBenchmark" class="w175 noselect2">
+          <option value="<%= PathHelper.SurveyViewerBenchmarkEnum.Global.ToString() %>">Global (n=<%= Global360ResponseCount %>)</option>
+          <option value="<%= PathHelper.SurveyViewerBenchmarkEnum.Org.ToString() %>">Organisation</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="tab-panel" id="tab-panel-<%= PathHelper.SurveyViewerTabEnum.selection %>" data-appendTo="panel-<%= PathHelper.SurveyViewerTabEnum.selection %>">
+      <div class="form-horizontal mt30">
+        <%= WebHelper.GetSelectRow("Projects:", FormFields.ProjectJobNumber, 1, 6, GetProjectOptionsHtml()) %>
+        <%= WebHelper.GetMultiSelectRow("Programs:", FormFields.ProgramJobIds, 1, 6, "") %>
+        <%= WebHelper.GetTextDisplayRow("", 8, "<div id=\"ResultMessage\"></div>") %>
+      </div>
+    </div>
+
+    <div class="tab-panel" id="tab-panel-<%= PathHelper.SurveyViewerTabEnum.overview %>" data-appendTo="panel-<%= PathHelper.SurveyViewerTabEnum.overview %>">
+
+      <% = WebHelper.GetPartialLoaderHtml(new WebHelper.PartialLoaderOptions() {
+          ID = PartialIDs.SummaryScore,
+          Url = PathHelper.Partials.SkillsViewer_Overview(null, null, PathHelper.SurveyViewerBenchmarkEnum.Global),
+          InitialWidth = "400px",
+          InitialHeight = "200px",
+          DeferInitialLoad = true,
+          InitialStyle = WebHelper.PartialLoaderStyle.Blank,
+          LoaderStyle = WebHelper.PartialLoaderStyle.Chart
+        }) %>
+
+      <br/>
+
+      <%= WebHelper.GetPartialLoaderHtml(new WebHelper.PartialLoaderOptions() {
+          ID = PartialIDs.Categories,
+          Url = PathHelper.Partials.SkillsViewer_Categories(null, null, PathHelper.PrePostScopeEnum.None, PathHelper.SurveyViewerBenchmarkEnum.Global),
+          InitialWidth = "100%",
+          InitialHeight = "400px",
+          DeferInitialLoad = true,
+          InitialStyle = WebHelper.PartialLoaderStyle.Blank,
+          LoaderStyle = WebHelper.PartialLoaderStyle.Chart
+        }) %>
+
+    </div>
+
+    <div class="tab-panel" id="tab-panel-<%= PathHelper.SurveyViewerTabEnum.detailed %>" data-appendTo="panel-<%= PathHelper.SurveyViewerTabEnum.detailed %>">
+
+      <%= WebHelper.GetPartialLoaderHtml(new WebHelper.PartialLoaderOptions() {
+          ID = PartialIDs.QuestionDetail,
+          Url = PathHelper.Partials.SkillsViewer_Detail(null, null, PathHelper.SurveyViewerBenchmarkEnum.Global),
+          InitialWidth = "100%",
+          InitialHeight = "400px",
+          DeferInitialLoad = true,
+          InitialStyle = WebHelper.PartialLoaderStyle.Blank,
+          LoaderStyle = WebHelper.PartialLoaderStyle.Chart
+        }) %>
+
+    </div>
+
+    <div class="tab-panel" id="tab-panel-<%= PathHelper.SurveyViewerTabEnum.focus %>" data-appendTo="panel-<%= PathHelper.SurveyViewerTabEnum.focus %>">
+
+      <%= WebHelper.GetPartialLoaderHtml(new WebHelper.PartialLoaderOptions() {
+          ID = PartialIDs.Focus,
+          Url = PathHelper.Partials.SkillsViewer_Focus(null, null, PathHelper.SurveyViewerBenchmarkEnum.Global),
+          InitialWidth = "100%",
+          InitialHeight = "400px",
+          DeferInitialLoad = true,
+          InitialStyle = WebHelper.PartialLoaderStyle.Blank,
+          LoaderStyle = WebHelper.PartialLoaderStyle.Chart
+        }) %>
+
+    </div>
+
+    <div class="tab-panel" id="tab-panel-<%= PathHelper.SurveyViewerTabEnum.heatmap %>" data-appendTo="panel-<%= PathHelper.SurveyViewerTabEnum.heatmap %>">
+
+      <%= WebHelper.GetPartialLoaderHtml(new WebHelper.PartialLoaderOptions() {
+          ID = PartialIDs.HeatMap,
+          Url = PathHelper.Partials.SkillsViewer_HeatMap(null, null, PathHelper.SurveyViewerBenchmarkEnum.Global),
+          InitialWidth = "100%",
+          InitialHeight = "400px",
+          DeferInitialLoad = true,
+          InitialStyle = WebHelper.PartialLoaderStyle.Blank,
+          LoaderStyle = WebHelper.PartialLoaderStyle.Chart
+        }) %>
+
+    </div>
+
+    <div class="tab-panel" id="tab-panel-<%= PathHelper.SurveyViewerTabEnum.prepost %>" data-appendTo="panel-<%= PathHelper.SurveyViewerTabEnum.prepost %>">
+
+      <%= WebHelper.GetPartialLoaderHtml(new WebHelper.PartialLoaderOptions() {
+        ID = PartialIDs.QuestionPrePost,
+        Url = PathHelper.Partials.SkillsViewer_PrePost(null, null, PathHelper.SurveyViewerBenchmarkEnum.Global),
+        InitialWidth = "100%",
+        InitialHeight = "400px",
+        DeferInitialLoad = true,
+        InitialStyle = WebHelper.PartialLoaderStyle.Blank,
+        LoaderStyle = WebHelper.PartialLoaderStyle.Chart
+      }) %>
+
+    </div>
+
+  <% } %>
+
+</asp:Content>
+
+<asp:Content ContentPlaceHolderID="PostScriptContent" runat="server">
+
+  <% if (!ProjectList.IsNullOrEmpty()) { %>
+
+    <script type="text/javascript">
+      'use strict';
+
+      (function ($) {
+
+        var selProject, selPrograms, selBenchmark, pageTabSelection, pageTabPrePost, resultMessage;
+        var reportTabs, divBenchmarkSelect;
+
+        $(document).ready(function() {
+
+          selProject = $('select[name="<%= FormFields.ProjectJobNumber %>"]');
+          selPrograms = $('select[name="<%= FormFields.ProgramJobIds %>"]');
+          reportTabs = $("#<%= WebHelper.ElementID.ReportTabs %>");
+          divBenchmarkSelect = $("#divBenchmarkSelect");
+          selBenchmark = $("#selBenchmark");
+          pageTabSelection = $("#PageTabSelection");
+          pageTabPrePost = $("#PageTabPrePost");
+          resultMessage = $("#ResultMessage");
+
+          selProject.change(LoadPrograms);
+          selPrograms.change(LoadReport);
+          selBenchmark.change(LoadReport);
+
+          DisableBenchmarkSelectOnPrePostTab();
+          LoadPrograms();
+
+        }); // ready.
+
+        function DisableBenchmarkSelectOnPrePostTab() {
+
+          // When user clicks pre-post tab, set benchmark dropdown to global and disable it.
+          // Restore original selection when moving off pre-post tab.
+
+          reportTabs.on("click", "li", function (ev) {
+            var tabName = $(ev.currentTarget).data("tabname");
+            if (!isStringNullOrEmpty(tabName)) {
+              if (tabName == "<%= PathHelper.SurveyViewerTabEnum.prepost %>") {
+              divBenchmarkSelect.hide();
+            } else {
+              divBenchmarkSelect.show();
+            }
+          }
+        });
+        }
+
+        function LoadPrograms() {
+
+          selPrograms.empty().prop("disabled", true).trigger("change").busyLoad("show");
+
+          AjaxSubmit({
+            url: AbleJS.Util.PatchQuery({
+              url: location.href,
+              params: { "<%= PathHelper.AbleUrlKeys.ProjectJobNumber %>": selProject.val() ?? "" }
+            }),
+            action: "<%= AjaxAction.GetPrograms %>",
+            onSuccess: function (jqXHR, data) {
+              selBenchmark.find('option[value="<%= PathHelper.SurveyViewerBenchmarkEnum.Org.ToString() %>"]').text("Organisation (n=" + data["<%= ReturnValues.Company360ResponseCount %>"] + ")");
+              selPrograms.html(data["<%= ReturnValues.Html %>"]).prop("disabled", false).trigger("change").busyLoad("hide");
+            }
+          });
+        }
+
+        function LoadReport() {
+
+            var urlParamsObj = {
+            "<%= PathHelper.AbleUrlKeys.ProjectJobNumber %>": selProject.val() ?? "",
+            "<%= PathHelper.AbleUrlKeys.ProgramJobId %>": selPrograms.val() ?? "",
+            "<%= PathHelper.AbleUrlKeys.SurveyViewerBenchmark %>": selBenchmark.val()
+          }
+
+          pageTabPrePost.addClass("disabled");
+          resultMessage.text("");
+
+          AjaxSubmit({
+            url: AbleJS.Util.PatchQuery({ url: location.href, params: urlParamsObj }),
+            action: "<%= AjaxAction.GetStats %>",
+            onSuccess: function (jqXHR, data) {
+              if (data["<%= ReturnValues.Message %>"]) {
+                resultMessage.text(data["<%= ReturnValues.Message %>"]);
+              }
+              if (data["<%= ReturnValues.HasPreSurvey %>"] === true) {
+                pageTabPrePost.show().removeClass("disabled");
+              } else {
+                pageTabPrePost.hide();
+              }
+              if (data["<%= ReturnValues.DisableReportTabs %>"] === true) {
+                pageTabSelection.siblings().addClass("disabled");
+                pageTabSelection.siblings().find("a").prop("disabled", true).prop("tabindex", -1);
+              } else {
+                pageTabSelection.siblings().removeClass("disabled");
+                pageTabSelection.siblings().find("a").prop("disabled", false).prop("tabindex", 0);
+              }
+              ReloadPartials(urlParamsObj);
+            }
+          });
+
+          function ReloadPartials(urlParamsObj) {
+
+            var delay = 300;
+
+            $.EachPartial(function ($partial, partialInfo) {
+              partialInfo.Clear();
+              if (!isStringNullOrEmpty(urlParamsObj["<%= PathHelper.AbleUrlKeys.ProjectJobNumber %>"])) {
+                setTimeout(function (thisPartialInfo) {
+                  thisPartialInfo.LoadUrl(thisPartialInfo.initialUrl, urlParamsObj);
+                }, delay, partialInfo);
+                delay += 300;
+              }
+            });
+          }
+        }
+
+      })(jQuery);
+    </script>
+
+  <% } %>
+
+</asp:Content>

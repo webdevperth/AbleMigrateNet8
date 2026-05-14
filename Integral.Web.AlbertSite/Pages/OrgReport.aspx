@@ -1,0 +1,277 @@
+﻿<%@ Page Language="C#" AutoEventWireup="true"
+  CodeFile="OrgReport.aspx.cs"
+  Inherits="Integral.Web.PortalSite.Pages_Albert.OrgReport"
+  MasterPageFile="~/MasterPages/Public.Master" %>
+
+<%@ Import Namespace="Integral.Web" %>
+
+<%@ Register TagPrefix="ID" TagName="OrgRpt_TopFilters" Src="~/UserControls/OrgRpt_TopFilters.ascx" %>
+
+<asp:Content ID="HeadContent" runat="server" ContentPlaceHolderID="HeadContent">
+  <link rel="stylesheet" type="text/css" href="<%= PathHelper.UrlPath.CSS %>reports.css" />
+</asp:Content>
+
+<asp:Content ID="BodyContent" runat="server" ContentPlaceHolderID="BodyContent">
+
+  <% if (!RequestedCtrlName.IsNullOrEmpty()) { %>
+
+    <%= LoadControl(PathHelper.ServerPaths.UserControls + RequestedCtrlName + ".ascx").RenderToString() %>
+
+  <% } else { %>
+
+    <section class="container publicReport pt20">
+
+      <div class="flex">
+        <div class="flex0 pr15">
+          <div class="analytics-icon"></div>
+        </div>
+        <div class="flex1">
+          <a class="btn btn-secondary floatright" href="<%= PathHelper.Pages.Logout() %>">Log Out</a>
+          <h4 class="mt0">Analytics</h4>
+          <h3><%= surveyInfo == null ? "" : surveyInfo.SurveyName.HTMLEncode() %></h3>
+        </div>
+      </div>
+
+      <% if (InvalidIdsVisible) { %>
+        The report URL (address) is incomplete or invalid.<br/>
+        Please use the exact report link provided by Integral Development.
+      <% } %>
+
+      <% if (ReportIsAvailable) { %>
+
+        <!-- begin top nav -->
+        <ul class="nav nav-tabs nav-tabs-underlined" id="pageTabs">
+          <li class="pageTab pageTab_overview"><a href="#">Overview</a></li>
+          <li class="pageTab pageTab_categories"><a href="#">Categories</a></li>
+          <li class="pageTab pageTab_focus"><a href="#">Focus</a></li>
+          <li class="pageTab pageTab_detailed"><a href="#">Detailed</a></li>
+          <li class="pageTab pageTab_heatmap"><a href="#">Heat Map</a></li>
+          <% if (reportData.OpenTextThemesExist || reportParticipantInfo.CanAccessTextResponses) { %>
+          <li class="pageTab pageTab_comments"><a href="#">Open Questions</a></li>
+          <% } %>
+        </ul>
+
+        <div class="col filters align-right">
+          <ID:OrgRpt_TopFilters runat="server" />
+        </div>
+
+        <div id="msgNoData" class="msgNoData row hidden">
+          <div class="col-md-5">
+            <p>Your Demographic selections have resulted in less than <%= reportData.SurveyInfo.OrgReportMinResponsesToShow %> responses.</p>
+            <p>To use this Demographic selection, please choose a larger group of<br/>
+              respondents using the Org Level selector, or change the Demographic<br/>
+              selection to increase the number of responses.</p>
+            <p>The purpose of these rules is to protect the anonymity of participants.</p>
+          </div>
+          <div class="noDataImg col-md-7">
+            <img src="<%= PathHelper.UrlPath.Images %>htmlreports/OrgRpt-NoData.gif" width="350" />
+          </div>
+        </div>
+
+        <div id="pageTabContent_overview" class="pageTabContent">
+          <div id="OrgRpt_Ovw_TopChart" class="control"></div>
+          <div id="OrgRpt_Ovw_IOIDirs" class="control"></div>
+          <div id="OrgRpt_Ovw_Quadrants" class="control"></div>
+        </div>
+
+        <div id="pageTabContent_categories" class="pageTabContent">
+          <div id="OrgRpt_Categories" class="control"></div>
+        </div>
+
+        <div id="pageTabContent_focus" class="pageTabContent">
+          <div id="OrgRpt_Focus" class="control"></div>
+        </div>
+
+        <div id="pageTabContent_detailed" class="pageTabContent">
+          <div id="OrgRpt_Detailed" class="control"></div>
+        </div>
+
+        <div id="pageTabContent_heatmap" class="pageTabContent">
+          <div id="OrgRpt_HeatMap" class="control"></div>
+        </div>
+
+        <div id="pageTabContent_comments" class="pageTabContent">
+          <div id="OrgRpt_Comments" class="control"></div>
+        </div>
+
+      <% } %>
+
+    </section>
+  <% } %>
+
+</asp:Content>
+
+<asp:Content ContentPlaceHolderID="PostScriptContent" runat="server">
+
+  <% if (ReportIsAvailable) { %>
+  <script>
+
+    //(function ($) {
+
+      var benchTypeOptions = [ "o", "g" ]; // 'o' = organisation, 'g' = global
+      var orgLevelsCurrent, demogCurrent, categoryCurrent;
+      var benchTypeCurrent = benchTypeOptions[0];
+      var pageTabNames = []; // tab names, taken from the li.pageTab items.
+      var pageTabNameCurrent = ""; // name of the current tab to show (one of the strings in pageTabNames[])
+
+      CtlOrgRpt_TopFilters.Loaded = function (orgLevelVals, benchTypeVal, categoryVal) {
+        // Initial filter values.
+        orgLevelsCurrent = orgLevelVals;
+        benchTypeCurrent = benchTypeVal;
+        categoryCurrent = categoryVal;
+        // When filter changes, remember new values and reload tab.
+        CtlOrgRpt_TopFilters.FilterChanged = function (orgLevelVals, benchTypeVal, categoryVal) {
+          orgLevelsCurrent = orgLevelVals;
+          benchTypeCurrent = benchTypeVal;
+          categoryCurrent = categoryVal;
+          ShowPageTabContent();
+        }
+      }
+
+      $(document).ready(function () {
+
+        $("#pageTabs li.pageTab").each(function (i, e) {
+          var tabName = GetTabNameFromClass(e.className);
+          if (tabName != null) pageTabNames.push(tabName);
+        });
+
+        $("#pageTabs li.pageTab").click(function (ev) {
+          ev.preventDefault();
+          var tabName = GetTabNameFromClass(this.className);
+          if (tabName != null) ShowPageTabContent(tabName);
+        });
+
+        $(".chkbenchType")
+          .focus(function () { $(this).closest(".btn-group.benchType").addClass("focus"); })
+          .blur(function () { $(this).closest(".btn-group.benchType").removeClass("focus"); });
+
+        // Init report data if required.
+        $.post(location.href, { "<%= PathHelper.FormKeys.AjaxAction %>": "getdata" }).complete(function () {
+          ShowPageTabContent(pageTabNames[0]);
+        });
+
+      }); // ready
+
+      function SyncSelectedFilters() {
+        orgLevelsCurrent = CtlOrgRpt_TopFilters.GetSelectedOrgLevels();
+        demogCurrent = CtlOrgRpt_TopFilters.GetSelectedDemographics();
+        benchTypeCurrent = CtlOrgRpt_TopFilters.GetSelectedBenchType();
+        categoryCurrent = CtlOrgRpt_TopFilters.GetSelectedCategory();
+      }
+
+      function GetTabNameFromClass(className) {
+        var tabName = className.match(/pageTab_([a-z]+)/i);
+        if (tabName != null && tabName.length && tabName.length == 2) return tabName[1];
+        return null;
+      }
+
+      function ShowPageTabContent(pageTabNameToShow) {
+
+        if (pageTabNameToShow == null) pageTabNameToShow = pageTabNameCurrent;
+        if (pageTabNames.indexOf(pageTabNameToShow) == -1) pageTabNameToShow = pageTabNames[0]; // if not valid, default to initial page.
+        pageTabNameCurrent = pageTabNameToShow;
+
+        SyncSelectedFilters();
+
+        // Activate the correct tab.
+        $(".pageTab_" + pageTabNameCurrent).addClass("active").siblings().removeClass("active");
+        // Hide all page elements except the requested one.
+        $("#msgNoData").hide();
+        $(".pageTabContent").hide();
+        $(".pageTabContent .control").empty();
+        $("#pageTabContent_" + pageTabNameCurrent).fadeIn();
+
+        // Call tab-specific function to load its content.
+        /*
+        $("#ctlOrgRpt_TopFilters_BenchType + .boot-multiselect-container,"
+          + "#ctlOrgRpt_TopFilters_OrgLevel + .boot-multiselect-container,"
+          + "#ctlOrgRpt_TopFilters_Demographic + .boot-multiselect-container").show();
+        $("#ctlOrgRpt_TopFilters_Category + .boot-multiselect-container").hide();
+        */
+        // ShowFilters(true, true, true, false);
+        try {
+          eval("ShowPageTab_" + pageTabNameCurrent + "();");
+        } catch (e) { }
+      }
+
+      // Note the function names below, e.g. "ShowPageTab_xxx()", must be same as "pageTab_xxx" class name in html.
+
+      function ShowPageTab_overview() {
+        ShowFilters(true, true, true, false);
+        GetControlContent("OrgRpt_Ovw_TopChart");
+        GetControlContent("OrgRpt_Ovw_IOIDirs");
+        GetControlContent("OrgRpt_Ovw_Quadrants");
+      }
+
+      function ShowPageTab_categories() {
+        ShowFilters(true, true, true, false);
+        GetControlContent("OrgRpt_Categories");
+      }
+
+      function ShowPageTab_focus() {
+        ShowFilters(true, true, true, false);
+        GetControlContent("OrgRpt_Focus");
+      }
+
+      function ShowPageTab_detailed() {
+        ShowFilters(true, true, true, false);
+        GetControlContent("OrgRpt_Detailed");
+      }
+
+      function ShowPageTab_heatmap() {
+        ShowFilters(false, false, false, true);
+        GetControlContent("OrgRpt_HeatMap");
+      }
+
+      function ShowPageTab_comments() {
+        ShowFilters(true, false, false, false);
+        GetControlContent("OrgRpt_Comments");
+      }
+
+      function ShowFilters(showOrgLevels, showDemographics, showBenchmarks, showCategories) {
+        $("#ctlOrgRpt_TopFilters_OrgLevel").parent().toggle(showOrgLevels);
+        $("#ctlOrgRpt_TopFilters_Demographic").parent().toggle(showDemographics);
+        $("#ctlOrgRpt_TopFilters_BenchType").parent().toggle(showBenchmarks);
+        $("#ctlOrgRpt_TopFilters_Category").parent().toggle(showCategories);
+      }
+
+      function GetCharts() {
+        GetControlContent("ChartAlbert360ScoreOverTime");
+        GetControlContent("ChartAlbert360FunctionTable");
+      }
+
+    // })(jQuery);
+
+    // Note GetControlContent() must be public.
+    function GetControlContent(elementId, extraQueries, fnCallback) {
+      if ($("#msgNoData").is(":visible")) return;
+      var splitValues = elementId.split("__");
+      ctrlName = splitValues[0];
+      var ctrlOption = splitValues.length == 1 ? "" : splitValues[1];
+      $.get(location.href + "&ctrlname=" + ctrlName
+            + "&orgLevels=" + orgLevelsCurrent
+            + "&demog=" + demogCurrent
+            + "&benchType=" + benchTypeCurrent
+            + "&category=" + categoryCurrent
+            + "&option=" + ctrlOption
+            + (extraQueries == null ? "" : ("&" + extraQueries)))
+      .done(function (html, statusText, rsp) {
+        if (rsp.status.toString() == "<%= NoContentStatusCode %>") {
+          $("#msgNoData").show();
+        } else {
+          if (fnCallback) {
+            fnCallback(html);
+          } else {
+            $("#" + elementId).html(html);
+            setTimeout(function () {
+              common_UpdateUI($("#" + elementId));
+            }, 500);
+          }
+        }
+      });
+    }
+
+  </script>
+  <% } %>
+
+</asp:Content>

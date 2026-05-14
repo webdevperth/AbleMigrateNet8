@@ -1,0 +1,165 @@
+﻿<%@ Page Language="C#" AutoEventWireup="true" CodeFile="PurchaseServices.aspx.cs" Inherits="Integral.Web.PortalSite.Page_Partials.PurchaseServices" %>
+
+<%@ Import Namespace="Integral.Web" %>
+
+<%= GetEventPanelInfo() %>
+
+<script type="text/javascript">
+  (function ($) {
+
+    // Dictionary to store selected products in each service (Each panel is a service), the key is the service name
+    var selectedProductsPerService = {};
+    var btnComplete, purchaseForm;
+
+    $(document).ready(function () {
+
+      btnComplete = $('.<%= WebHelper.PurchaseServices.Button_CSS.Complete %>');
+      purchaseForm = $('.<%= WebHelper.PurchaseServices.Public_CSS.PurchaseForm %>')
+
+      btnComplete.click(CompleteServicePurchase);
+
+      // Step Card Selection
+      $('.step-card, .link-item').click(function () {
+        var parentPanel = $(this).closest('.step-panel');
+        var serviceName = parentPanel.attr('name');
+        var productId = $(this).data('<%= WebHelper.PurchaseServices.DataAttributes.ProductId %>');
+
+        // Update visual selection
+        parentPanel.find('.step-card, .link-item').removeClass('selected');
+        $(this).addClass('selected');
+
+        // Only store if we have both productName and ProductId
+        if (serviceName && productId !== undefined) {
+          selectedProductsPerService[serviceName] = productId;
+        }
+      });
+
+      // * Panel Buttons Functionality *
+      // Handle Next and Previous buttons
+      $(`.<%= WebHelper.PurchaseServices.Button_CSS.Next %>,
+         .<%= WebHelper.PurchaseServices.Button_CSS.Previous %>`).click(function () {
+
+        var isNext = $(this).hasClass('<%= WebHelper.PurchaseServices.Button_CSS.Next %>');
+        var currentPanel = $(this).closest('.step-panel');
+        var serviceName = currentPanel.attr('name');
+        var stepKey = isNext
+          ? '<%= WebHelper.PurchaseServices.DataAttributes.NextStep %>'
+          : '<%= WebHelper.PurchaseServices.DataAttributes.PreviousStep %>';
+        var targetStep = currentPanel.data(stepKey);
+
+        if (isNext) {
+          // Validate selection before proceeding
+          if (!serviceName || !selectedProductsPerService[serviceName]) {
+            common_ErrorToast(`Please select a ${serviceName ? serviceName.toLowerCase() : ''} option`);
+            return;
+          }
+
+          if (targetStep == '<%= WebHelper.PurchaseServices.StepPanelType.Summary %>') {
+            GetSelectedItems(true); // Summary
+          }
+        }
+        // Hide current panel
+        currentPanel.addClass('displaynone');
+        // Show target panel if exists
+        if (targetStep) {
+          $(`div[name="${targetStep}"]`).removeClass('displaynone');
+          if (typeof UpdateStepIndicators === 'function') {
+            UpdateStepIndicators(targetStep);
+          }
+        }
+      });
+
+      // Handle See More buttons
+      $('.<%= WebHelper.PurchaseServices.Button_CSS.SeeMore %>').click(function (e) {
+        e.stopPropagation(); // Prevent card selection when clicking "See More"
+        var card = $(this).closest('.step-card');
+        var description = card.find('.<%= WebHelper.PurchaseServices.Public_CSS.BoxDescription %>');
+
+        var isHidden = description.hasClass('displaynone');
+        description.toggleClass('expanded', isHidden); // Toggle visibility of the description
+        description.toggleClass('displaynone', !isHidden); // Toggle visibility of the description
+        $(this)
+          .attr('aria-expanded', isHidden)
+          .text(isHidden ? 'See Less' : 'See More'); // Update button text
+      });
+
+      GetSelectedItems(false); // Get Preselected Products on Page Load
+
+    });
+
+    function GetSelectedItems(getSummary) {
+
+      var summaryHtml = "";
+      var totalToPay = 0;
+
+      $('.step-card.selected, .link-item.selected').each(function () {
+        try {
+          var parentPanel = $(this).closest('.step-panel');
+          var serviceName = parentPanel.attr('name');
+          var productId = $(this).data('<%= WebHelper.PurchaseServices.DataAttributes.ProductId %>');
+
+          if (getSummary) {
+            var productName = $(this).find('.<%= WebHelper.PurchaseServices.Public_CSS.ProgramTitle %>').data('<%= WebHelper.PurchaseServices.DataAttributes.ProductName %>'); // Grab the product name
+            var productPriceValue = parseFloat($(this).find('.price').data('<%= WebHelper.PurchaseServices.DataAttributes.ProductPriceValue %>')); // Grab the price value
+            var productPriceDisplay = $(this).find('.price').data('<%= WebHelper.PurchaseServices.DataAttributes.PriceDisplaySummary %>') || ""; // Grab the price display
+
+            // Create the summary item HTML structure
+            summaryHtml += `
+              <div class="summary-item w100p">
+                <h3>${serviceName}</h3>
+                <p>${productName}<span class="price float-right">${productPriceDisplay}</span></p>
+              </div>`;
+
+            // Add to total to pay to display
+            totalToPay += productPriceValue || 0;
+          }
+
+          // Only proceed if we have valid data
+          if (serviceName && productId !== undefined && productId != null) {
+            selectedProductsPerService[serviceName] = productId;
+          }
+        } catch (error) {
+          console.log('Error processing selected card:', error);
+        }
+      });
+
+      // If a summary is required, update the summary section
+      if (getSummary) {
+        $('.<%= WebHelper.PurchaseServices.Public_CSS.SummaryContainer %>').empty().html(summaryHtml); // Clear existing content and update with the new summary
+        $('.<%= WebHelper.PurchaseServices.Public_CSS.SummaryTotal %>').empty().html(`<p class="float-right mt10 mb10">Total: <span class="price ml5">$${totalToPay.toFixed(2)} AUD</span></p>`);
+      }
+    }
+
+    function UpdateStepIndicators(activeStep) {
+      $('.purchase-step').removeClass('active');
+      $('.purchase-step').each(function () {
+        if ($(this).text().trim() === activeStep) {
+          $(this).addClass('active');
+        }
+      });
+    }
+
+    function CompleteServicePurchase() {
+
+      AjaxSubmit({
+        form: purchaseForm,
+        url: "<%= PathHelper.CurrentUrl %>",
+        action: "<%= AjaxAction.CompletePurchase %>",
+        data: {
+          "<%= FormFields.PurchaseData %>": JSON.stringify(selectedProductsPerService)
+        },
+        onSuccess: function (jqXHR, data) {
+
+        },
+        onFail: function (jqXHR, data) {
+        },
+        onError: function (jqXHR, textStatus, errorThrown) {
+          common_InfoDialog("Submit failed, please try again later.");
+        },
+        onAlways: function (data_or_jqXHR, textStatus, jqXHR_or_errorThrown) { }
+      });
+    }
+
+  })(jQuery);
+
+</script>

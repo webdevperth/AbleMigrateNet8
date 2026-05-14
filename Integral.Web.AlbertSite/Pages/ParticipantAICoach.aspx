@@ -1,0 +1,350 @@
+﻿<%@ Page Language="C#" AutoEventWireup="true"
+  CodeFile="ParticipantAICoach.aspx.cs"
+  Inherits="Integral.Web.PortalSite.Pages_Albert.ParticipantAICoach"
+  MasterPageFile="~/MasterPages/AdminLTE.Master" %>
+
+<%@ Import Namespace="Integral.Web" %>
+<%@ Import Namespace="Integral.Integrations" %>
+
+<asp:Content ContentPlaceHolderID="BodyContent" runat="server">
+
+  <%-- flex for left (chat) and right (events) columns. note height 100% of child nodes --%>
+  <div class="flex flex-space-between gap30 content-height-viewport">
+
+    <%-- chat column --%>
+    <div class="flex1 content-chat pos-relative" id="ContentChat">
+
+      <%-- outer vertical flex: row 1 = chat list + nudge, row 2 = input box --%>
+      <div class="flex-column flex-space-between h100pc">
+
+        <%-- Row 1 - inner vertical div with right and bottom border around chat list & nudges.
+              Note important to hide overflow to maintain height for this --%>
+        <div class="chat-area-border flex1 flex-column flex-space-between overflow-y-hidden">
+
+          <%-- row 1 chat list --%>
+          <div id="MessageList" class="flex1 flex-column gap15 overflow-y-auto overflow-x-hidden pb20">
+            <%= GetLatestMessagessHtml() %>
+          </div>
+
+          <%-- row 2 nudge grid --%>
+          <% if (CanViewChatNudges) { %>
+            <div id="ChatNudgeList" class="grid grid-fill grid-cols-1-1 row-gap-10 column-gap-20 pt15 hidden-sm hidden-xs">
+              <% foreach (var nudge in NudgeList) { %>
+                <div class="chat-nudge" data-nudge-prompt="<%= nudge.ChatPrompt.HTMLEncode() %>">
+                  <div class="chat-nudge-header"><%= nudge.HeadingText.HTMLEncode() %></div>
+                  <div class="chat-nudge-text"><%= nudge.BodyText.HTMLEncode() %></div>
+                </div>
+              <% } %>
+            </div>
+          <% } %>
+        </div>
+
+        <%-- Row 2 - input box --%>
+        <div class="chat-input-container flex0 pt15">
+          <div class="input-group">
+            <textarea class="form-control border no-shadow resize-none" placeholder="Type your message here" id="txtChatInput"></textarea>
+            <span class="input-group-btn">
+              <button class="btn btn-primary" id="btnChatSend" type="button">
+                <span class="spinner-icon">
+                  <ion-icon name="sync-outline"></ion-icon>
+                </span>
+                <span class="button-text">
+                  <ion-icon name="arrow-up-outline"></ion-icon>
+                </span>
+              </button>
+            </span>
+          </div>
+        </div>
+
+      </div><%-- outer vertical flex --%>
+
+      <div id="DisabledMessage" class="chat-blocking-banner hidden">
+        <a href="/ParticipantSurveys" class="btn btn-primary"></a>
+      </div>
+
+    </div><%-- content chat column --%>
+
+    <%-- content event column --%>
+    <div class="flex0 w25pc h100pc content-events hidden-sm hidden-xs">
+
+      <%-- Vetical flex for headings & actions.
+            All rows flex0 except for last row for upcoming list --%>
+      <div class="flex flex-column h100p">
+        <h4>Actions</h4>
+        <%= GetParticipantActions() %>
+        <h4>Upcoming
+          <% if (TotalUpcomingEvents > MaxEvents) { %>
+            <span class="headnote">(<%= MaxEvents %> / <%= TotalUpcomingEvents %> events shown)</span>
+          <% } %>
+        </h4>
+        <%-- Last row fills remaining vertical space and scrolls if necessary --%>
+        <div class="flex1 overflow-y-auto overflow-x-hidden">
+          <%= GetParticipantUpcomingEvents() %>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <%-- chat message templates --%>
+  <div id="MessageTemplate_User" class="hidden">
+    <%= GetSingleMessageHtml(false, "", true) %>
+  </div>
+  <div id="MessageTemplate_AI" class="hidden">
+    <%= GetSingleMessageHtml(true, "", true) %>
+  </div>
+
+  <iframe id="AIMessageStreamIFrame" class="hidden" src="about:blank" style="border: 1px solid red; overflow: visible; width: 100%; height: 200px"></iframe>
+
+  <script type="text/javascript" src="https://assets.calendly.com/assets/external/widget.js"></script>
+
+  <script type="text/javascript">
+
+    (function($) {
+
+      var canInteractWithChat, canViewChatNudges;
+      var $contentChat, $aiMessageStreamIFrame;
+      var $messageList, $messageTemplate_User, $messageTemplate_AI;
+      var $chatNudgeList;
+      var $txtChatInput, $btnChatSend;
+      var $newAIMessage;
+      var endpointUrl, endpointForCORS;
+
+      $(document).ready(function () {
+
+        canInteractWithChat = <%= CanInteractWithChat.ToJSTrueFalse() %>;
+        canViewChatNudges = <%= CanViewChatNudges.ToJSTrueFalse() %>;
+        endpointUrl = "<%= ConfigHelper.ParticipantAIChatEndpoint.ToString() %>";
+        endpointForCORS = "<%= ConfigHelper.ParticipantAIChatEndpoint.GetLeftPart(UriPartial.Authority) %>";
+
+        $contentChat = $('#ContentChat');
+        $DisabledMessage = $("#DisabledMessage");
+        $aiMessageStreamIFrame = $('#AIMessageStreamIFrame');
+        $messageList = $('#MessageList');
+        $messageTemplate_User = $("#MessageTemplate_User");
+        $messageTemplate_AI = $("#MessageTemplate_AI");
+        $chatNudgeList = $("#ChatNudgeList");
+        $txtChatInput = $('#txtChatInput');
+        $btnChatSend = $("#btnChatSend");
+
+        $btnChatSend.click(ValidateInputAndSubmit);
+        $txtChatInput.keypress(function (event) {
+          if (event.which === 13 && !event.shiftKey) { // Check if the Enter key (key code 13) was pressed
+            ValidateInputAndSubmit();
+          }
+        });
+
+        // When iframe posts message to this window, add it to the
+        // message body of the last "IsFromAI" message in the list.
+        DisableSendControls();
+        window.addEventListener("message", WindowEventReceived);
+        $aiMessageStreamIFrame.prop("src", endpointUrl);
+
+        if (canViewChatNudges) {
+          $chatNudgeList.find("[data-nudge-prompt]").click(NudgeClicked);
+        }
+
+        if (!canInteractWithChat) {
+          DisableChatWithMessage("You need to complete your pending intake survey to be able to interact with your AI Coach");
+        }
+
+        $messageList.find(".<%= WebHelper.CSSClasses.ChatMessageBodyText %>").each(function (i, e) {
+          UpdateMessageHtmlFormatting($(e));
+        });
+
+        ScrollMessageListToEnd();
+      });
+
+      function WindowEventReceived(e) {
+
+        // First ensure message is from the AIChat domain - very important for postMessage security.
+        if (e.origin.toLowerCase() !== endpointForCORS.toLowerCase()) return;
+
+        if (e.data["status"] === "ready") {
+
+          if (canInteractWithChat) EnableSendControls(); // API iframe ready - does this just once on page load.
+
+        } else if (e.data["action"] === "message") {
+
+          var messageType = e.data["messageType"];
+          var messageText = e.data["messageText"];
+
+          if (messageType == "chatstreamfinished") {
+
+            SetSendButtonBusyState(false);
+            SetNewAIMessageBusyState(false);
+            EnableSendControls();
+
+          } else if (isStringNullOrEmpty(messageText)) {
+
+            // MessageText missing, don't do anything.
+
+          } else {
+
+            if ($newAIMessage) {
+              AppendMessageText($newAIMessage, messageText); // Add text to new AI message body.
+              SetNewAIMessageBusyState(false); // Remove busy indicator after text is added.
+            }
+          }
+        }
+      }
+
+      function DisableChatWithMessage(message) {
+        DisableSendControls();
+        $DisabledMessage.find("a").text(message);
+        $DisabledMessage.removeClass("hidden");
+      }
+
+      function NudgeClicked(event) {
+        var nudgePromptText = $(event.currentTarget).data("nudge-prompt");
+        if (!isStringNullOrEmpty(nudgePromptText)) {
+          SubmitMessage(nudgePromptText);
+        }
+      }
+
+      function ValidateInputAndSubmit() {
+        if (!canInteractWithChat) return;
+        var inputText = $txtChatInput.val().trim(); // Get input text and remove leading/trailing spaces
+        $txtChatInput.val("");
+        if (!isStringNullOrEmpty(inputText)) {
+          apiRetryCount = 0;
+          SubmitMessage(inputText);
+        }
+      }
+
+      function SubmitMessage(userMessageText) {
+
+        DisableSendControls();
+
+        AddNewMessageToList(false, userMessageText); // Add user's message.
+        $newAIMessage = AddNewMessageToList(true); // Add a placekeeper message for the AI response.
+
+        SetSendButtonBusyState(true);
+        SetNewAIMessageBusyState(true);
+        RemoveActionCard();
+        RemoveNudges();
+        PostUserMessage(userMessageText);
+      }
+
+      function PostUserMessage(userMessageText) {
+
+        // Save message and get new UserMessageGuid.
+        AjaxSubmit({
+          action: "<%= AjaxAction.UserMesage %>",
+          data: {
+            "<%= FormFields.UserMessageText %>": userMessageText
+          },
+          onSuccess: function (jqXHR, data) {
+            var userMessageGuid = data["<%= AjaxReturnData.UserMessageGuid %>"];
+            PostAbleAPIMessage(
+              {
+                "action": "request",
+                "UserMessageGuid": userMessageGuid
+              }
+            );
+          }
+        });
+      }
+
+      function RemoveActionCard() {
+        var $actionCard = $(".<%= AICoach_ActionCardClass %>");
+        if ($actionCard.length > 0) $actionCard.remove();
+      }
+
+      function RemoveNudges() {
+        $chatNudgeList.fadeOut();
+      }
+
+      // Send message to iframe to submit the user's message.
+      function PostAbleAPIMessage(data) {
+        data.ClientDomain = "<%= Request.Url.Host %>";
+        $aiMessageStreamIFrame[0].contentWindow.postMessage(data, endpointForCORS);
+      }
+
+      function AddNewMessageToList(isFromAI, messageText) {
+        // Get message list item from the appropriate template element.
+        var $newMessage = (isFromAI === true ? $messageTemplate_AI : $messageTemplate_User).children().clone();
+        // Add message to the item.
+        if (!isStringNullOrEmpty(messageText)) AppendMessageText($newMessage, messageText);
+        // Add item to the list of messages.
+        $messageList.append($newMessage);
+        ScrollMessageListToEnd();
+
+        return $newMessage;
+      }
+
+      function AppendMessageText($message, messageText) {
+
+        if (!isJQuery($message) || $message.length != 1 || isStringNullOrEmpty(messageText)) return;
+
+        var $messageBody = $message.find(".<%= WebHelper.CSSClasses.ChatMessageBodyText %>");
+
+        // Remove busy spinner if present.
+        $messageBody.find(".spinner").remove();
+        // Remove any html in text.
+        messageText = RemoveHtmlFromMessage(messageText);
+        // Add text to message body.
+        $messageBody.append(messageText);
+        // Update the html formatting of the message.
+        UpdateMessageHtmlFormatting($messageBody);
+
+        ScrollMessageListToEnd();
+      }
+
+      function RemoveHtmlFromMessage(messageText) {
+        // Replace <br> tags in source with \n (LF).
+        messageText = messageText.replace(/<br[^>]*>/ig, "\n");
+        // Extract only text.
+        return $("<div/>").append(messageText).text();
+      }
+
+      function UpdateMessageHtmlFormatting($messageBody) {
+        $messageBody.html($messageBody.html().replace(/\*\*((?:(?!\*\*).)*)\*\*/g, "<b>$1</b>"));
+      }
+
+      function EnableSendControls() {
+        if (canInteractWithChat) {
+          $txtChatInput.prop("disabled", false);
+          $btnChatSend.prop("disabled", false);
+          SetSendButtonBusyState(false);
+          setTimeout(function () { $txtChatInput.focus(); }, 200);
+        }
+      }
+
+      function DisableSendControls(){
+        $txtChatInput.prop("disabled", true);
+        $btnChatSend.prop("disabled", true);
+      }
+
+      function SetSendButtonBusyState(state) {
+        if (state === true) {
+          $btnChatSend.addClass("busy");
+        } else {
+          $btnChatSend.removeClass("busy");
+        }
+      }
+
+      function SetNewAIMessageBusyState(state) {
+        if ($newAIMessage) {
+          var $chatText = $newAIMessage.find(".<%= WebHelper.CSSClasses.ChatMessageBodyText %>");
+          if (state === true) {
+            $chatText.addClass("<%= WebHelper.CSSClasses.Spinner %>");
+          } else {
+            $chatText.removeClass("<%= WebHelper.CSSClasses.Spinner %>");
+          }
+        }
+      }
+
+      function ScrollMessageListToEnd() {
+
+        var scrollHeight = $messageList.prop("scrollHeight");
+        var listHeight = $messageList.outerHeight();
+
+        $messageList[0].scrollTo({ top: scrollHeight - listHeight, behavior: "smooth" });
+      }
+
+    })(jQuery);
+  </script>
+
+</asp:Content>

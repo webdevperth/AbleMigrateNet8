@@ -1,0 +1,214 @@
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="OrgRpt_Ovw_IOIDirs.ascx.cs" Inherits="Integral.Web.PortalSite.UserControls.OrgRpt_Ovw_IOIDirs" %>
+
+<%@ Import Namespace="Integral.Web" %>
+<%@ Import Namespace="Integral.Web.PortalSite.Reports" %>
+
+<div class="container-fluid">
+  <div class="ctlOrgRptOvwDirs row">
+    <div class="col-xs-12 col-md-11">
+
+      <div class="boxBorder">
+        <div class="boxTitle">
+          <h4>IOI For <%= reportData.SurveyInfo.GetDirectorateTitle() %>s</h4>
+        </div>
+        <div class="canvas-container"><canvas id="ctlOrgRptOvwDirs_canvas" height="300" width=""></canvas></div>
+      </div>
+
+    </div>
+  </div><%-- ctlOrgRptOvwDirs row --%>
+</div><%-- container --%>
+
+<script type="text/javascript">
+
+  // draws a rectangle with a rounded top
+  Chart.helpers.drawRoundedTopRectangle = function (ctx, x, y, width, height, radius) {
+    ctx.beginPath();
+    ctx.moveTo(x + radius, y);
+    // top right corner
+    ctx.lineTo(x + width - radius, y);
+    ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+    // bottom right   corner
+    ctx.lineTo(x + width, y + height);
+    // bottom left corner
+    ctx.lineTo(x, y + height);
+    // top left
+    ctx.lineTo(x, y + radius);
+    ctx.quadraticCurveTo(x, y, x + radius, y);
+    ctx.closePath();
+  };
+
+  Chart.elements.RoundedTopRectangle = Chart.elements.Rectangle.extend({
+    draw: function () {
+      var ctx = this._chart.ctx;
+      var vm = this._view;
+      var left, right, top, bottom, signX, signY, borderSkipped;
+      var borderWidth = vm.borderWidth;
+
+      if (!vm.horizontal) {
+        // bar
+        left = vm.x - vm.width / 2;
+        right = vm.x + vm.width / 2;
+        top = vm.y;
+        bottom = vm.base;
+        signX = 1;
+        signY = bottom > top ? 1 : -1;
+        borderSkipped = vm.borderSkipped || 'bottom';
+      } else {
+        // horizontal bar
+        left = vm.base;
+        right = vm.x;
+        top = vm.y - vm.height / 2;
+        bottom = vm.y + vm.height / 2;
+        signX = right > left ? 1 : -1;
+        signY = 1;
+        borderSkipped = vm.borderSkipped || 'left';
+      }
+
+      // Canvas doesn't allow us to stroke inside the width so we can
+      // adjust the sizes to fit if we're setting a stroke on the line
+      if (borderWidth) {
+        // borderWidth shold be less than bar width and bar height.
+        var barSize = Math.min(Math.abs(left - right), Math.abs(top - bottom));
+        borderWidth = borderWidth > barSize ? barSize : borderWidth;
+        var halfStroke = borderWidth / 2;
+        // Adjust borderWidth when bar top position is near vm.base(zero).
+        var borderLeft = left + (borderSkipped !== 'left' ? halfStroke * signX : 0);
+        var borderRight = right + (borderSkipped !== 'right' ? -halfStroke * signX : 0);
+        var borderTop = top + (borderSkipped !== 'top' ? halfStroke * signY : 0);
+        var borderBottom = bottom + (borderSkipped !== 'bottom' ? -halfStroke * signY : 0);
+        // not become a vertical line?
+        if (borderLeft !== borderRight) {
+          top = borderTop;
+          bottom = borderBottom;
+        }
+        // not become a horizontal line?
+        if (borderTop !== borderBottom) {
+          left = borderLeft;
+          right = borderRight;
+        }
+      }
+
+      // calculate the bar width and roundess
+      var barWidth = Math.abs(left - right);
+      var roundness = this._chart.config.options.barRoundness || 0.5;
+      var radius = barWidth * roundness * 0.5;
+
+      // keep track of the original top of the bar
+      var prevTop = top;
+
+      // move the top down so there is room to draw the rounded top
+      top = prevTop + radius;
+      var barRadius = top - prevTop;
+
+      ctx.beginPath();
+      ctx.fillStyle = vm.backgroundColor;
+      ctx.strokeStyle = vm.borderColor;
+      ctx.lineWidth = borderWidth;
+
+      // draw the rounded top rectangle
+      Chart.helpers.drawRoundedTopRectangle(ctx, left, (top - barRadius + 1), barWidth, bottom - prevTop, barRadius);
+
+      ctx.fill();
+      if (borderWidth) {
+        ctx.stroke();
+      }
+
+      // restore the original top value so tooltips and scales still work
+      top = prevTop;
+    },
+  });
+
+  Chart.defaults.roundedBar = Chart.helpers.clone(Chart.defaults.bar);
+
+  Chart.controllers.roundedBar = Chart.controllers.bar.extend({
+    dataElementType: Chart.elements.RoundedTopRectangle
+  });
+
+  (function ($) {
+
+    $(document).ready(function() {
+
+
+
+
+
+      var canvas = $("#ctlOrgRptOvwDirs_canvas");
+      canvas.width(canvas.parent().width());
+      DrawChart(canvas);
+
+    });
+
+    function DrawChart(canvas) {
+
+      var ctx = canvas[0].getContext("2d");
+
+      var chartData = {
+        labels: [
+          <%= this.dirLabels %>
+          <%-- demo data: 'CEO, Directors and Managers', 'Office of the CEO', 'Corporate Services', 'Governance and Strategy', 'Infrastructure Services', 'Planning and Development' --%>
+        ],
+        datasets: [
+          <%= this.dataSetsJson %>
+<%-- demo data
+  {
+  label: '2018',
+  data: [63, 37, 36, 48, 28, 43],
+  backgroundColor: '#4BA7FE',
+  borderWidth: 0
+}
+, {
+  label: '2014',
+  data: [61, 55, 37, 50, 22, 43],
+  backgroundColor: '#9894E3',
+  borderWidth: 0
+}
+, {
+  label: '2011',
+  data: [41, 17, 37, 36, 22, 39],
+  backgroundColor: '#6FCAA8',
+  borderWidth: 0
+}
+, {
+  label: '2009',
+  data: [38, , 36, 37, 17, 39],
+  backgroundColor: '#FBC050',
+  borderWidth: 0
+  }
+--%>
+        ]
+      };
+
+      var chartOptions = {
+        responsive: true,
+        maintainAspectRatio: true,
+        barRoundness: 1,
+        legend: {
+          position: 'top',
+          display: true,
+        },
+        scales: {
+          xAxes: [{ categoryPercentage: 0.4, maxBarThickness: 10, gridLines: { color: "rgba(0, 0, 0, 0)" }, ticks: { autoSkip: false } }],
+          yAxes: [{ gridLines: { color: "#F2F3F5" }, ticks: { fontColor: '#a0a0a0', beginAtZero: true, min: 0, max: 80, precision: 0, stepSize: 20 } }]
+        }
+      };
+
+      var myChart = new Chart(ctx, {
+        type: 'roundedBar',
+        data: chartData,
+        options: chartOptions,
+        plugins: [{
+          beforeInit: function (chart, options) {
+            chart.data.labels.forEach(function (labelText, labelIndex, labelArray) {
+              // Find closest space to middle of string.
+              var spacePos = app_GetCentralSpacePosInString(labelText);
+              if (spacePos != null) labelArray[labelIndex] = (labelText.substr(0, spacePos + 1) + "|" + labelText.substr(spacePos + 1)).split('|');
+            });
+          }
+        }]
+      });
+
+    } // DrawChart()
+
+  })(jQuery);
+
+</script>

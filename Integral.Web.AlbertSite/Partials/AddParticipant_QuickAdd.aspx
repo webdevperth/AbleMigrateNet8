@@ -1,0 +1,370 @@
+﻿<%@ Page Language="C#" AutoEventWireup="true" CodeFile="AddParticipant_QuickAdd.aspx.cs" Inherits="Integral.Web.PortalSite.Page_Partials.AddParticipant_QuickAdd" %>
+
+<%@ Import Namespace="Integral.Web" %>
+
+<div class="container-fluid">
+
+  <%= WebHelper.PurchaseServices.GetQuickParticipantWizard(ProductList, GetCustomStepsHtml()) %>
+
+</div>
+
+<% var scriptId = new Random((int)DateTime.Now.Ticks).Next(100000); %>
+
+<script id="<%= scriptId %>" type="text/javascript">
+  (function ($) {
+
+    var $emailInput, $selCompanyId, $selProjectJobNumber, $selProgramJobId, $newCompanyInfo, $newProjectInfo;
+    var $btnAddParticipant, $programSelectionDiv, $participantForm, coachingFields, $coachingTypeOpts, $subscriptionDiv;
+
+    $(document).ready(function () {
+
+      $emailInput = $('input[name="<%= FormFields.EmailAddress %>"]');
+      $coachingTypeOpts = $('input[name="<%= FormFields.CoachingType %>"]');
+      $coachingFields = $(".coachingFields");
+      $selCompanyId = $('select[name="<%= FormFields.CompanyId %>"]');
+      $selProjectJobNumber = $('select[name="<%= FormFields.ProjectJobNumber %>"]');
+      $selProgramJobId = $('select[name="<%= FormFields.ProgramJobId %>"]');
+      $newCompanyInfo = $("#newCompanyInfo");
+      $newProjectInfo = $("#newProjectInfo");
+      $btnAddParticipant = $(".<%= WebHelper.PurchaseServices.Button_CSS.AddParticipant %>");
+      $programSelectionDiv = $('.programselection');
+      $participantForm = $(".participantForm");
+      $subscriptionDiv = $('div[name="<%= WebHelper.PurchaseServices.StepPanelType.Subscription %>"]');
+
+      $selCompanyId.change(ChangeCompany); // Company dropdown.
+      ChangeCompany(); // Set company related info and gets list of existing projects.
+      $selProjectJobNumber.change(ChangeProject); // Project dropdown.
+      $btnAddParticipant.click(AddParticipant); // Add Participant
+      $coachingTypeOpts.change(CoachingTypeChanged); // Changed Coaching Type
+
+      // Handle next/previous buttons
+      $(`.<%= WebHelper.PurchaseServices.Button_CSS.Next %>,
+         .<%= WebHelper.PurchaseServices.Button_CSS.Previous %>`).click(function () {
+
+        var isNext = $(this).hasClass('<%= WebHelper.PurchaseServices.Button_CSS.Next %>');
+        var currentPanel = $(this).closest('.step-panel');
+        var serviceName = currentPanel.attr('name');
+        var stepKey = isNext
+          ? '<%= WebHelper.PurchaseServices.DataAttributes.NextStep %>'
+          : '<%= WebHelper.PurchaseServices.DataAttributes.PreviousStep %>';
+        var targetStep = currentPanel.data(stepKey);
+
+        // Show target panel if exists
+        if (targetStep) {
+          if (typeof UpdateStepIndicators === 'function') {
+            UpdateStepIndicators(targetStep);
+          }
+        }
+      });
+
+      // Handle See More buttons
+      $('.<%= WebHelper.PurchaseServices.Button_CSS.SeeMore %>').click(function (e) {
+        e.stopPropagation(); // Prevent card selection when clicking "See More"
+        var card = $(this).closest('.step-card');
+        var description = card.find('.<%= WebHelper.PurchaseServices.Public_CSS.BoxDescription %>');
+
+        var isHidden = description.hasClass('displaynone');
+        description.toggleClass('expanded', isHidden); // Toggle visibility of the description
+        description.toggleClass('displaynone', !isHidden); // Toggle visibility of the description
+        $(this)
+          .attr('aria-expanded', isHidden)
+          .text(isHidden ? 'See Less' : 'See More'); // Update button text
+      });
+
+      $('.step-card, .link-item').click(function () {
+        var parentPanel = $(this).closest('.step-panel');
+        // Update visual selection
+        parentPanel.find('.step-card, .link-item').removeClass('selected');
+        $(this).addClass('selected');
+        GetSubscriptionSettings();
+      });
+
+      // Welcome Email / Meet your Coach Email. Hide Datetime picker if "Send now" is checked
+      $('input[type="checkbox"][name^="Send"]').on('change', function () {
+        // Hide/show the associated datepicker.
+        var datePicker = $(this).closest('.form-col-content').find('.input-group:has(.control-datepicker)');
+        if ($(this).is(':checked')) {
+          datePicker.hide();
+        } else {
+          datePicker.show();
+        }
+      }).trigger('change');
+
+      // When leaving input, search for user and if they have an active subscription
+      $emailInput.on('blur', SearchUsersActiveSubscription);
+
+      // This checkbox is created dynamically (not on page load), it's important to use delegated event binding.
+      $(document).on('change', 'input[name="<%= FormFields.CreateANewSubscription %>"]', function () {
+        if ($(this).is(':checked')) {
+          $('.<%= WebHelper.PurchaseServices.Public_CSS.SubscriptionOptions %>').removeClass('hidden-transition');
+        } else {
+          $('.<%= WebHelper.PurchaseServices.Public_CSS.SubscriptionOptions %>').addClass('hidden-transition');
+        }
+      });
+
+    });
+
+    function SearchUsersActiveSubscription() {
+
+      var email = $emailInput.val();
+
+      var $panelInfo = $('.<%= WebHelper.PurchaseServices.Public_CSS.PanelInfo %>');
+      var $subscriptionOptions = $('.<%= WebHelper.PurchaseServices.Public_CSS.SubscriptionOptions %>');
+
+      $panelInfo.empty();
+
+      if (IsValidEmail(email)) {
+
+        AjaxSubmit({
+          form: $participantForm,
+          url: "<%= PathHelper.CurrentUrl %>",
+          action: "<%= AjaxAction.SearchUsersActiveSubscription %>",
+          onSuccess: function (jqXHR, data) {
+            var activeProductId = data["<%= AjaxReturnData.ActiveProductId %>"];
+            if (activeProductId) {
+              // Trigger get subscription settings for active subscription
+              const $target = $(`.<%= WebHelper.PurchaseServices.Public_CSS.SubscriptionOptions %> [data-<%= WebHelper.PurchaseServices.DataAttributes.ProductId %>="${activeProductId}"]`);
+              if ($target.length) {
+                $target[0].dispatchEvent(new MouseEvent('click', { bubbles: true }));
+              }
+
+              var activeSubscriptionHtml = data["<%= AjaxReturnData.ActiveSubscriptionHtml %>"];
+              if (activeSubscriptionHtml) {
+                $('.<%= WebHelper.PurchaseServices.Public_CSS.PanelInfo %>').html(activeSubscriptionHtml);
+                // Show PanelInfo, disable SubscriptionOptions
+                $panelInfo.removeClass('hidden-transition').addClass('visible-transition');
+                $subscriptionOptions.removeClass('visible-transition').addClass('hidden-transition');
+                common_UpdateUI($panelInfo);
+              }
+            } else {
+              // Show SubscriptionOptions, Hide PanelInfo
+              $panelInfo.removeClass('visible-transition').addClass('hidden-transition');
+              $subscriptionOptions.removeClass('hidden-transition').addClass('visible-transition');
+            }
+          },
+          onFail: function (jqXHR, data) {
+            // If failed, show the tab where there were bad fields.
+            var stepTab = data["<%= AjaxReturnData.StepTabWithBadFields %>"];
+            if (stepTab) {
+              UpdateStepIndicators(stepTab);
+            }
+          },
+          onError: function (jqXHR, textStatus, errorThrown) {
+            common_InfoDialog("Update failed, please try again later.");
+          },
+          onAlways: function (data_or_jqXHR, textStatus, jqXHR_or_errorThrown) {
+          }
+        });
+      } else {
+        $subscriptionOptions.removeClass('hidden-transition');
+        // Do not look up user. This will return an ajax error later.
+        return;
+      }
+    }
+
+    function IsValidEmail(email) {
+      // Simple expression to validate email address
+      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    }
+
+    function CoachingTypeChanged(docReady) {
+      var opt = $coachingTypeOpts.filter(":checked");
+      if (opt.length == 1) {
+        if (opt.val() == "<%= DbHelper.AlbertCoachingTypes.GetIntercomValue_NoCoaching() %>") {
+          $coachingFields.slideUp(200);
+        } else {
+          $coachingFields.slideDown(200);
+        }
+      }
+    }
+
+    function UpdateStepIndicators(activeStep) {
+      // Fade out all panels first
+      $('.step-panel:visible').fadeOut(200, function () {
+        $(`div[name="${activeStep}"]`).fadeIn(200);
+      });
+
+      $('.purchase-step').removeClass('active');
+      $('.purchase-step').each(function () {
+        if ($(this).attr('id') === activeStep) {
+          $(this).addClass('active');
+        }
+      });
+    }
+
+    function GetSubscriptionSettings() {
+
+      // Get ProductId from the Subscription and send it as we handle this with a div
+      var subscription_ProductId = $subscriptionDiv.find('.selected').data('<%= WebHelper.PurchaseServices.DataAttributes.ProductId %>');
+
+      AjaxSubmit({
+        form: $participantForm,
+        url: "<%= PathHelper.CurrentUrl %>",
+        action: "<%= AjaxAction.GetSubscriptionSettings %>",
+        data: {
+          "<%= FormFields.Subscription_ProductId %>": subscription_ProductId
+        },
+        onSuccess: function (jqXHR, data) {
+          var subscriptionSettings = data["<%= AjaxReturnData.SubscriptionSettingsHtml %>"];
+          if (subscriptionSettings) {
+            $('.<%= FormClasses.SubscriptionSettings %>').html(subscriptionSettings);
+          }
+        },
+        onFail: function (jqXHR, data) {
+          // If failed, show the tab where there were bad fields.
+          var stepTab = data["<%= AjaxReturnData.StepTabWithBadFields %>"];
+          if (stepTab) {
+            UpdateStepIndicators(stepTab);
+          }
+        },
+        onError: function (jqXHR, textStatus, errorThrown) {
+          common_InfoDialog("Update failed, please try again later.");
+        },
+        onAlways: function (data_or_jqXHR, textStatus, jqXHR_or_errorThrown) {
+        }
+      });
+    }
+
+    function AddParticipant(evt) {
+      var thisBtn = $(evt.target);
+
+      // Get ProductId from the Subscription and send it as we handle this with a div
+      var subscription_ProductId = $subscriptionDiv.find('.selected').data('<%= WebHelper.PurchaseServices.DataAttributes.ProductId %>');
+
+      AjaxSubmit({
+        form: $participantForm,
+        url: "<%= PathHelper.CurrentUrl %>",
+        action: "<%= AjaxAction.AddParticipant %>",
+        data: {
+          "<%= FormFields.Subscription_ProductId %>": subscription_ProductId
+        },
+        onSuccess: function (jqXHR, data) {
+
+        },
+        onFail: function (jqXHR, data) {
+          // If failed, show the tab where there were bad fields.
+          var stepTab = data["<%= AjaxReturnData.StepTabWithBadFields %>"];
+          if (stepTab) {
+            UpdateStepIndicators(stepTab);
+          }
+        },
+        onError: function (jqXHR, textStatus, errorThrown) {
+          common_InfoDialog("Update failed, please try again later.");
+        },
+        onAlways: function (data_or_jqXHR, textStatus, jqXHR_or_errorThrown) {
+        }
+      });
+    }
+
+    // Set company related info and gets list of existing projects.
+    function ChangeCompany(ev) {
+      var companyId = $selCompanyId.val();
+      if (companyId == "<%= PathHelper.AbleUrlValues.IdNew %>") {
+        $newCompanyInfo.slideDown(300, SetNewCompanyFocus);
+        $selProjectJobNumber.val("<%= PathHelper.AbleUrlValues.IdNew %>").trigger("change");
+      } else {
+        $newCompanyInfo.slideUp(300);
+      }
+      companyId = parseInt(companyId, 10) || 0; // Will be zero if new company.
+      GetIsExistingClient(companyId); // Update isExistingClient - will be false for new company.
+      GetProjects(companyId); // Update projects list - will be blank for new company.
+    }
+
+    // Ajax call to get "existing client" status of selected Company.
+    function GetIsExistingClient(companyId) {
+      AjaxSubmit({
+        url: document.location.href,
+        action: "<%= AjaxAction.GetIsExistingClient %>",
+        data: {
+            "<%= FormFields.CompanyId %>": companyId
+          },
+          onSuccess: function (jqXHR, data) {
+            isExistingClient = data.IsExistingClient === true;
+          },
+      });
+    }
+
+    function SetNewCompanyFocus() {
+      $newCompanyInfo.find("input:text").focus();
+    }
+
+    function GetProjects(cid) {
+      var selectedValue = $selProjectJobNumber.val();
+      var foundSelected = false;
+      $selProjectJobNumber.find('option:not([value=""],[value="<%= PathHelper.AbleUrlValues.IdNew %>"])').remove();
+      $.get("<%= PathHelper.Endpoints.ProjectsForCompanyId(null) %>" + cid, function(data) {
+        if (data && data.Projects && data.Projects.InfoList){
+          for(var i_project in data.Projects.InfoList) {
+            var project = data.Projects.InfoList[i_project];
+            var $option = $("<option/>", {
+              value: project.JobNumber,
+              text: project.JobNumber + ": " + project.ProjectName,
+            })
+            .data("jobnumber", project.JobNumber);
+            if (selectedValue && $option.prop("value") === selectedValue) {
+              $option.prop("selected", true);
+              foundSelected = true;
+            }
+            $selProjectJobNumber.append($option);
+          }
+          if (!foundSelected) setTimeout(function(){ $selProjectJobNumber.focus().select2("open");}, 200);
+        } else if ($selCompanyId.val() != "") {
+          $selProjectJobNumber.find('option[value="<%= PathHelper.AbleUrlValues.IdNew %>"]').prop("selected", true);
+        }
+        $selProjectJobNumber.trigger("change");
+      }, "json");
+    }
+
+    function ChangeProject(ev) {
+      if ($selProjectJobNumber.val() != "" && $selCompanyId.val() == "") {
+        if (ev) ev.preventDefault();
+        common_InfoDialog("Please select a company (or new company) first.", function(){ $selProjectJobNumber.val("").trigger("change"); });
+        return;
+      }
+      var pid = $selProjectJobNumber.val();
+      if (pid != "<%= PathHelper.AbleUrlValues.IdNew %>") {
+        $newProjectInfo.slideUp(300);
+      } else {
+        $newProjectInfo.slideDown(300);
+      }
+
+      if (pid === "" || pid === "<%= PathHelper.AbleUrlValues.IdNew %>") {
+        $programSelectionDiv.empty();
+      } else {
+        GetProgramsInProject(pid);
+      }
+    }
+
+    function GetProgramsInProject(projectJobNumber) {
+      AjaxSubmit({
+        form: $participantForm,
+        url: "<%= PathHelper.CurrentUrl %>",
+        action: "<%= AjaxAction.GetProgramsInProject %>",
+        data: {
+          "<%= FormFields.ProjectJobNumber %>": projectJobNumber
+        },
+        onSuccess: function (jqXHR, data) {
+          var programsHtml = data["<%= AjaxReturnData.ProgramsInProjectHtml %>"];
+          if (programsHtml == "" || programsHtml == null) {
+            $programSelectionDiv.empty();
+          } else {
+            $programSelectionDiv.html(programsHtml);
+            $programSelectionDiv.show();
+          }
+        },
+        onFail: function (jqXHR, data) {
+          $programSelectionDiv.empty();
+        },
+        onError: function (jqXHR, textStatus, errorThrown) {
+          $programSelectionDiv.empty();
+          common_InfoDialog("Update failed, please try again later.");
+        },
+        onAlways: function (data_or_jqXHR, textStatus, jqXHR_or_errorThrown) {
+
+        }
+      });
+    }
+
+  })(jQuery);
+
+</script>
