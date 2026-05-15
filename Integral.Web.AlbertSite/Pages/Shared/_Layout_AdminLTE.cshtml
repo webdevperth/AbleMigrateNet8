@@ -1,0 +1,73 @@
+@{
+    Layout = "_Layout_Site";
+    var LayoutData = LayoutModel.GetCurrent();
+
+    WebHelper.AddBodyClass("AdminLTE");
+    LayoutData.CanViewBreadcrumb = !SessionHelper.IsUserRoleLeader;
+}
+
+@section HeadContentBeforeCustomScripts {
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/tinymce/5.8.2/tinymce.min.js" integrity="sha512-laacsEF5jvAJew9boBITeLkwD47dpMnERAtn4WCzWu/Pur9IkF0ZpVTcWRT/FUCaaf7ZwyzMY5c9vCcbAAuAbg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/tinymce/5.8.2/jquery.tinymce.min.js" integrity="sha512-0+DXihLxnogmlHWg1hVntlqMiGthwA02YWrzGnOi+yNyoD3IA4yDBzxvm+EwTCZeUM4zNy3deF9CbQqQBQx2Yg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/autonumeric/4.1.0/autoNumeric.min.js" integrity="sha512-U0/lvRgEOjWpS5e0JqXK6psnAToLecl7pR+c7EEnndsVkWq3qGdqIGQGN2qxSjrRnCyBJhoaktKXTVceVG2fTw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+  <!-- FilePond https://github.com/pqina/jquery-filepond -->
+  <script src="https://unpkg.com/filepond/dist/filepond.min.js"></script>
+  <script src="https://unpkg.com/filepond-plugin-file-validate-size/dist/filepond-plugin-file-validate-size.min.js"></script>
+  <script src="https://unpkg.com/filepond-plugin-file-validate-type/dist/filepond-plugin-file-validate-type.min.js"></script>
+  <script src="https://unpkg.com/filepond-plugin-file-encode/dist/filepond-plugin-file-encode.js"></script>
+  <link href="https://unpkg.com/filepond@@^4/dist/filepond.css" rel="stylesheet" />
+
+  @await RenderSectionAsync("HeadContentBeforeCustomScripts", required: false)
+
+}
+
+@section HeadContent {
+  @await RenderSectionAsync("HeadContent", required: false)
+}
+
+<div class="wrapper">
+
+  <partial name="_AdminLTEHeaderNav" model="@Model" />
+
+  <partial name="_AdminLTESidebarNav" model="@Model" />
+
+  <div class="content-wrapper">
+    <a name="tpl_body_top" id="tpl_body_top" tabindex="0"></a>
+    @if (LayoutData.MasterContentHeaderVisible) {
+      <section class="content-header @(LayoutData.NoMinHeaderHeight ? "no-min-height" : "")">
+        @if (!LayoutData.PageBreadcrumbHtml.IsNullOrEmpty() && LayoutData.CanViewBreadcrumb) {
+          <div class="breadcrumbs">@Html.Raw(LayoutData.PageBreadcrumbHtml)</div>
+        }
+        @if (!LayoutData.PageTitle.IsNullOrEmpty()) {
+          <h1 class="pageTitle"><span><span class="visible-xs">@LayoutData.PageTitle_Mobile.ValueIfNullOrEmpty(LayoutData.PageTitle)</span><span class="hidden-xs">@LayoutData.PageTitle</span></span></h1>
+        }
+        @if (!LayoutData.PageSubSubtitleHTML.IsNullOrEmpty()) {
+          <h4 class="coacheesLink">@Html.Raw(LayoutData.PageSubSubtitleHTML)</h4>
+        }
+      </section>
+    }
+    <section class="content">
+      @RenderBody()
+    </section>
+  </div>
+
+</div><!-- ./wrapper -->
+
+<a id="table-rowlink-helper" href="#">&nbsp;</a>
+
+<div id="@WebHelper.ElementID.SlideoutBackdrop" class="slideout-backdrop"></div>
+<div id="@WebHelper.ElementID.SlideoutPanelHolder" class="slideout-holder">
+  <div class="slideout-panel">
+    <div id="@WebHelper.ElementID.SlideoutPanelHeader" class="slideout-header">
+      <ion-icon name="arrow-forward-outline" class="slideout-closer"></ion-icon>
+      <div id="@WebHelper.ElementID.SlideoutPanelTitle" class="slideout-title"></div>
+    </div>
+    <div id="@WebHelper.ElementID.SlideoutPanelBody" class="slideout-body"></div>
+  </div>
+</div>
+
+@section PostScriptContent {
+  @await RenderSectionAsync("PostScriptContent", required: false)
+}

@@ -1,0 +1,35 @@
+@{
+    Layout = "_Layout_Site";
+}
+
+@section HeadContent {
+  <link rel="Stylesheet" type="text/css" href="@(PathHelper.UrlPath.CSS)portal-public.css" />
+  @await RenderSectionAsync("HeadContent", required: false)
+}
+
+<div class="wrapper layout-no-nav">
+  <div class="content-wrapper">
+    <section class="content">
+      @RenderBody()
+    </section>
+  </div>
+</div>
+
+@section PostScriptContent {
+
+  <script>
+    $(document).ready(function() {
+      var tz;
+      try {
+        tz = new Date().toString().replace(/.*\(([^\)]+)\).*/, "$1");
+      } catch (e) {
+        tz = 'GMT Standard Time';
+      }
+      $("#timezone-display").text(tz);
+      $("#login_timezone").val(tz);
+    });
+  </script>
+
+  @await RenderSectionAsync("PostScriptContent", required: false)
+
+}

@@ -1,0 +1,566 @@
+@{
+    Layout = null;
+    var LayoutData = LayoutModel.GetCurrent();
+
+    SystemWeb.AddResponseHeader("Cache-Control", "no-cache, no-store");
+
+    string urlPath = SystemWeb.RequestRawUrl.ToLower();
+    urlPath = urlPath.Mid(PathHelper.WebRoot.Length);
+    urlPath = urlPath.Replace("/", "-");
+    urlPath = System.Text.RegularExpressions.Regex.Replace(urlPath, @"/?\?.*", "");
+    if (urlPath == "-" || urlPath == "") urlPath = "-default";
+    WebHelper.AddBodyClass($"{(ConfigHelper.IsDevServer ? "devserver" : "")} hold-transition skin-blue sidebar-mini page{urlPath}");
+}
+@functions {
+
+    bool ShouldLoadAmplitude() {
+        return !string.IsNullOrEmpty(ConfigHelper.Amplitude.ApiKey)
+            && SessionHelper.IsUserLoggedIn;
+    }
+
+    bool IsAmplitudeSessionReplayEnabled() {
+        if (!SessionHelper.IsUserLoggedIn) return false;
+        if (string.IsNullOrEmpty(ConfigHelper.Amplitude.SessionReplayAllowedRoles)) return true;
+        var userRole = SessionHelper.GetUserRole();
+        var allowedRoles = ConfigHelper.Amplitude.SessionReplayAllowedRoles
+            .Split(',')
+            .Select(r => r.Trim())
+            .Where(r => !string.IsNullOrEmpty(r))
+            .ToList();
+        return allowedRoles.Any(r => r.Equals(userRole.ToString(), System.StringComparison.OrdinalIgnoreCase));
+    }
+
+    string GetTrackingUserRoleName() {
+        switch (SessionHelper.GetUserRole()) {
+            case ConfigHelper.UserRole.Coach: return "Coach";
+            case ConfigHelper.UserRole.Client: return "Client";
+            case ConfigHelper.UserRole.Leader: return "Participant";
+            default: return "Unknown";
+        }
+    }
+
+    string GetAmplitudeIdentifyScript() {
+        if (!SessionHelper.IsUserLoggedIn) return string.Empty;
+
+        var userInfo = SessionHelper.GetUserInfoOrNull();
+        if (userInfo == null) return string.Empty;
+
+        var userRole = SessionHelper.GetUserRole();
+        var planType = AmplitudeUserInfoExtensions.GetLearnerPlanType(userInfo);
+
+        var script = new System.Text.StringBuilder();
+        script.AppendLine("var identifyEvent = new window.amplitude.Identify();");
+        script.AppendLine($"identifyEvent.set('user_name', '{userInfo.EmailAddress.JSEncode()}');");
+        script.AppendLine($"identifyEvent.set('first_name', '{userInfo.FirstName.JSEncode()}');");
+        script.AppendLine($"identifyEvent.set('last_name', '{userInfo.LastName.JSEncode()}');");
+        script.AppendLine($"identifyEvent.set('email', '{userInfo.EmailAddress.JSEncode()}');");
+        script.AppendLine($"identifyEvent.set('environment', '{ConfigHelper.EnvironmentType.JSEncode()}');");
+        script.AppendLine($"identifyEvent.set('user_role', '{userRole.ToString().JSEncode()}');");
+        script.AppendLine($"identifyEvent.set('internal_id', {userInfo.UserId});");
+        script.AppendLine($"identifyEvent.set('org_id', {userInfo.OrgId});");
+        script.AppendLine($"identifyEvent.set('org_name', '{userInfo.OrgName.JSEncode()}');");
+
+        if (userInfo.ClientCompanyId.HasValue && userInfo.ClientCompanyId.Value > 0) {
+            script.AppendLine($"identifyEvent.set('client_company_id', {userInfo.ClientCompanyId.Value});");
+            script.AppendLine($"identifyEvent.set('client_company_name', '{userInfo.ClientCompanyName.JSEncode()}');");
+        }
+
+        if (!string.IsNullOrEmpty(planType)) {
+            script.AppendLine($"identifyEvent.set('plan_type', '{planType.JSEncode()}');");
+        }
+
+        script.AppendLine("window.amplitude.identify(identifyEvent);");
+
+        return script.ToString();
+    }
+
+}
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+
+  <head>
+    <title>Able @LayoutData.BrowserPageTitle</title>
+
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+
+    <meta name="description" content="" />
+    <meta name="keywords" content="professional development" />
+    <meta name="author" content="Integral Development" />
+
+    <link href="/favicon.ico" type="image/x-icon" rel="shortcut icon" />
+    <link href="/favicon.ico" type="image/x-icon" rel="icon" />
+    <link rel="apple-touch-icon" href="@(PathHelper.UrlPath.Images)apple-touch-icon.png" />
+    <link rel="apple-touch-icon-precomposed" href="@(PathHelper.UrlPath.Images)apple-touch-icon.png" />
+
+    @if (!string.IsNullOrWhiteSpace(ConfigHelper.AppInsights.ConnectionString)) {
+      <script type="text/javascript">
+        !(function (cfg) { var k, x, D, E, L, C, b, U, O, A, e, t = "track", n = "TrackPage", i = "TrackEvent", I = [t + "Event", t + "Exception", t + "PageView", t + "PageViewPerformance", "addTelemetryInitializer", t + "Trace", t + "DependencyData", t + "Metric", "start" + n, "stop" + n, "start" + i, "stop" + i, "setAuthenticatedUserContext", "clearAuthenticatedUserContext", "flush"]; function a() { cfg.onInit && cfg.onInit(e) } k = window, x = document, D = k.location, E = "script", L = "ingestionendpoint", C = "disableExceptionTracking", b = "crossOrigin", U = "POST", O = cfg.pn || "aiPolicy", t = "appInsightsSDK", A = cfg.name || "appInsights", (cfg.name || k[t]) && (k[t] = A), e = k[A] || function (u) { var n = u.url || cfg.src, s = !1, p = !1, l = { initialize: !0, queue: [], sv: "9", config: u, version: 2, extensions: void 0 }; function d(e) { var t, n, i, a, r, o, c, s; !0 !== cfg.dle && (o = (t = function () { var e, t = {}, n = u.connectionString; if ("string" == typeof n && n) for (var i = n.split(";"), a = 0; a < i.length; a++) { var r = i[a].split("="); 2 === r.length && (t[r[0].toLowerCase()] = r[1]) } return t[L] || (e = (n = t.endpointsuffix) ? t.location : null, t[L] = "https://" + (e ? e + "." : "") + "dc." + (n || "services.visualstudio.com")), t }()).instrumentationkey || u.instrumentationKey || "", t = (t = (t = t[L]) && "/" === t.slice(-1) ? t.slice(0, -1) : t) ? t + "/v2/track" : u.endpointUrl, t = u.userOverrideEndpointUrl || t, (n = []).push((i = "SDK LOAD Failure: Failed to load Application Insights SDK script (See stack for details)", a = e, c = t, (s = (r = f(o, "Exception")).data).baseType = "ExceptionData", s.baseData.exceptions = [{ typeName: "SDKLoadFailed", message: i.replace(/\./g, "-"), hasFullStack: !1, stack: i + "\nSnippet failed to load [" + a + "] -- Telemetry is disabled\nHelp Link: https://go.microsoft.com/fwlink/?linkid=2128109\nHost: " + (D && D.pathname || "_unknown_") + "\nEndpoint: " + c, parsedStack: [] }], r)), n.push((s = e, i = t, (c = (a = f(o, "Message")).data).baseType = "MessageData", (r = c.baseData).message = 'AI (Internal): 99 message:"' + ("SDK LOAD Failure: Failed to load Application Insights SDK script (See stack for details) (" + s + ")").replace(/\"/g, "") + '"', r.properties = { endpoint: i }, a)), e = n, o = t, JSON && ((c = k.fetch) && !cfg.useXhr ? c(o, { method: U, body: JSON.stringify(e), mode: "cors" }) : XMLHttpRequest && ((s = new XMLHttpRequest).open(U, o), s.setRequestHeader("Content-type", "application/json"), s.send(JSON.stringify(e))))) } function f(e, t) { return e = e, t = t, i = l.sv, a = l.version, r = D, (o = {})["ai.device." + "id"] = "browser", o["ai.device.type"] = "Browser", o["ai.operation.name"] = r && r.pathname || "_unknown_", o["ai.internal.sdkVersion"] = "javascript:snippet_" + (i || a), { time: (r = new Date).getUTCFullYear() + "-" + n(1 + r.getUTCMonth()) + "-" + n(r.getUTCDate()) + "T" + n(r.getUTCHours()) + ":" + n(r.getUTCMinutes()) + ":" + n(r.getUTCSeconds()) + "." + (r.getUTCMilliseconds() / 1e3).toFixed(3).slice(2, 5) + "Z", iKey: e, name: "Microsoft.ApplicationInsights." + e.replace(/-/g, "") + "." + t, sampleRate: 100, tags: o, data: { baseData: { ver: 2 } }, ver: undefined, seq: "1", aiDataContract: undefined }; function n(e) { e = "" + e; return 1 === e.length ? "0" + e : e } var i, a, r, o } var i, a, t, r, g = -1, h = 0, m = ["js.monitor.azure.com", "js.cdn.applicationinsights.io", "js.cdn.monitor.azure.com", "js0.cdn.applicationinsights.io", "js0.cdn.monitor.azure.com", "js2.cdn.applicationinsights.io", "js2.cdn.monitor.azure.com", "az416426.vo.msecnd.net"], o = function () { return c(n, null) }; function c(t, r) { if ((n = navigator) && (~(n = (n.userAgent || "").toLowerCase()).indexOf("msie") || ~n.indexOf("trident/")) && ~t.indexOf("ai.3") && (t = t.replace(/(\/)(ai\.3\.)([^\d]*)$/, function (e, t, n) { return t + "ai.2" + n })), !1 !== cfg.cr) for (var e = 0; e < m.length; e++)if (0 < t.indexOf(m[e])) { g = e; break } var n, o = function (e) { var a; l.queue = [], p || (0 <= g && h + 1 < m.length ? (a = (g + h + 1) % m.length, i(t.replace(/^(.*\/\/)([\w\.]*)(\/.*)$/, function (e, t, n, i) { return t + m[a] + i })), h += 1) : (s = p = !0, d(t))) }, c = function (e, t) { p || setTimeout(function () { t && !l.core && o() }, 500), s = !1 }, i = function (e) { var n, i = x.createElement(E), e = (cfg.pl ? cfg.ttp && cfg.ttp.createScript ? i.src = cfg.ttp.createScriptURL(e) : i.src = (null == (n = window.trustedTypes) ? void 0 : n.createPolicy(O, { createScriptURL: function (e) { try { var t = new URL(e); if (t.host && "js.monitor.azure.com" === t.host) return e; a(e) } catch (n) { a(e) } } })).createScriptURL(e) : i.src = e, cfg.nt && i.setAttribute("nonce", cfg.nt), r && (i.integrity = r), i.setAttribute("data-ai-name", A), cfg[b]); function a(e) { d("AI policy blocked URL: " + e) } return !e && "" !== e || "undefined" == i[b] || (i[b] = e), i.onload = c, i.onerror = o, i.onreadystatechange = function (e, t) { "loaded" !== i.readyState && "complete" !== i.readyState || c(0, t) }, cfg.ld && cfg.ld < 0 ? x.getElementsByTagName("head")[0].appendChild(i) : setTimeout(function () { x.getElementsByTagName(E)[0].parentNode.appendChild(i) }, cfg.ld || 0), i }; i(t) } cfg.sri && (i = n.match(/^((http[s]?:\/\/.*\/)\w+(\.\d+){1,5})\.(([\w]+\.){0,2}js)$/)) && 6 === i.length ? (T = "".concat(i[1], ".integrity.json"), a = "@@".concat(i[4]), S = window.fetch, t = function (e) { if (!e.ext || !e.ext[a] || !e.ext[a].file) throw Error("Error Loading JSON response"); var t = e.ext[a].integrity || null; c(n = i[2] + e.ext[a].file, t) }, S && !cfg.useXhr ? S(T, { method: "GET", mode: "cors" }).then(function (e) { return e.json()["catch"](function () { return {} }) }).then(t)["catch"](o) : XMLHttpRequest && ((r = new XMLHttpRequest).open("GET", T), r.onreadystatechange = function () { if (r.readyState === XMLHttpRequest.DONE) if (200 === r.status) try { t(JSON.parse(r.responseText)) } catch (e) { o() } else o() }, r.send())) : n && o(); try { l.cookie = x.cookie } catch (w) { } function e(e) { for (; e.length;)!function (t) { l[t] = function () { var e = arguments; s || l.queue.push(function () { l[t].apply(l, e) } ) } }(e.pop()) } e(I); var v, y, S = !(l.SeverityLevel = { Verbose: 0, Information: 1, Warning: 2, Error: 3, Critical: 4 }), T = (u.extensionConfig || {}).ApplicationInsightsAnalytics || {}; return (S = !0 !== u[C] && !0 !== T[C] || S) && (e(["_" + (v = "onerror")]), y = k[v], k[v] = function (e, t, n, i, a) { var r = y && y(e, t, n, i, a); return !0 !== r && l["_" + v]({ message: e, url: t, lineNumber: n, columnNumber: i, error: a, evt: k.event }), r }, u.autoExceptionInstrumented = !0), l }(cfg.cfg), (k[A] = e).queue && 0 === e.queue.length ? (e.queue.push(a), e.trackPageView({})) : a(); })({
+          src: "https://js.monitor.azure.com/scripts/b/ai.3.gbl.min.js",
+          crossOrigin: "anonymous",
+          cfg: {
+            connectionString: "@ConfigHelper.AppInsights.ConnectionString"
+          }
+        });
+
+        @if (SessionHelper.IsUserLoggedIn) {
+          @:appInsights.setAuthenticatedUserContext("@SessionHelper.AsExternalUserId().ToString()");
+        }
+
+        // Add environment to all telemetry
+        appInsights.addTelemetryInitializer(function(envelope) {
+          envelope.baseData = envelope.baseData || {};
+          envelope.baseData.properties = envelope.baseData.properties || {};
+          envelope.baseData.properties["Environment"] = "@ConfigHelper.EnvironmentType";
+        });
+      </script>
+    }
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.3/modernizr.min.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.3/jquery.min.js"></script>@* Needs to be before content. *@
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-migrate/1.4.1/jquery-migrate.min.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.css" />
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jQuery-slimScroll/1.3.8/jquery.slimscroll.min.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css" />    <!-- Bootstrap 3.3.6 -->
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/2.3.11/js/app.min.js"></script>
+    <link rel="stylesheet" href="@(PathHelper.UrlPath.CSS)AdminLTE-2.3.11-no-importants.min.css" />
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap3-dialog/1.35.4/js/bootstrap-dialog.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap3-dialog/1.35.4/css/bootstrap-dialog.min.css" />
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-multiselect/0.9.15/js/bootstrap-multiselect.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-multiselect/0.9.15/css/bootstrap-multiselect.css" />
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.8.0/js/bootstrap-datepicker.min.js" type="text/javascript"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.8.0/css/bootstrap-datepicker.min.css" />
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.full.min.js" type="text/javascript"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" />
+
+    <script src="https://cdn.jsdelivr.net/gh/StephanWagner/jBox@@v1.3.2/dist/jBox.all.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/StephanWagner/jBox@@v1.3.2/dist/jBox.all.min.css">
+
+    <script src="https://cdn.jsdelivr.net/npm/busy-load/dist/app.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/busy-load/dist/app.min.css" />
+
+    <link href="https://unpkg.com/tabulator-tables@@6.3.1/dist/css/tabulator.min.css" rel="stylesheet">
+    <script src="https://unpkg.com/tabulator-tables@@6.3.1/dist/js/tabulator.min.js" type="text/javascript"></script>
+    <script src="https://cdn.jsdelivr.net/npm/luxon@@3.7.2/build/global/luxon.min.js"></script>
+
+    <script type="module" src="https://cdn.jsdelivr.net/npm/ionicons@@5.5.2/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://cdn.jsdelivr.net/npm/ionicons@@5.5.2/dist/ionicons/ionicons.js"></script>
+    <link rel="stylesheet" href="@(PathHelper.UrlPath.JS)FA5PRO-5.7.2/css/all.min.css" />
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/iCheck/1.0.2/icheck.min.js" type="text/javascript"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.3/Chart.bundle.min.js" type="text/javascript"></script>
+
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/smartwizard@@6/dist/js/jquery.smartWizard.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/smartwizard@@6/dist/css/smart_wizard_all.min.css" />
+
+    @* Able styles *@
+    <link rel="stylesheet" href="@(PathHelper.UrlPath.CSS)portal-site.css?v=@PathHelper.ScriptVer" />
+    <link rel="stylesheet" href="@(PathHelper.UrlPath.CSS)adminlte-custom-2022.css?v=@PathHelper.ScriptVer" />
+    <link rel="stylesheet" href="@(PathHelper.UrlPath.CSS)tabulator-able.css?v=@PathHelper.ScriptVer" />
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.23.0/moment.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.23.0/locale/en-au.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/big.js@@6.0.0/big.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/js-cookie/2.2.1/js.cookie.min.js"></script>
+
+    @if (ShouldLoadAmplitude()) {
+
+      <script src="https://cdn.amplitude.com/libs/analytics-browser-2.25.4-min.js.gz"></script>
+
+      if (IsAmplitudeSessionReplayEnabled()) {
+        <script src="https://cdn.amplitude.com/libs/plugin-session-replay-browser-1.22.2-min.js.gz"></script>
+      }
+
+      <script>
+
+        @if (IsAmplitudeSessionReplayEnabled()) {
+          @:// Session replay enabled for configured user roles: @ConfigHelper.Amplitude.SessionReplayAllowedRoles
+          @:const sessionReplayTracking = window.sessionReplay.plugin({
+          @:  forceSessionTracking: true, // Enable capture of Session Start and Session End events
+          @:  sampleRate: @ConfigHelper.Amplitude.SessionReplaySampleRate,
+          @:});
+          @:window.amplitude.add(sessionReplayTracking);
+        }
+
+        window.amplitude.init('@ConfigHelper.Amplitude.ApiKey', {
+          userId: '@AmplitudeHelper.GetCurrentExternalUserId()?.ToString()',
+          deviceId: '@AmplitudeHelper.GetCurrentAmplitudeDevice()',
+          defaultTracking: true,
+          sampleRate: @ConfigHelper.Amplitude.AnalyticsSampleRate,
+        });
+
+        // Set user properties via frontend identify call (complements backend Identify API)
+        @Html.Raw(GetAmplitudeIdentifyScript())
+
+      </script>
+    }
+
+    @if (ConfigHelper.ShowScreenLog) {
+      <script src="@(PathHelper.UrlPath.JS)screenlog-modded.js" type="text/javascript"></script>
+      <script>
+        (function ($) {
+          $(document).ready(function () {
+            screenLog.init({ startTop: 85 });
+          });
+        })(jQuery);
+      </script>
+    }
+
+    <script>
+      @* busyLoad defaults *@
+      $(document).ready(function () {
+        if ($.busyLoadSetup) {
+          $.busyLoadSetup({
+            background: "rgb(255, 255, 255, 0.4)",
+            image: "@PathHelper.Images.BusyLoadSpinner200()",
+            color: "#634CFF",
+            maxSize: "70px",
+            minSize: "70px"
+          });
+        }
+      });
+    </script>
+
+    @* Consts used by Able scripts *@
+    <script>
+      const app_scriptVer = "@PathHelper.ScriptVer";
+      const app_isDev = @Html.Raw(ConfigHelper.IsDevServer.ToJSTrueFalse());
+      const app_isStaging = @Html.Raw(ConfigHelper.IsStagingServer.ToJSTrueFalse());
+      const app_isLive = @Html.Raw(ConfigHelper.IsLiveServer.ToJSTrueFalse());
+      const app_canShowDebugMessages = @Html.Raw(SessionHelper.CanShowDebugMessages.ToJSTrueFalse());
+      const app_ajaxPath = "@PathHelper.UrlPath.Ajax";
+      const app_jsPath = "@PathHelper.UrlPath.JS";
+      const app_cssPath = "@PathHelper.UrlPath.CSS";
+      const app_urlKey_SvId = "@PathHelper.AbleUrlKeys.SurveyId";
+      const app_urlKey_PartialRandomId = "@PathHelper.AbleUrlKeys.PartialRandomId";
+      const app_menuHighlightPathPrefix = "@PathHelper.MenuHighlightPathPrefix";
+      const app_formKey_UserRole = "@PathHelper.FormKeys.UserRole";
+      const app_formKey_AjaxAction = "@PathHelper.FormKeys.AjaxAction";
+      const app_SetUserRoleUrl = "@PathHelper.Endpoints.SetUserRole()";
+      const HttpHeader_IsAjax = "@AppHelper.HttpHeaders.IsAjax";
+      const HttpHeader_AjaxAction = "@AppHelper.HttpHeaders.AjaxAction";
+      const HttpHeader_IsPartial = "@AppHelper.HttpHeaders.IsPartial";
+      const HttpHeader_Referrer = "@AppHelper.HttpHeaders.Referrer";
+      const AjaxReturnValue_StackDump = "@WebHelper.AjaxReturnValues.AppErrorStackDump";
+      const AjaxReturnValue_IsAppException = "@WebHelper.AjaxReturnValues.IsAppException";
+      const AjaxReturnValue_NewSurveyId = "@WebHelper.AjaxReturnValues.NewSurveyId";
+      const AjaxReturnValue_SessionExpired = "@WebHelper.AjaxReturnValues.SessionExpired";
+      const AjaxResponseLogKey = "@AjaxSubmitHelper.JsonKeys.ResponseLog";
+      const DATEPICKER_OUTPUT_FORMAT = "@WebHelper.DATE_OUTPUT_FORMAT";
+      const DATEPICKER_OUTPUT_FORMAT_JS = "@WebHelper.DATE_OUTPUT_FORMAT_JS";
+      const DATEPICKER_OUTPUT_FORMAT_MOMENTJS = "@WebHelper.DATE_OUTPUT_FORMAT_MOMENTJS";
+      const JS_ElementID_SlideoutBackdrop = "@WebHelper.ElementID.SlideoutBackdrop";
+      const JS_ElementID_SlideoutPanelHeader = "@WebHelper.ElementID.SlideoutPanelHeader";
+      const JS_ElementID_SlideoutPanelTitle = "@WebHelper.ElementID.SlideoutPanelTitle";
+      const JS_ElementID_SlideoutPanelBody = "@WebHelper.ElementID.SlideoutPanelBody";
+      const JS_DataAttrName_SlideoutTrigger = "@WebHelper.DataAttrName.SlideoutTrigger";
+      const JS_DataAttrName_SlideoutShowOnPageLoad = "@WebHelper.DataAttrName.SlideoutShowOnPageLoad";
+      const JS_DataAttrName_SlideoutTitle = "@WebHelper.DataAttrName.SlideoutTitle";
+      const JS_DataAttrName_SlideoutPartialUrl = "@WebHelper.DataAttrName.SlideoutPartialUrl";
+      const JS_DataAttrName_SlideoutCallbackFunction = "@WebHelper.DataAttrName.SlideoutCallbackFunction";
+      const JS_DataAttrName_ModalPartialUrl = "@WebHelper.DataAttrName.ModalPartialUrl";
+      const JS_DataAttrName_ModalTitle = "@WebHelper.DataAttrName.ModalTitle";
+      const JS_DataAttrName_ModalShowOnPageLoad = "@WebHelper.DataAttrName.ModalShowOnPageLoad";
+      const JS_DataAttrName_AjaxDataType = "@WebHelper.DataAttrName.AjaxDataType";
+      const JS_DataAttrName_AjaxAlternateUrl = "@WebHelper.DataAttrName.AjaxAlternateUrl";
+      const JS_DataAttrName_AjaxFormData = "@WebHelper.DataAttrName.AjaxFormData";
+      const JS_DataAttrName_AjaxSearchKey = "@WebHelper.DataAttrName.AjaxSearchKey";
+      const JS_DataAttrName_DialogRef = "@WebHelper.DataAttrName.DialogRef";
+      const JS_LoggedInUser_UserGuid = "@SessionHelper.GetUserInfoOrNull()?.UserGuid";
+      const JS_LoggedInUser_SessionCreatedId = "@AmplitudeHelper.GetSessionCreatedId()";
+      const JS_PartnerDropdown_Class = "@WebHelper.CSSClasses.PartnerDropdownClass";
+      const JS_PartnerDropdown_ImgSrcData = "@WebHelper.DataAttrName.PartnerDropdownImgSrc";
+      const JS_ToastType_Info = @((int)AjaxSubmitHelper.ToastType.Info);
+      const JS_ToastType_Success = @((int)AjaxSubmitHelper.ToastType.Success);
+      const JS_ToastType_Error = @((int)AjaxSubmitHelper.ToastType.Error);
+      const JS_AjaxFieldErrorMsg_Class = "@WebHelper.CSSClasses.AjaxFieldErrorMsg";
+      const JS_AjaxFieldNamePrefix_Class = "@WebHelper.CSSClasses.AjaxFieldNamePrefix";
+      const JS_UpdateUI_Done_Class = "@WebHelper.CSSClasses.UpdateUI_Done";
+      const JS_UserPhotoPathTemplate = "@PathHelper.UserPhotoPathTemplate.HTMLEncode()";
+      const JS_UserPhotoPathTemplateReplaceName = "@PathHelper.UserPhotoPathTemplateReplaceName.HTMLEncode()";
+    </script>
+
+    @* Start error logging before loading Able scripts *@
+    <script>
+
+      var app_jsErrorOccurred = false;
+
+      window.addEventListener('error', function (errorEvent) {
+
+        var errorMessage = errorEvent.message;
+        var errorUrl = errorEvent.filename;
+        var errorLine = errorEvent.lineno;
+        var errorColumn = errorEvent.colno;
+        var errorObject = errorEvent.error;
+
+        if (typeof errorMessage === "string") {
+          // Ignore these error messages (each item can be a regex, case-insensitive):
+          var arrIgnoreErrorRegex = [
+            "ResizeObserver",
+            "CredentialsContainer",
+            "\"Pong\" is not valid"
+          ];
+          for (i in arrIgnoreErrorRegex) {
+            var regexIgnoreErrors = new RegExp(arrIgnoreErrorRegex[i], "gi");
+            if (regexIgnoreErrors.test(errorMessage)) return;
+          }
+        }
+
+        // Ignore errors occurring in extensions.
+        if (typeof errorUrl === "string") {
+          if (errorUrl.match(/extension:\/\//gi)) return; // url contains "extension://"
+        }
+
+        app_jsErrorOccurred = true;
+
+        var stackTrace = null;
+        try {
+          stackTrace = errorObject.stack; // Not all browsers implement this, ignore if not.
+        } catch { }
+
+        let referrerUrl = "@Html.Raw((SystemWeb.GetRequestHeader(AppHelper.HttpHeaders.Referrer) ?? "").JavaScriptEncode())";
+        if (isStringNullOrEmpty(referrerUrl)) referrerUrl = document.referrer || "";
+
+        try {
+          $.post("@PathHelper.Endpoints.JSLogger()", {
+            "@PathHelper.JSLoggerKeys.RequestUrl": encodeURIComponent(document.location.href),
+            "@PathHelper.JSLoggerKeys.RequestQuery": encodeURIComponent(document.location.search),
+            "@PathHelper.JSLoggerKeys.ReferrerUrl": encodeURIComponent(referrerUrl),
+            "@PathHelper.JSLoggerKeys.BrowserUserAgent": encodeURIComponent(window.navigator.userAgent),
+            "@PathHelper.JSLoggerKeys.ErrorMessage": encodeURIComponent(errorMessage),
+            "@PathHelper.JSLoggerKeys.ErrorUrl": encodeURIComponent(errorUrl), // Could be different to request, e.g. external js file.
+            "@PathHelper.JSLoggerKeys.ErrorLine": errorLine,
+            "@PathHelper.JSLoggerKeys.ErrorColumn": errorColumn,
+            "@PathHelper.JSLoggerKeys.StackTrace": encodeURIComponent(stackTrace)
+          });
+        } catch (e) {
+          // Ignore
+          if (app_isDev) {
+            console.log("Error posting this error:");
+            console.log(e);
+          }
+        }
+
+        if (app_isDev) {
+          console.log("Error  : " + errorMessage + "<br>"
+            + "URL  : " + errorUrl + "<br>"
+            + "Line : " + errorLine + "<br>"
+            + "<pre>" + stackTrace + "</pre>");
+        }
+
+        if (typeof BootstrapDialog === 'undefined') {
+
+          alert(
+            "Unfortunately an error occurred on this page.\n\n" +
+            "We apologise for the interruption, we have been alerted and it will be resolved as soon as possible. " +
+            "In the meantime, it may help to go back to the previous page and try again.");
+
+        } else {
+
+          BootstrapDialog.show({
+            title: 'Oops!',
+            message: "Unfortunately an error occurred on this page.<br/><br/>" +
+              "We apologise for the interruption, we have been alerted and it will be resolved as soon as possible. " +
+              "In the meantime, it may help to go back to the previous page and try again.",
+            type: BootstrapDialog.TYPE_WARNING,
+            closable: true,
+            animate: false,
+            draggable: true,
+            buttons: [
+              {
+                label: "Ok",
+                cssClass: 'btn-primary',
+                hotkey: 13,
+                action: function (dialog) { dialog.close(); }
+              }
+            ],
+            onshown: function (dialog) {
+              var modal = dialog.getModalDialog();
+              var top = ($(window).height() - modal.height()) / 2 - 20;
+              if (top > 0) modal.css("margin-top", top + "px");
+              setTimeout(function () { modal.find(".btn-primary").focus(); }, 200);
+            },
+            onhidden: function (dialogRef) {
+              if (app_isDev) {
+                alert(errorMessage + '\n' + errorUrl + '\n' + 'line: ' + errorLine);
+              }
+            }
+          });
+
+        }
+
+        return false; // true prevents firing of default event handler.
+      });
+
+    </script>
+
+    @await RenderSectionAsync("HeadContentBeforeCustomScripts", required: false)
+
+    @* Able custom scripts load last, and must be after the JS consts above. *@
+    <script src="@(PathHelper.UrlPath.JS)common-functions.js?v=@PathHelper.ScriptVer" type="text/javascript"></script>
+    <script src="@(PathHelper.UrlPath.JS)bootstrap-functions.js?v=@PathHelper.ScriptVer" type="text/javascript"></script>
+    <script src="@(PathHelper.UrlPath.JS)CommonDialogs.js?v=@PathHelper.ScriptVer" type="text/javascript"></script>
+    <script src="@(PathHelper.UrlPath.JS)AjaxSubmit.js?v=@PathHelper.ScriptVer" type="text/javascript"></script>
+
+    @* Show page messages on load *@
+
+    <script>
+
+      @if (!LayoutData.PageMessageText.IsNullOrEmpty()) {
+        @:$(window).on('load', function () {
+
+        if (LayoutData.PageMessageType == AjaxSubmitHelper.PageMessageType.InfoToast) {
+          @:  common_InfoToast("@Html.Raw(LayoutData.PageMessageText)");
+        } else if (LayoutData.PageMessageType == AjaxSubmitHelper.PageMessageType.SuccessToast) {
+          @:  common_SuccessToast("@Html.Raw(LayoutData.PageMessageText)");
+        } else if (LayoutData.PageMessageType == AjaxSubmitHelper.PageMessageType.ErrorToast) {
+          @:  common_ErrorToast("@Html.Raw(LayoutData.PageMessageText)");
+        } else {
+          @:  BootstrapDialog.show({
+          @:    title: "", cssClass: "no-title",
+          @:    message: "@Html.Raw(LayoutData.PageMessageText.Replace("\"", "&quot;"))",
+          @:    type: BootstrapDialog.@WebHelper.GetNextPageMessageTypeForBootstrapDialog(),
+          @:    closable: true, animate: false, draggable: true,
+          @:    buttons: [{ label: "Ok", cssClass: 'btn-primary', hotkey: 13, action: function (dialog) { dialog.close(); } }],
+          @:    onshown: function (dialog) {
+          @:      var modal = dialog.getModalDialog();
+          @:      var top = ($(window).height() - modal.height()) / 2 - 20;
+          @:      if (top > 0) modal.css("margin-top", top + "px");
+          @:      setTimeout(function () { modal.find(".btn-primary").focus(); }, 200);
+          @:    },
+          @:  });
+        }
+
+        @:});
+      }
+
+      @if (SessionHelper.IsUserLoggedIn) {
+        @:$(document).ready(function () {
+        @:  setInterval(function () { $.get("@PathHelper.Endpoints.JSLogger()"); }, 600000); // keep-alive
+        @:});
+      }
+
+      if (Tabulator) {
+        Tabulator.defaultOptions.ajaxURL = document.location.href;
+        Tabulator.defaultOptions.ajaxContentType = "form";
+        Tabulator.defaultOptions.ajaxParams = {
+          '@PathHelper.FormKeys.AjaxAction': '@WebHelper.Tabulator.AjaxAction.GetTableData.ToString()'
+        };
+        Tabulator.defaultOptions.ajaxConfig = {
+          method: "POST",
+          headers: {
+            "@AppHelper.HttpHeaders.IsAjax": true,
+            "@AppHelper.HttpHeaders.IsTabulator": true
+          }
+        };
+      }
+
+    </script>
+
+    @* extra HEAD content defined on pages *@
+
+    @await RenderSectionAsync("HeadContent", required: false)
+
+    @* Hotjar, Google etc at very end of HEAD, only load on production *@
+    @if (ConfigHelper.IsLiveServer) {
+
+      <script>
+        (function (h, o, t, j, a, r) {
+          h.hj = h.hj || function () { (h.hj.q = h.hj.q || []).push(arguments) };
+          h._hjSettings = { hjid: 2880253, hjsv: 6 };
+          a = o.getElementsByTagName('head')[0];
+          r = o.createElement('script'); r.async = 1;
+          r.src = t + h._hjSettings.hjid + j + h._hjSettings.hjsv;
+          a.appendChild(r);
+        })(window, document, 'https://static.hotjar.com/c/hotjar-', '.js?sv=');
+      </script>
+
+      <script async src="https://www.googletagmanager.com/gtag/js?id=G-7FFK7QN4ER"></script>
+      <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+        gtag('config', 'G-7FFK7QN4ER');
+        gtag('set', { 'user_type': "@GetTrackingUserRoleName()" });
+      </script>
+
+    }
+
+  </head>
+
+  <body class="fixed hold-transition @LayoutData.BodyClass">
+
+    @RenderBody()
+
+    <div id="siteModalTemplate" class="modal fade" tabindex="-1" role="dialog">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title">Modal title</h4>
+          </div>
+          <div class="modal-body"></div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-primary">Save changes</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    @await RenderSectionAsync("PostScriptContent", required: false)
+
+    @if (SessionHelper.CanShowDebugMessages) {
+      <script>
+
+        if (app_canShowDebugMessages && typeof screenLog === "object") {
+          // Set up screenLog and show messages from server.
+          try {
+            screenLog.init({ startTop: 250 });
+            $('.chinchang-screenLog').draggable({ cancel: '.chinchang-screenLog-rows' });
+          } catch (e) {
+            console.log("screenLog error:");
+            console.log(e);
+          }
+        }
+
+        @Html.Raw(LogHelper.GetResponseLogJS())
+
+      </script>
+    }
+
+    @* Fonts *@
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wdth,wght@@0,97,300..800;1,97,300..800&display=swap" rel="stylesheet">
+
+    @if (SessionHelper.IsUserLoggedIn) {
+      <script>
+        window.intercomSettings = {
+          api_base: "https://api-iam.intercom.io",
+          app_id: "yunr84s6",
+          intercom_user_jwt: "@IntercomHelpers.CreateUserJwt(SessionHelper.GetUserInfoOrNull())"
+        };
+      </script>
+    }
+
+    <script>
+      (function () { var w = window; var ic = w.Intercom; if (typeof ic === "function") { ic('reattach_activator'); ic('update', w.intercomSettings); } else { var d = document; var i = function () { i.c(arguments); }; i.q = []; i.c = function (args) { i.q.push(args); }; w.Intercom = i; var l = function () { var s = d.createElement('script'); s.type = 'text/javascript'; s.async = true; s.src = 'https://widget.intercom.io/widget/yunr84s6'; var x = d.getElementsByTagName('script')[0]; x.parentNode.insertBefore(s, x); } ; if (document.readyState === 'complete') { l(); } else if (w.attachEvent) { w.attachEvent('onload', l); } else { w.addEventListener('load', l, false); } } })();
+    </script>
+
+  </body>
+</html>
