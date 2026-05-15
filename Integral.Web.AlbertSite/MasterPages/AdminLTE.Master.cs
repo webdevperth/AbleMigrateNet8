@@ -9,12 +9,12 @@ namespace Integral.Web.PortalSite.MasterPages {
   public partial class AdminLTE : System.Web.UI.MasterPage {
 
     public object __o;
-    public string CoacheeName, CoacheeEmail, PageTitle, PageTitle_Mobile, PageSubSubtitleHTML, PageBreadcrumbHtml;
+    public string CoacheeName, CoacheeEmail;
     public string ProgramJobNumber, ProgramName, ProgramUrl;
     public string ProjectJobNumber, ProjectName, ProjectUrl;
-    public bool NoMinHeaderHeight = false, CanViewBreadcrumb;
     public string QuoteName, CompanyName;
-    public bool MasterContentHeaderVisible = false;
+
+    public AppCode.LayoutModel Layout => AppCode.LayoutModel.GetCurrent();
 
     protected void Page_Init(object sender, EventArgs e) {
 
@@ -31,14 +31,14 @@ namespace Integral.Web.PortalSite.MasterPages {
 
       WebHelper.AddBodyClass("AdminLTE");
 
-      CanViewBreadcrumb = !SessionHelper.IsUserRoleLeader;
+      Layout.CanViewBreadcrumb = !SessionHelper.IsUserRoleLeader;
 
       if (Page is AppCode.PageBaseClasses.CoacheeInfoBase) {
 
         var coacheePage = Page as AppCode.PageBaseClasses.CoacheeInfoBase;
-        PageTitle = !coacheePage.PageTitle.IsNullOrEmpty() ? coacheePage.PageTitle : Regex.Replace(Request.RawUrl, @"^.*/([A-Za-z]+).*$", "$1").Replace("Coachee", "");
-        PageSubSubtitleHTML = coacheePage.PageSubSubtitleHTML;
-        MasterContentHeaderVisible = true;
+        Layout.PageTitle = !coacheePage.PageTitle.IsNullOrEmpty() ? coacheePage.PageTitle : Regex.Replace(Request.RawUrl, @"^.*/([A-Za-z]+).*$", "$1").Replace("Coachee", "");
+        Layout.PageSubSubtitleHTML = coacheePage.PageSubSubtitleHTML;
+        Layout.MasterContentHeaderVisible = true;
 
         // Get all the info we need about project & program, based on user "state".
         // User could be:
@@ -88,27 +88,27 @@ namespace Integral.Web.PortalSite.MasterPages {
           crumbList.Add(new BreadcrumbPart(coacheePage.IsNewCoachee ? "New Participant" : coacheePage.CoacheeInfo.GetFullName()));
         }
         // Get the crumbs Html.
-        PageBreadcrumbHtml = GetPageBreadcrumbHtml(crumbList);
+        Layout.PageBreadcrumbHtml = GetPageBreadcrumbHtml(crumbList);
 
       } else if (Page is AppCode.PageBaseClasses.ProgramPageBase) {
 
         var programPage = Page as AppCode.PageBaseClasses.ProgramPageBase;
-        PageTitle = programPage.PageTitle;
-        PageSubSubtitleHTML = programPage.PageSubSubtitleHTML;
-        MasterContentHeaderVisible = true;
+        Layout.PageTitle = programPage.PageTitle;
+        Layout.PageSubSubtitleHTML = programPage.PageSubSubtitleHTML;
+        Layout.MasterContentHeaderVisible = true;
 
         if (programPage.IsNewProgram && programPage.AddToProjectInfo != null) {
-          PageBreadcrumbHtml = GetProgramBreadCrumbHtml(null, programPage.AddToProjectInfo, programPage.IsNewProgram);
+          Layout.PageBreadcrumbHtml = GetProgramBreadCrumbHtml(null, programPage.AddToProjectInfo, programPage.IsNewProgram);
         } else {
-          PageBreadcrumbHtml = GetProgramBreadCrumbHtml(programPage.ProgramInfo, null, programPage.IsNewProgram);
+          Layout.PageBreadcrumbHtml = GetProgramBreadCrumbHtml(programPage.ProgramInfo, null, programPage.IsNewProgram);
         }
 
       } else if (Page is AppCode.PageBaseClasses.ProjectPageBase) {
 
         var projectPage = Page as AppCode.PageBaseClasses.ProjectPageBase;
-        PageTitle = projectPage.PageTitle;
-        PageSubSubtitleHTML = projectPage.PageSubSubtitleHTML;
-        MasterContentHeaderVisible = true;
+        Layout.PageTitle = projectPage.PageTitle;
+        Layout.PageSubSubtitleHTML = projectPage.PageSubSubtitleHTML;
+        Layout.MasterContentHeaderVisible = true;
 
         if (!projectPage.IsNewProject) {
           // New breadcrumb list.
@@ -118,15 +118,15 @@ namespace Integral.Web.PortalSite.MasterPages {
           // Project name crumb.
           crumbList.Add(new BreadcrumbPart(GetCrumbProjectName(projectPage.ProjectInfo.JobNumber, projectPage.ProjectInfo.ProjectName)));
           // Get crumbs html.
-          PageBreadcrumbHtml = GetPageBreadcrumbHtml(crumbList);
+          Layout.PageBreadcrumbHtml = GetPageBreadcrumbHtml(crumbList);
         }
 
       } else if (Page is AppCode.PageBaseClasses.QuotePageBase) {
 
         var quotePage = Page as AppCode.PageBaseClasses.QuotePageBase;
-        PageTitle = quotePage.PageTitle;
-        PageSubSubtitleHTML = quotePage.PageSubSubtitleHTML;
-        MasterContentHeaderVisible = true;
+        Layout.PageTitle = quotePage.PageTitle;
+        Layout.PageSubSubtitleHTML = quotePage.PageSubSubtitleHTML;
+        Layout.MasterContentHeaderVisible = true;
 
         // New breadcrumb list.
         var crumbList = new List<BreadcrumbPart>();
@@ -152,14 +152,14 @@ namespace Integral.Web.PortalSite.MasterPages {
         }
 
         // Get crumbs html.
-        PageBreadcrumbHtml = GetPageBreadcrumbHtml(crumbList);
+        Layout.PageBreadcrumbHtml = GetPageBreadcrumbHtml(crumbList);
 
       } else if (Page is AppCode.PageBaseClasses.CoachInfoBase) {
 
         var coachPage = Page as AppCode.PageBaseClasses.CoachInfoBase;
-        PageTitle = coachPage.PageTitle;
-        PageSubSubtitleHTML = coachPage.PageSubSubtitleHTML;
-        MasterContentHeaderVisible = true;
+        Layout.PageTitle = coachPage.PageTitle;
+        Layout.PageSubSubtitleHTML = coachPage.PageSubSubtitleHTML;
+        Layout.MasterContentHeaderVisible = true;
 
         // New breadcrumb list.
         var crumbList = new List<BreadcrumbPart>();
@@ -170,51 +170,51 @@ namespace Integral.Web.PortalSite.MasterPages {
           crumbList.Add(new BreadcrumbPart(coachPage.CoachInfo.GetFullName()));
         }
         // Get crumbs html.
-        PageBreadcrumbHtml = GetPageBreadcrumbHtml(crumbList);
+        Layout.PageBreadcrumbHtml = GetPageBreadcrumbHtml(crumbList);
 
       } else if (Page is AppCode.PageBaseClasses.CompanyInfoBase) {
 
         var companyPage = Page as AppCode.PageBaseClasses.CompanyInfoBase;
-        PageTitle = companyPage.PageTitle;
-        PageSubSubtitleHTML = companyPage.PageSubSubtitleHTML;
-        MasterContentHeaderVisible = true;
+        Layout.PageTitle = companyPage.PageTitle;
+        Layout.PageSubSubtitleHTML = companyPage.PageSubSubtitleHTML;
+        Layout.MasterContentHeaderVisible = true;
 
         if (!companyPage.IsNewCompany) {
           var crumbList = new List<BreadcrumbPart>();
           crumbList.Add(new BreadcrumbPart(companyPage.CompanyInfo.CompanyName));
           // Get crumbs html.
-          PageBreadcrumbHtml = GetPageBreadcrumbHtml(crumbList);
+          Layout.PageBreadcrumbHtml = GetPageBreadcrumbHtml(crumbList);
         }
 
       } else if (Page is AppCode.PageBaseClasses.ModulePageBase) {
 
         var modulePage = Page as AppCode.PageBaseClasses.ModulePageBase;
-        PageTitle = modulePage.PageTitle;
+        Layout.PageTitle = modulePage.PageTitle;
 
         if (modulePage.ModuleInfo != null && modulePage.ContentInfo != null && modulePage.IsContentFromModule) {
-          PageBreadcrumbHtml = GetModuleBreadCrumbHtml(modulePage.ModuleInfo, modulePage.ContentInfo);
-          CanViewBreadcrumb = true; // All can see this breadcrumb
+          Layout.PageBreadcrumbHtml = GetModuleBreadCrumbHtml(modulePage.ModuleInfo, modulePage.ContentInfo);
+          Layout.CanViewBreadcrumb = true; // All can see this breadcrumb
         }
 
-        MasterContentHeaderVisible = !PageTitle.IsNullOrEmpty() || !PageBreadcrumbHtml.IsNullOrEmpty() ? true : false;
+        Layout.MasterContentHeaderVisible = !Layout.PageTitle.IsNullOrEmpty() || !Layout.PageBreadcrumbHtml.IsNullOrEmpty() ? true : false;
 
       } else if (Page is AppCode.PageBaseClasses.LoggedInPageBase) {
 
         var loggedInPage = Page as AppCode.PageBaseClasses.LoggedInPageBase;
-        PageTitle = loggedInPage.PageTitle;
-        PageSubSubtitleHTML = loggedInPage.PageSubSubtitleHTML;
-        MasterContentHeaderVisible = !PageTitle.IsNullOrEmpty() ? true : false;
+        Layout.PageTitle = loggedInPage.PageTitle;
+        Layout.PageSubSubtitleHTML = loggedInPage.PageSubSubtitleHTML;
+        Layout.MasterContentHeaderVisible = !Layout.PageTitle.IsNullOrEmpty() ? true : false;
 
         if (loggedInPage.ProgramInfo != null) {
           if (PathHelper.IsCurrentPage(PathHelper.Pages.Coachees())) {
-            PageBreadcrumbHtml = GetProgramBreadCrumbHtml(loggedInPage.ProgramInfo);
+            Layout.PageBreadcrumbHtml = GetProgramBreadCrumbHtml(loggedInPage.ProgramInfo);
           } else if (PathHelper.IsCurrentPage(PathHelper.Reports.EvalViewer())) {
-            PageBreadcrumbHtml = GetProgramBreadCrumbHtml(loggedInPage.ProgramInfo, PageTitle);
+            Layout.PageBreadcrumbHtml = GetProgramBreadCrumbHtml(loggedInPage.ProgramInfo, Layout.PageTitle);
           }
         }
       }
 
-      PageTitle_Mobile = (Page as AppCode.PageBaseClasses.LoggedInPageBase)?.PageTitle_Mobile;
+      Layout.PageTitle_Mobile = (Page as AppCode.PageBaseClasses.LoggedInPageBase)?.PageTitle_Mobile;
     }
 
     protected override void Render(HtmlTextWriter writer) {

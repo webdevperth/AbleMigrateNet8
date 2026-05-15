@@ -39,16 +39,16 @@
 
     <div class="content-wrapper">
       <a name="tpl_body_top" id="tpl_body_top" tabindex="0"></a>
-      <% if (MasterContentHeaderVisible) { %>
-        <section class="content-header <%= NoMinHeaderHeight ? "no-min-height" : "" %>">
-          <% if (!PageBreadcrumbHtml.IsNullOrEmpty() && CanViewBreadcrumb) { %>
-            <div class="breadcrumbs"><%= PageBreadcrumbHtml %></div>
+      <% if (Layout.MasterContentHeaderVisible) { %>
+        <section class="content-header <%= Layout.NoMinHeaderHeight ? "no-min-height" : "" %>">
+          <% if (!Layout.PageBreadcrumbHtml.IsNullOrEmpty() && Layout.CanViewBreadcrumb) { %>
+            <div class="breadcrumbs"><%= Layout.PageBreadcrumbHtml %></div>
           <% } %>
-          <% if (!PageTitle.IsNullOrEmpty()) { %>
-            <h1 class="pageTitle"><span><span class="visible-xs"><%= PageTitle_Mobile.ValueIfNullOrEmpty(PageTitle).HTMLEncode() %></span><span class="hidden-xs"><%= PageTitle.HTMLEncode() %></span></span></h1>
+          <% if (!Layout.PageTitle.IsNullOrEmpty()) { %>
+            <h1 class="pageTitle"><span><span class="visible-xs"><%= Layout.PageTitle_Mobile.ValueIfNullOrEmpty(Layout.PageTitle).HTMLEncode() %></span><span class="hidden-xs"><%= Layout.PageTitle.HTMLEncode() %></span></span></h1>
           <% } %>
-          <% if (!PageSubSubtitleHTML.IsNullOrEmpty()) { %>
-            <h4 class="coacheesLink"><%= PageSubSubtitleHTML %></h4>
+          <% if (!Layout.PageSubSubtitleHTML.IsNullOrEmpty()) { %>
+            <h4 class="coacheesLink"><%= Layout.PageSubSubtitleHTML %></h4>
           <% } %>
         </section>
       <% } %>

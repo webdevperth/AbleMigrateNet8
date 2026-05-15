@@ -83,6 +83,7 @@
     <Compile Include="AppCode\IntercomBootstrap.cs" />
     <Compile Include="AppCode\AmplitudeBootstrap.cs" />
     <Compile Include="AppCode\AmplitudeHelper.cs" />
+    <Compile Include="AppCode\LayoutModel.cs" />
   </ItemGroup>
 
 </Project>

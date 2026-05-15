@@ -7,10 +7,7 @@ namespace Integral.Web.PortalSite.MasterPages {
 
   public partial class SiteMaster : System.Web.UI.MasterPage {
 
-    public string PageMessageText = "";
-    public AjaxSubmitHelper.PageMessageType PageMessageType = AjaxSubmitHelper.PageMessageType.None;
-
-    public string BrowserPageTitle = "";
+    public AppCode.LayoutModel Layout => AppCode.LayoutModel.GetCurrent();
 
     protected void Page_Load(object sender, EventArgs e) {
 
@@ -20,22 +17,24 @@ namespace Integral.Web.PortalSite.MasterPages {
 
       // Get page message, if any, and clear it.
       // TODO: Static (not popup) page messages at top of page.
-      PageMessageText = WebHelper.GetNextPageMessageText();
-      PageMessageType = WebHelper.GetNextPageMessageType();
+      Layout.PageMessageText = WebHelper.GetNextPageMessageText();
+      Layout.PageMessageType = WebHelper.GetNextPageMessageType();
       WebHelper.ClearNextPageMessageText();
 
+      string browserPageTitle = "";
       if (SystemWeb.GetRequestItemValue(ConfigHelper.RequestItems.IsLoggedInPage).ToBooleanOrDefault(false) == true) {
-        BrowserPageTitle = SystemWeb.GetRequestItemValue(ConfigHelper.RequestItems.PageTitle).ToString();
-        if (BrowserPageTitle.IsNullOrEmpty()) {
+        browserPageTitle = SystemWeb.GetRequestItemValue(ConfigHelper.RequestItems.PageTitle).ToString();
+        if (browserPageTitle.IsNullOrEmpty()) {
           // Get page title from url. e.g. If url is "/ProgramParticipants.aspx" then title will be "Program Participants"
-          BrowserPageTitle = Request.Path.RegexFirstGroupOrNull(@"([^/]*)\..*$").EmptyIfNull().RegexReplace("([a-z])([A-Z])", "$1 $2");
+          browserPageTitle = Request.Path.RegexFirstGroupOrNull(@"([^/]*)\..*$").EmptyIfNull().RegexReplace("([a-z])([A-Z])", "$1 $2");
         }
-        BrowserPageTitle = " - " + BrowserPageTitle;
+        browserPageTitle = " - " + browserPageTitle;
       }
 
       // Add title tag for dev or staging.
-      if (!BrowserPageTitle.IsNullOrEmpty()) BrowserPageTitle += " ";
-      BrowserPageTitle += WebHelper.GetDevOrStagingSiteTagText();
+      if (!browserPageTitle.IsNullOrEmpty()) browserPageTitle += " ";
+      browserPageTitle += WebHelper.GetDevOrStagingSiteTagText();
+      Layout.BrowserPageTitle = browserPageTitle;
 
       // Determine body class for this page url.
       string urlPath = Request.RawUrl.ToLower();

@@ -7,7 +7,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 
   <head>
-    <title>Able <%= BrowserPageTitle %></title>
+    <title>Able <%= Layout.BrowserPageTitle %></title>
 
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta charset="UTF-8">
@@ -357,26 +357,26 @@
 
     <script>
 
-      <% if (!PageMessageText.IsNullOrEmpty()) { %>
+      <% if (!Layout.PageMessageText.IsNullOrEmpty()) { %>
         $(window).on('load', function () { <%-- wait for fully parsed CSS as we are showing something immediately on page load --%>
 
-          <% if (PageMessageType == AjaxSubmitHelper.PageMessageType.InfoToast) { %>
+          <% if (Layout.PageMessageType == AjaxSubmitHelper.PageMessageType.InfoToast) { %>
 
-            common_InfoToast("<%= PageMessageText %>");
+            common_InfoToast("<%= Layout.PageMessageText %>");
 
-          <% } else if (PageMessageType == AjaxSubmitHelper.PageMessageType.SuccessToast) { %>
+          <% } else if (Layout.PageMessageType == AjaxSubmitHelper.PageMessageType.SuccessToast) { %>
 
-            common_SuccessToast("<%= PageMessageText %>");
+            common_SuccessToast("<%= Layout.PageMessageText %>");
 
-          <% } else if (PageMessageType == AjaxSubmitHelper.PageMessageType.ErrorToast) { %>
+          <% } else if (Layout.PageMessageType == AjaxSubmitHelper.PageMessageType.ErrorToast) { %>
 
-            common_ErrorToast("<%= PageMessageText %>");
+            common_ErrorToast("<%= Layout.PageMessageText %>");
 
           <% } else { %>
 
             BootstrapDialog.show({
               title: "", cssClass: "no-title",
-              message: "<%= PageMessageText.Replace("\"", "&quot;") %>",
+              message: "<%= Layout.PageMessageText.Replace("\"", "&quot;") %>",
               type: BootstrapDialog.<%= WebHelper.GetNextPageMessageTypeForBootstrapDialog() %>,
               closable: true, animate: false, draggable: true,
               buttons: [{ label: "Ok", cssClass: 'btn-primary', hotkey: 13, action: function (dialog) { dialog.close(); } }],
@@ -446,7 +446,7 @@
 
   </head>
 
-  <body class="fixed hold-transition <%= WebHelper.GetBodyClass() %>">
+  <body class="fixed hold-transition <%= Layout.BodyClass %>">
 
     <asp:ContentPlaceHolder ID="BodyContent" runat="server" />
 
