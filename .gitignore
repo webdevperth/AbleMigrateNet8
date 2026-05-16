@@ -11,6 +11,7 @@ styles
 *.jar
 *.zip
 *.bat
+MIGRATION_NOTES.md
 
 ## Below is standard ##
 
