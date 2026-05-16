@@ -1,10 +1,12 @@
-﻿using System;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+using System;
+using System.Threading.Tasks;
 
 namespace Integral.Web.PortalSite.AppCode.PageBaseClasses {
 
-  public class LoggedInPageBase : System.Web.UI.Page {
-
-    public object __o;
+  public class LoggedInPageModel : PageModel {
 
     public string PageTitle {
       get {
@@ -29,6 +31,18 @@ namespace Integral.Web.PortalSite.AppCode.PageBaseClasses {
     public DbHelper.AbleUser.AbleUserInfo userInfo { get; protected set; }
     public bool IsViewingSharedSurvey { get; protected set; } = false;
     public DbHelper.SurveyShare.SharedSurveysInfo SharedSurveyInfo { get; protected set; } = null;
+
+    public override async Task OnPageHandlerExecutionAsync(
+        PageHandlerExecutingContext context, PageHandlerExecutionDelegate next) {
+
+      InitializePage();
+      if (WebHelper.IsRequestExiting()) {
+        // Caller (SetRedirect/SetFallbackRedirect) has set Response.Headers.Location and ended the request.
+        context.Result = new EmptyResult();
+        return;
+      }
+      await next();
+    }
 
     protected void InitializePage() {
 
@@ -103,13 +117,6 @@ namespace Integral.Web.PortalSite.AppCode.PageBaseClasses {
 
     }
 
-    protected virtual void Page_Init(object sender, EventArgs e) {
-
-      if (WebHelper.IsRequestExiting()) return;
-
-      InitializePage();
-    }
-
     protected void GetSharedSurveyInfo() {
 
       SharedSurveyInfo = null;
@@ -129,7 +136,7 @@ namespace Integral.Web.PortalSite.AppCode.PageBaseClasses {
       layout.IsViewingSharedSurvey = IsViewingSharedSurvey;
     }
 
-    internal bool CheckPageAccess() {
+    protected bool CheckPageAccess() {
 
       // Check for self registered users, as some will not be able to navigate able until they complete an action.
       if ((SessionHelper.IsUserRoleClient && !PathHelper.IsCurrentPage(PathHelper.Pages.OverviewUpcoming()))
