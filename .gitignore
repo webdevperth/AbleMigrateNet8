@@ -9,6 +9,8 @@ images
 scripts
 styles
 *.jar
+*.zip
+*.bat
 
 ## Below is standard ##
 
