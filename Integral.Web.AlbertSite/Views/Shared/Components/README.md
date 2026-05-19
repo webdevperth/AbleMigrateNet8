@@ -58,18 +58,22 @@ In both cases the model lives in `Integral.Web.PortalSite.ViewComponents`
 so the Razor view can reference it via the `@using` already declared in
 `/Views/_ViewImports.cshtml`.
 
+**Important Note:** Although the namespace for all ViewComponent classes is
+  `Integral.Web.PortalSite.ViewComponents`, the files must reside in
+   `/Views/Shared/Components/{ComponentName}/` **not** `/ViewComponents/{ComponentName}/`.
+
 ## Translating `.ascx` markup → Razor
 
 The mechanical translations from Web Forms inline-code syntax to Razor:
 
-| Web Forms                              | Razor                                  |
-| -------------------------------------- | -------------------------------------- |
-| `<%= expr %>`                          | `@(expr)`                              |
-| `<%: expr %>` (HTML-encoded)           | `@expr` (Razor encodes by default)     |
-| `<% if (...) { %> ... <% } %>`         | `@if (...) { ... }`                    |
-| `<% foreach (...) { %> ... <% } %>`    | `@foreach (...) { ... }`               |
-| `<% var x = ...; %>`                   | `@{ var x = ...; }`                    |
-| `<% void Foo() { %> ... <% } %>`       | `@{ void Foo() { ... } }` (local fn), or — preferably — extract a helper method onto the ViewComponent's model and call it from the view |
+| Web Forms                           | Razor                                                                                                                                    |
+| ----------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| `<%= expr %>`                       | `@(expr)`                                                                                                                                |
+| `<%: expr %>` (HTML-encoded)        | `@expr` (Razor encodes by default)                                                                                                       |
+| `<% if (...) { %> ... <% } %>`      | `@if (...) { ... }`                                                                                                                      |
+| `<% foreach (...) { %> ... <% } %>` | `@foreach (...) { ... }`                                                                                                                 |
+| `<% var x = ...; %>`                | `@{ var x = ...; }`                                                                                                                      |
+| `<% void Foo() { %> ... <% } %>`    | `@{ void Foo() { ... } }` (local fn), or — preferably — extract a helper method onto the ViewComponent's model and call it from the view |
 
 Drop `<%@ Control ... %>` and any `runat="server"` attributes — they have
 no meaning in Razor.

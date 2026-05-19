@@ -4,21 +4,17 @@ using Integral.Web.PortalSite.AppCode;
 
 namespace Integral.Web.PortalSite.ViewComponents {
 
-  public class OrgRpt_DetailedViewComponent : ViewComponent {
+  public class OrgRpt_Categories : ViewComponent {
 
     public Task<IViewComponentResult> InvokeAsync() {
 
       var ctx = OrgReportContext.GetOrLoad(HttpContext);
       if (!ctx.IsAvailable) return Task.FromResult<IViewComponentResult>(Content(""));
 
-      if (PathHelper.IsCurrentPage(PathHelper.Reports.OrganisationIOSReports(0))) {
-        // For OrgIOSReport page, split IOI questions into sections.
-        ctx.ReportData.GroupAndSortLikertQuestionsByQuadrant();
-      }
-
-      var model = new OrgRpt_DetailedModel {
+      var model = new OrgRpt_CategoriesModel {
         reportData = ctx.ReportData
       };
+      model.Initialize();
 
       return Task.FromResult<IViewComponentResult>(View(model));
     }

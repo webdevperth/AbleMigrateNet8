@@ -4,7 +4,7 @@ using Integral.Web.PortalSite.AppCode;
 
 namespace Integral.Web.PortalSite.ViewComponents {
 
-  public class OrgRpt_FocusViewComponent : ViewComponent {
+  public class OrgRpt_Focus : ViewComponent {
 
     public Task<IViewComponentResult> InvokeAsync() {
 

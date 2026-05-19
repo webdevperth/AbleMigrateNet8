@@ -4,7 +4,7 @@ using Integral.Web.PortalSite.Reports;
 
 namespace Integral.Web.PortalSite.ViewComponents {
 
-  public class OrgRpt_TopFiltersViewComponent : ViewComponent {
+  public class OrgRpt_TopFilters : ViewComponent {
 
     public Task<IViewComponentResult> InvokeAsync() {
 
