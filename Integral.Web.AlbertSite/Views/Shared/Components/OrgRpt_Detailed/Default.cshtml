@@ -1,0 +1,11 @@
+@model OrgRpt_DetailedModel
+
+<div class="tab-content">
+  <div class="OrgRptDetailed row">
+    <div class="col-xs-12">
+      <div class="qnSection mb20">
+        @Html.Raw(Model.GetQuestions())
+      </div>
+    </div>
+  </div>
+</div>

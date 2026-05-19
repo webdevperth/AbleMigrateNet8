@@ -1,0 +1,265 @@
+@model OrgRpt_TopFiltersModel
+
+<style>
+  .ctlOrgRpt_TopFilters .multiselect-native-select:not(:has(> select > option)) { display: none !important; }
+</style>
+
+<div class="ctlOrgRpt_TopFilters">
+  <div class="row">
+    <div class="col-md-12">
+
+      <div class="">
+
+        <select class="form-control selOrgLevel" id="ctlOrgRpt_TopFilters_OrgLevel" size="1" multiple data-bms-options="notitles selectall" data-bms-allornum="Org Level (_)">
+
+          @if (Model.surveyInfo.SurveyId == 3028) {
+            <option value="171235">CEO, Directors and Managers</option>
+            <optgroup label="Office of the CEO">
+              <option value="171236">Executive and Risk Services</option>
+              <option value="171303">City Projects & Administration</option>
+            </optgroup>
+            <optgroup label="Corporate Services">
+              <option value="171238">Information Technology</option>
+              <option value="171239">Financial Services</option>
+              <option value="171240">Culture and Recreation</option>
+              <option value="171241">Rangers, Parking and Community Safety</option>
+              <option value="171242">Leisure Centres</option>
+            </optgroup>
+            <optgroup label="Governance and Strategy">
+              <option value="171243">Governance</option>
+              <option value="171244">Marketing and Communications</option>
+              <option value="171245">Human Resources</option>
+              <option value="171246">Strategic and Organisational Development</option>
+            </optgroup>
+            <optgroup label="Infrastructure Services">
+              <option value="171247">Infrastructure Management Services (inside)</option>
+              <option value="171304">Infrastructure Management Services (outside)</option>
+              <option value="171249">Operations (inside)</option>
+              <option value="171250">Operations (outside)</option>
+              <option value="171251">Asset Management (inside)</option>
+              <option value="171252">Asset Management (outside)</option>
+              <option value="171248">Directorate Administration</option>
+            </optgroup>
+            <optgroup label="Planning and Development">
+              <option value="171253">Planning Services</option>
+              <option value="171254">Compliance and Regulatory Services</option>
+              <option value="171255">Libraries</option>
+              <option value="171256">Community Development and Youth Services</option>
+            </optgroup>
+          } else if (Model.surveyInfo.SurveyId == 3170) {
+            <option value="184899">CEO, Directors and Managers</option>
+            <optgroup label="Office of the CEO">
+              <option value="184900">Executive and Risk Services</option>
+              <option value="184901">Administration & Support</option>
+            </optgroup>
+            <optgroup label="Corporate Services">
+              <option value="184902">Wayne Technologies</option>
+              <option value="184903">Financial Services</option>
+              <option value="184904">Culture and Recreation</option>
+              <option value="184905">Wayne Aerospace</option>
+              <option value="184906">Wayne Security</option>
+            </optgroup>
+            <optgroup label="Governance and Strategy">
+              <option value="184907">Governance</option>
+              <option value="184908">Marketing and Communications</option>
+              <option value="184909">Human Resources</option>
+              <option value="184910">Strategic and Organisational Development</option>
+            </optgroup>
+            <optgroup label="Infrastructure Services">
+              <option value="184911">Wayne Research Institute</option>
+              <option value="184912">Wayne Foundation</option>
+              <option value="184913">Operations</option>
+              <option value="184914">Special Operations</option>
+            </optgroup>
+            <optgroup label="Asset Management">
+              <option value="184915">Bat Cave</option>
+              <option value="184916">Bat Bunker</option>
+              <option value="184917">Wayne Manor</option>
+              <option value="184918">Wayne Towers</option>
+              <option value="184919">Wayne Foundation Building</option>
+            </optgroup>
+            <optgroup label="Planning and Development">
+              <option value="184920">Libraries</option>
+              <option value="184921">Community Development and Youth Services</option>
+            </optgroup>
+          } else if (Model.surveyInfo.SurveyId == 4282) {
+              <option value="1375751675">Primarily work in Office</option>
+              <option value="1375751676">Primarily work in Field</option>
+          } else {
+            @Html.Raw(Model.GetOrgLevelOptions())
+          }
+        </select>
+
+        <select class="form-control" id="ctlOrgRpt_TopFilters_Demographic" size="1" multiple data-bms-options="notitles selectall" data-bms-allornum="Demographic (_)">
+          @if (Model.surveyInfo.SurveyId == 3028) {
+            <optgroup label="Gender">
+              <option value="105632-171260">Male</option>
+              <option value="105632-171261">Female</option>
+              <option value="105632-171308">Don’t Identify as Either</option>
+            </optgroup>
+            <optgroup label="Age">
+              <option value="105633-171228">0 - 20 years</option>
+              <option value="105633-171229">21 - 30 years</option>
+              <option value="105633-171305">31 - 40 years</option>
+              <option value="105633-171306">41 - 50 years</option>
+              <option value="105633-171307">51 - 60 years</option>
+              <option value="105633-171230">61 years or more</option>
+            </optgroup>
+            <optgroup label="Length of Employment">
+              <option value="105634-171262">Less than 2 years</option>
+              <option value="105634-171263">2 to less than 5 years</option>
+              <option value="105634-171264">5 to less than 10 years</option>
+              <option value="105634-171309">10 to less than 15 years</option>
+              <option value="105634-171310">15 to less than 20 years</option>
+              <option value="105634-171265">20 years or more</option>
+            </optgroup>
+          } else if (Model.surveyInfo.SurveyId == 3170) {
+            <optgroup label="Gender">
+              <option value="111397-184925">Male</option>
+              <option value="111397-184926">Female</option>
+              <option value="111397-184927">Don’t Identify as Either</option>
+            </optgroup>
+            <optgroup label="Age">
+              <option value="111398-184889">0 - 20 years</option>
+              <option value="111398-184890">21 - 30 years</option>
+              <option value="111398-184891">31 - 40 years</option>
+              <option value="111398-184892">41 - 50 years</option>
+              <option value="111398-184893">51 - 60 years</option>
+              <option value="111398-184894">61 years or more</option>
+            </optgroup>
+            <optgroup label="Length of Employment">
+              <option value="105634-184928">Less than 2 years</option>
+              <option value="105634-184929">2 to less than 5 years</option>
+              <option value="105634-184930">5 to less than 10 years</option>
+              <option value="105634-184931">10 to less than 15 years</option>
+              <option value="105634-184932">15 to less than 20 years</option>
+              <option value="105634-184933">20 years or more</option>
+            </optgroup>
+          } else if (Model.surveyInfo.SurveyId == 4282) {
+            <optgroup label="Gender">
+              <option value="116430-1375751701">Female</option>
+              <option value="116430-1375751702">Male</option>
+            </optgroup>
+            <optgroup label="Length of Service">
+              <option value="116432-1375751704">Less than 2 years</option>
+              <option value="116432-1375751705">2 to less than 5 years</option>
+              <option value="116432-1375751706">5 to less than 10 years</option>
+              <option value="116432-1375751709">10 years or more</option>
+            </optgroup>
+          } else {
+            @Html.Raw(Model.GetDemographicOptions())
+          }
+        </select>
+
+        <select class="form-control" id="ctlOrgRpt_TopFilters_BenchType" size="1" data-bms-options="notitles" data-bms-allornum="@OrgReports.Benchmark_Display_Text.UCaseFirstChar()">
+          @Html.Raw(Model.GetBenchOptions())
+        </select>
+
+        @* if (surveyInfo.SurveyId == 3028) { *@
+        <select class="form-control" id="ctlOrgRpt_TopFilters_Category" size="1" data-bms-options="notitles" data-bms-allornum="Category">
+          <option value="@((int)DbHelper.OrgReports.ValidDimensions.Quadrants)">Quadrants</option>
+          <option value="@((int)DbHelper.OrgReports.ValidDimensions.ReportSections)">Custom</option>
+          @if (!Model.surveyInfo.OrgReportDisableDrivers) {
+            <option value="@((int)DbHelper.OrgReports.ValidDimensions.Drivers)">Drivers</option>
+          }
+        </select>
+        @* } *@
+
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+
+  var CtlOrgRpt_TopFilters = {
+
+    selBenchmark: null,
+    benchType: "",
+    orgLevelTagId: "#ctlOrgRpt_TopFilters_OrgLevel",
+    demographicTagId: "#ctlOrgRpt_TopFilters_Demographic",
+    benchTypeTagId: "#ctlOrgRpt_TopFilters_BenchType",
+    categoryTagId: "#ctlOrgRpt_TopFilters_Category",
+    demographicTagId: "#ctlOrgRpt_TopFilters_Demographic",
+
+    Init: function () { // called by docready below.
+
+      var _this = this;
+      // this.selBenchmark = $("#ctlOrgRpt_TopFilters_BenchType");
+      // this.benchType = Cookies.get('OrgRpt_BenchType');
+      // this.SetBenchSelector();
+
+      app_CommonFunctions.BootMultiSelect(
+        $(_this.orgLevelTagId + "," + _this.benchTypeTagId + "," + _this.categoryTagId + "," + _this.demographicTagId),
+        {
+          initialVals: null,
+          onDropdownShown: function (event) {
+            this.options.initialVals = _this.GetStringListFromVal(this.$select.val());
+          },
+          onDropdownHidden: function (event) {
+            var newVals = _this.GetStringListFromVal(this.$select.val());
+            if (this.options.initialVals != newVals)
+              _this.FilterChanged(
+                _this.GetStringListFromVal($(_this.orgLevelTagId).val()),
+                _this.GetStringListFromVal($(_this.benchTypeTagId).val()),
+                _this.GetStringListFromVal($(_this.categoryTagId).val())
+              );
+          },
+          onSelectAll: function () {
+            this.clearSelection();
+          }
+        }
+      );
+
+      _this.Loaded(_this.GetSelectedBenchType(), _this.GetSelectedOrgLevels(), _this.GetSelectedCategory());
+
+    }, // init
+
+    GetSelectedOrgLevels: function () {
+      return this.GetStringListFromVal($(this.orgLevelTagId).val());
+    },
+
+    GetSelectedDemographics: function () {
+      return this.GetStringListFromVal($(this.demographicTagId).val());
+    },
+
+    GetSelectedCategory: function () {
+      return $(this.categoryTagId).val();
+    },
+
+    GetSelectedBenchType: function () {
+      return $(this.benchTypeTagId).val();
+    },
+
+    GetStringListFromVal: function (val) {
+      if (val == null) return ""; // no selection
+      if (val.join) return val.join(","); // multiple selection
+      return val; // single selection
+    },
+
+    SetBenchSelector: function (bench) {
+      var benchOption = this.selBenchmark.find("option[value=" + this.benchType + "]");
+      if (benchOption.length == 0) this.ChangedBenchSelector();
+    },
+
+    ChangedBenchSelector: function () {
+      this.benchType = this.selBenchmark.val();
+      //Cookies.set('OrgRpt_BenchType', this.benchType, { expires: 3600 });
+      this.FilterChanged(this.benchType); // caller overrides
+    },
+
+    // Events. Caller replaces these.
+    Loaded: function (orgLevelVals, benchTypeVal, categoryVal) { },
+    FilterChanged: function (orgLevelVals, benchTypeVal, categoryVal) { }
+
+  };
+
+  $(document).ready(function () {
+
+    CtlOrgRpt_TopFilters.Init();
+
+  });
+
+
+</script>

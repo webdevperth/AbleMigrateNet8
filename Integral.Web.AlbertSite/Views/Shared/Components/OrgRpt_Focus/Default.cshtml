@@ -1,0 +1,40 @@
+@model OrgRpt_FocusModel
+
+<div class="tab-content">
+  <div class="ctlOrgRpt_Focus row">
+    <div class="col-xs-12">
+
+      @foreach (var table in Model.TableList) {
+
+        <div class="table-responsive @(table.TableMode == OrgReports.FocusTableMode.Highest ? "modeHighest" : "modeLowest")">
+          <table class="table tblScores">
+            <colgroup>
+              <col width="700">
+              <col width="250">
+            </colgroup>
+            <thead>
+              <tr>
+                <td class="cTitle"><span class="circle"></span>@Html.Raw(table.TableTitle.HTMLEncode())</td>
+                <td class="cFeedb">&nbsp;</td>
+              </tr>
+            </thead>
+            <tbody>
+              @foreach (var tableRow in Model.GetTableRows(table)) {
+                <tr class="rowSkill rowid_@(Model.currentTableRow.RowCount)">
+                  <td class="cTitle">
+                    @Html.Raw(Model.reportData.SurveyInfo.OrgReportDisableDrivers ? "" :
+                        (@"<div><div class=""sectionTitle"">" + Model.currentTableRow.SectionTitle.HTMLEncode() + "</div></div>"))
+                    <span class="qnNum">@Html.Raw(Model.currentTableRow.QuestionNumber).</span>@Html.Raw(Model.currentTableRow.RowText)
+                  </td>
+                  <td class="cFeedb">@Html.Raw(Model.GetScoreBarHTML(tableRow))</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+      }
+
+    </div>
+  </div>
+</div>
