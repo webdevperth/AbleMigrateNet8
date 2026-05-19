@@ -1,0 +1,115 @@
+@model OrgRpt_Ovw_TopChartModel
+
+<div class="container-fluid">
+  <div class="ctlOrgRptOvw row">
+    <div class="col-xs-12 col-md-11">
+      <div class="flex gap50 w100p h250">
+        <div class="flex0 w400"><!-- box scores -->
+
+          <div class="boxBorder boxOrgScore h100p">
+            <div class="boxTitle"><h4>Your Organisation Score <img class="orgInfoIcon" src="@(PathHelper.UrlPath.Images)icon-info-pur-18.png"></h4></div>
+            <div class="scoreLine"><span class="scoreNumber">@Model.surveyScoreRounded</span> / -100 to 100</div>
+            <div class="compareLine">
+              <span class="compareNumber">@(Model.benchDifference == 0 ?
+                                              "Equal to"
+                                              : Math.Abs(Model.benchDifference) + " pt " + (Model.benchDifference > 0 ? "above" : "below"))</span>
+              the @OrgReports.Benchmark_Display_Text (@Model.benchScoreRounded)</div>
+          </div>
+        </div>
+        <div class="flex1"><!-- chart -->
+
+          <div class="boxBorder h100p">
+            <div class="boxTitle">
+              <img class="benchLegendImg" src="@(PathHelper.UrlPath.Images)htmlreports/org-benchmark-legend.gif" />
+              <h4>Your Organisation Score Over Time</h4>
+            </div>
+            <div class="canvas-container"><canvas style="height: 100%" id="ctlOrgRptOvw_canvas"></canvas></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>@* ctlOrgRptOvw row *@
+</div>@* container *@
+
+<div id="ctlOrgRptOvw_InfoText" class="ctlOrgRptOvw_InfoText">
+  <h4>Organisation Score</h4>
+  <hr>
+  Your Organisation Score is the average score that your organisation or sub-section received
+  for the first 32 benchmarking questions that form the Integral Organisation Indicator (IOI).
+  The IOI is an indication of how integrally developed your organisation/section is.
+  You can compare the IOI score for your organisation/section with outside
+  organisations or other parts of your own organisation.<br/>
+  <br/>
+  The scores are on a scale from -100 (Completely disagree) through to +100 (Completely agree)
+  which provides an indication of respondents’ level of agreement with the positive statements in the IOI.<br/>
+  <br/>
+  The IOI is made up of 8 items for each of 4 quadrants: People Well Being, Efficiency,
+  Effectiveness and Systems, and Culture and Meaning. The scores for these quadrants are shown below.
+</div>
+
+<script type="text/javascript">
+
+  (function ($) {
+
+    $(document).ready(function() {
+
+      $(".ctlOrgRptOvw .orgInfoIcon").click(function(e) {
+        common_InfoDialog($("#ctlOrgRptOvw_InfoText").html());
+      });
+
+      var canvas = $("#ctlOrgRptOvw_canvas");
+      canvas.width(canvas.parent().width());
+      DrawChart(canvas);
+
+    });
+
+    function DrawChart(canvas) {
+
+      var ctx = canvas[0].getContext("2d");
+
+      var chartData = {
+        labels: @Html.Raw(Model.xAxisLabel),
+        datasets: [
+          {
+            label: 'Score',
+            data: @Html.Raw(Model.selfScoreDS),
+            backgroundColor: [ 'rgba(0, 0, 0, 0)' ],
+            borderColor: ['#5D57D6'],
+            borderWidth: 2
+          },{
+            label: '@OrgReports.Benchmark_Display_Text.UCaseFirstChar()',
+            data: @Html.Raw(Model.selfBenchMarkDS),
+            borderDash: [3,3],
+            backgroundColor: [ 'rgba(0, 0, 0, 0)' ],
+            borderColor: ['#6C66DA'],
+            borderWidth: 1
+          }
+        ]
+      };
+
+      var chartOptions = {
+        responsive: true,
+        legend: { display: false }, // remove legend
+        elements: {
+          //point:{ radius: 0 }, // remove points
+          line: { tension: 0 } // remove curves
+        },
+        scales: {
+          xAxes: [{ gridLines: { color: "rgba(0, 0, 0, 0.1)" } }],
+          yAxes: [{ gridLines: { color: "rgba(0, 0, 0, 0)" }, ticks: { beginAtZero: true, min: 0, max: 100, precision: 0, stepSize: 50 } }]
+        }
+      };
+
+      var myChart = new Chart(ctx, {
+        type: 'line',
+        data: chartData,
+        options: chartOptions
+      }); // new Chart()
+
+    } // DrawChart()
+
+
+  })(jQuery);
+
+</script>

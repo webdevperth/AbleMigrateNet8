@@ -1,0 +1,45 @@
+@model OrgRpt_Ovw_QuadrantsModel
+
+<div class="tab-content">
+  <div class="ctlOrgRptOvw_Quadrants row">
+    <div class="col-xs-12">
+
+      @foreach (var currentTable in Model.TableList) {
+
+        <div class="table-responsive">
+          <table class="table tblScores">
+            <colgroup>
+              <col width="300">
+              <col width="150">
+              <col width="250">
+              <col width="250">
+            </colgroup>
+            <thead>
+              <tr>
+                <td class="cTitle">@currentTable.TableTitle</td>
+                <td class="cProg">Progress</td>
+                <td class="cProg">Comparison to @OrgReports.Benchmark_Display_Text.UCaseFirstChar() (self)</td>
+                <td class="cFeedb">Your Feedback</td>
+              </tr>
+            </thead>
+            <tbody>
+              @foreach (var currentTableRow in Model.GetTableRows(currentTable)) {
+                  <tr class="rowSkill rowid_@(currentTableRow.RowCount) @currentTableRow.GetRowProgressClass()">
+                    <td class="cTitle">@Html.Raw(currentTableRow.RowText)</td>
+                    <td class="cProg">
+                      <span class="previousScore">@currentTableRow.GetPreviousScoreText() </span>
+                      <span class="glyphicon glyphicon-@(currentTableRow.GetProgressPercentGlyphicon())"></span>
+                      <span class="progressPercent" title="@currentTableRow.GetProgressPercentTitle()">@(currentTableRow.GetProgressPercent())%</span>
+                    </td>
+                    <td class=""><span class="progPtsText">@Html.Raw(currentTableRow.GetBenchComparisonPointsText())</span></td>
+                    <td class="cFeedb">@Html.Raw(Model.GetScoreBarHTML(currentTableRow))</td>
+                  </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+
+    </div>
+  </div>
+</div>
