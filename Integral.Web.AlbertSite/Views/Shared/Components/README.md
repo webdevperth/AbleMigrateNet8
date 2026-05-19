@@ -1,7 +1,7 @@
 # ViewComponent conventions
 
 This document captures the conventions used when migrating legacy Web Forms
-`.ascx` user controls in `UserControls/`, `Partials/`, and `MasterPages/` to
+`.ascx` user controls in `/UserControls/`, `/Partials/`, and `/MasterPages/` to
 ASP.NET Core 8 ViewComponents.
 
 The goal is to keep the C# class, the Razor view, and any small model class
@@ -26,7 +26,7 @@ This is the framework's default discovery location for ViewComponent views
 view-location configuration is required.
 
 The pilot example is
-[ChartAlbert360TopNav](../Views/Shared/Components/ChartAlbert360TopNav/).
+[ChartAlbert360TopNav](/Views/Shared/Components/ChartAlbert360TopNav/).
 
 ## Naming convention
 
@@ -56,7 +56,7 @@ get/set properties).
 
 In both cases the model lives in `Integral.Web.PortalSite.ViewComponents`
 so the Razor view can reference it via the `@using` already declared in
-`Views/_ViewImports.cshtml`.
+`/Views/_ViewImports.cshtml`.
 
 ## Translating `.ascx` markup → Razor
 
