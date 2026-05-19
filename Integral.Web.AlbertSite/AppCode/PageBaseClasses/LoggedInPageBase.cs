@@ -42,6 +42,16 @@ namespace Integral.Web.PortalSite.AppCode.PageBaseClasses {
       // Get user from session if it exists.
       userInfo = SessionHelper.GetUserInfoOrNull();
 
+      // Mirror onto the request-scoped LayoutModel so future ViewComponents (which have
+      // no host Page to cast) can read the same state. See LayoutModel.cs.
+      var layout = LayoutModel.GetCurrent();
+      layout.MenuThirdLayerActive_Programs = MenuThirdLayerActive_Programs;
+      layout.DashboardMenuIsActive = DashboardMenuIsActive;
+      layout.ProjectMenuIsActive = ProjectMenuIsActive;
+      layout.ProgramInfo = ProgramInfo;
+      layout.ProjectInfo = ProjectInfo;
+      layout.UserInfo = userInfo;
+
       // For convenience at the page level, set PageAjaxAction string from the commonly-used "AjaxAction" form field.
       if (SystemWeb.IsHttpPost) PageAjaxAction = WebHelper.GetAjaxaction();
 
@@ -112,6 +122,11 @@ namespace Integral.Web.PortalSite.AppCode.PageBaseClasses {
           IsViewingSharedSurvey = true;
         }
       }
+
+      // Mirror onto LayoutModel for future ViewComponent consumers.
+      var layout = LayoutModel.GetCurrent();
+      layout.SharedSurveyInfo = SharedSurveyInfo;
+      layout.IsViewingSharedSurvey = IsViewingSharedSurvey;
     }
 
     internal bool CheckPageAccess() {

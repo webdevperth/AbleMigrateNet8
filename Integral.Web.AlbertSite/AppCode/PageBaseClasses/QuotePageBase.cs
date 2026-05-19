@@ -30,6 +30,10 @@ namespace Integral.Web.PortalSite.AppCode.PageBaseClasses {
       IsNewQuote = false;
       QuoteInfo = null;
 
+      // Mirror onto LayoutModel for future ViewComponent consumers. See LayoutModel.cs.
+      var layout = LayoutModel.GetCurrent();
+      layout.QuoteInfo = QuoteInfo;
+
       FallbackUrl = PathHelper.Pages.QuoteList();
 
       Guid urlQuoteGuid;
@@ -46,11 +50,13 @@ namespace Integral.Web.PortalSite.AppCode.PageBaseClasses {
       if (urlProjectJobNumber.IsNullOrEmpty()) {
 
         ProjectInfo = null;
+        layout.ProjectInfo = null;
         CanCreateQuote = SessionHelper.AppAccess.Quotes.CanCreateQuote();
 
       } else {
 
         ProjectInfo = DbHelper.Projects.GetProjectInfoOrNull(urlProjectJobNumber, SessionHelper.UserInfo);
+        layout.ProjectInfo = ProjectInfo;
         if (ProjectInfo == null) {
           SetRedirect(PathHelper.Pages.Projects_List());
           return;
@@ -77,6 +83,7 @@ namespace Integral.Web.PortalSite.AppCode.PageBaseClasses {
         CanCopyQuote = false;
         CanDeleteQuote = false;
         QuoteInfo = DbHelper.AbleQuotes.GetEmptyQuoteInfo();
+        layout.QuoteInfo = QuoteInfo;
         QuoteInfo.OwnerUserId = userInfo.UserId; // Default to current user for new quotes.
         PageSubtitle = "New Quote";
         CanChangeSplitRoles = true;
@@ -95,6 +102,7 @@ namespace Integral.Web.PortalSite.AppCode.PageBaseClasses {
 
         // If not admin, only give access to quotes "owned" by the current user.
         QuoteInfo = DbHelper.AbleQuotes.GetQuoteInfoOrNull(urlQuoteGuid, userInfo);
+        layout.QuoteInfo = QuoteInfo;
 
         if (QuoteInfo == null) {
           if (ProjectInfo != null) {
@@ -107,6 +115,7 @@ namespace Integral.Web.PortalSite.AppCode.PageBaseClasses {
 
         if (ProjectInfo == null || ProjectInfo.JobNumber != QuoteInfo.JobNumber) {
           ProjectInfo = DbHelper.Projects.GetProjectInfoOrNull(QuoteInfo.JobNumber);
+          layout.ProjectInfo = ProjectInfo;
         }
 
         if (QuoteInfo.QuoteTitle.IsNullOrEmpty() && ProjectInfo != null) {

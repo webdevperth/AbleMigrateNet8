@@ -15,6 +15,11 @@ namespace Integral.Web.PortalSite.AppCode.PageBaseClasses {
       IsNewProject = false;
       ProjectInfo = null;
 
+      // Mirror onto LayoutModel for future ViewComponent consumers. See LayoutModel.cs.
+      var layout = LayoutModel.GetCurrent();
+      layout.ProjectMenuIsActive = ProjectMenuIsActive;
+      layout.ProjectInfo = ProjectInfo;
+
       // Is there a job id or "new" in the querystring?
       string urlProjectJobNumber = WebHelper.GetQueryStringValue(PathHelper.AbleUrlKeys.ProjectJobNumber);
 
@@ -29,10 +34,12 @@ namespace Integral.Web.PortalSite.AppCode.PageBaseClasses {
         }
 
         ProjectInfo = DbHelper.Projects.GetNewProjectInfo();
+        layout.ProjectInfo = ProjectInfo;
 
       } else {
 
         ProjectInfo = DbHelper.Projects.GetProjectInfoOrNull(urlProjectJobNumber, SessionHelper.UserInfo);
+        layout.ProjectInfo = ProjectInfo;
 
         if (ProjectInfo == null) {
           SetFallbackRedirect();

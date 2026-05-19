@@ -17,6 +17,9 @@ namespace Integral.Web.PortalSite.AppCode.PageBaseClasses {
 
       base.Page_Init(sender, e);
 
+      // Mirror onto LayoutModel for future ViewComponent consumers. See LayoutModel.cs.
+      var layout = LayoutModel.GetCurrent();
+
       // Change Fallback to Coachees if user is admin or coach.
       if (SessionHelper.IsUserRoleAdmin || SessionHelper.IsUserRoleCoach) FallbackUrl = PathHelper.Pages.Coachees();
 
@@ -38,6 +41,8 @@ namespace Integral.Web.PortalSite.AppCode.PageBaseClasses {
           FallbackUrl = PathHelper.Pages.ProgramParticipants(addToProgramJobId);
           ProgramInfo = DbHelper.AblePrograms.GetProgramInfoOrNull((int)addToProgramJobId);
           ProjectInfo = DbHelper.Projects.GetProjectInfoOrNull(ProgramInfo.ProgramJobNumber);
+          layout.ProgramInfo = ProgramInfo;
+          layout.ProjectInfo = ProjectInfo;
 
           if (ProgramInfo == null) {
             SetRedirect(PathHelper.Pages.Projects_List(), "Related Program was not found."); // Program doesn't exist, go back to Projects list.
@@ -50,6 +55,7 @@ namespace Integral.Web.PortalSite.AppCode.PageBaseClasses {
           // Adding from the Participant admin master list.
 
           ProgramInfo = null;
+          layout.ProgramInfo = null;
           CanAddCoachee = SessionHelper.AppAccess.Participants.CanAdd();
         }
 
@@ -61,6 +67,7 @@ namespace Integral.Web.PortalSite.AppCode.PageBaseClasses {
         } else {
 
           CoacheeInfo = null;
+          layout.CoacheeInfo = null;
           CanChangeProgramStatus = true;
           CanChangeCoach = true;
           CanChangeMeetCoachDate = true;
@@ -77,6 +84,7 @@ namespace Integral.Web.PortalSite.AppCode.PageBaseClasses {
         }
 
         CoacheeInfo = DbHelper.AlbertCoachees.GetCoacheeInfo(UrlCoacheeId);
+        layout.CoacheeInfo = CoacheeInfo;
 
         if (CoacheeInfo == null) {
           SetFallbackRedirect("Requested Coachee not found, it may have been deleted.");
@@ -92,6 +100,8 @@ namespace Integral.Web.PortalSite.AppCode.PageBaseClasses {
         if (CoacheeInfo.ProgramJobId != null) {
           ProgramInfo = DbHelper.AblePrograms.GetProgramInfoOrNull(CoacheeInfo.ProgramJobId.Value);
           ProjectInfo = DbHelper.Projects.GetProjectInfoOrNull(ProgramInfo.ProgramJobNumber);
+          layout.ProgramInfo = ProgramInfo;
+          layout.ProjectInfo = ProjectInfo;
         }
 
         // If user can view Participants in Program, change Fallback to Program Participants list instead of main Coachees list.

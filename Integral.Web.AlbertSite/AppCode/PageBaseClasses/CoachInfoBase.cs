@@ -36,6 +36,9 @@ namespace Integral.Web.PortalSite.AppCode.PageBaseClasses {
 
       CoachInfo = DbHelper.AlbertCoaches.GetCoachInfo(UrlCoachUserId, false); // Currently anyone can view anyone, no Org check here.
 
+      // Mirror onto LayoutModel for future ViewComponent consumers. See LayoutModel.cs.
+      LayoutModel.GetCurrent().CoachInfo = CoachInfo;
+
       if (CoachInfo == null) { // Coach id not found.
         SetFallbackRedirect();
         return;

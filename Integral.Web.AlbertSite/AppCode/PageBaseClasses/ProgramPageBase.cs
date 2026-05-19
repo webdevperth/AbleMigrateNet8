@@ -22,6 +22,12 @@ namespace Integral.Web.PortalSite.AppCode.PageBaseClasses {
       ProgramInfo = null;
       PageSubtitleIsHtml = false;
 
+      // Mirror onto LayoutModel for future ViewComponent consumers. See LayoutModel.cs.
+      var layout = LayoutModel.GetCurrent();
+      layout.MenuThirdLayerActive_Programs = MenuThirdLayerActive_Programs;
+      layout.ProjectMenuIsActive = ProjectMenuIsActive;
+      layout.ProgramInfo = ProgramInfo;
+
       // Set the revenue text to "Price" if the user is a client, or else "Revenue".
       RevenueTextDisplay = SessionHelper.IsUserRoleClient ? "Price" : "Revenue";
 
@@ -43,6 +49,7 @@ namespace Integral.Web.PortalSite.AppCode.PageBaseClasses {
         }
 
         ProjectInfo = DbHelper.Projects.GetProjectInfoOrNull(WebHelper.GetQueryStringValue(PathHelper.AbleUrlKeys.ProjectJobNumber));
+        layout.ProjectInfo = ProjectInfo;
 
         if (ProjectInfo == null) {
           SetRedirect(PathHelper.Pages.Projects_List());
@@ -50,6 +57,7 @@ namespace Integral.Web.PortalSite.AppCode.PageBaseClasses {
         }
 
         ProgramInfo = new DbHelper.AblePrograms.AbleProgramInfo();
+        layout.ProgramInfo = ProgramInfo;
 
         SessionHelper.AppState.Coachees.ResetFilter();
 
@@ -60,12 +68,14 @@ namespace Integral.Web.PortalSite.AppCode.PageBaseClasses {
             ? DbHelper.AblePrograms.WhereRelatedUserIs.NoCheck
             : DbHelper.AblePrograms.WhereRelatedUserIs.Tenant_AnyRelated,
           SessionHelper.UserInfo);
+        layout.ProgramInfo = ProgramInfo;
 
         if (ProgramInfo == null) {
           SetFallbackRedirect();
           return;
         }
         ProjectInfo = DbHelper.Projects.GetProjectInfoOrNull(ProgramInfo.ProgramJobNumber);
+        layout.ProjectInfo = ProjectInfo;
         if (ProjectInfo == null) {
           SetRedirect(PathHelper.Pages.Projects_List());
           return;

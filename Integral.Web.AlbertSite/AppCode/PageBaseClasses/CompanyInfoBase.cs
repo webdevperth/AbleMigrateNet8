@@ -28,10 +28,14 @@ namespace Integral.Web.PortalSite.AppCode.PageBaseClasses {
         urlCompanyId = WebHelper.GetQueryStringInt(PathHelper.AbleUrlKeys.CompanyId) ?? 0;
       }
 
+      // Mirror onto LayoutModel for future ViewComponent consumers. See LayoutModel.cs.
+      var layout = LayoutModel.GetCurrent();
+
       if (IsNewCompany) {
         // If adding new company, must be allowed to update, and only on Settings page.
 
         CompanyInfo = new DbHelper.ClientCompanies.AlbertCompanyInfo();
+        layout.CompanyInfo = CompanyInfo;
         CanUpdateCompany = SessionHelper.AppAccess.Companies.CanCreate();
 
         if (!CanUpdateCompany) {
@@ -42,6 +46,7 @@ namespace Integral.Web.PortalSite.AppCode.PageBaseClasses {
       } else {
 
         CompanyInfo = DbHelper.ClientCompanies.GetCompanyInfoOrNull(urlCompanyId, SessionHelper.GetUserInfoOrNull());
+        layout.CompanyInfo = CompanyInfo;
 
         if (CompanyInfo == null) {
           SetFallbackRedirect();
