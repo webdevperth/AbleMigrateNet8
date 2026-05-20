@@ -1,0 +1,168 @@
+@model SurveyFormModel
+
+<div class="survey_page stcode_@(Model.SurveyInfo.ReportType.StCode.ToLower()) page_@(Model.CurrentPage)">
+
+  @if (Model.SurveyInfo.SurveyType == DbHelper.AlbertSurveys.SurveyTypeEnum.DevelopmentPlan) {
+
+    <style>
+      .devplan-title-header { padding: 20px 15px; border-bottom: 1px solid #ddd; }
+      .slideout-body:has(.devplan-title-header) { padding-top: 0; }
+      .slideout-body .devplan-title-header { position: sticky; top: 0; z-index: 99; background: #fff; padding: 15px 25px;
+                                             box-shadow: 0 5px 10px #eee; margin: 0 calc(0px - var(--slideout-body-padding-side)); }
+    </style>
+
+    <div class="flex flex-fill flex-align-center devplan-title-header">
+
+      <div><h3 class="text-muted">@Model.GetPlanDateDisplay()</h3></div>
+
+      @if (!Model.IsViewingSharedSurvey) {
+        <div class="align-right">
+          @if (Model.CanShareSurvey) {
+            @Html.Raw(WebHelper.GetShareSurveyButtonHtml(Model.SurveyInfo, WebHelper.ShareSurveyButtonTypeEnum.RegularButton, "mr5"))
+          }
+          @if (Model.CanShowDevPlanReportSlideout) {
+            <button type="button" id="surveyForm-btn-slideout" class="btn btn-primary btn-sparkles mr5"></button>
+          }
+          <button type="button" class="btn btn-primary surveyForm-btn-update">
+            <span class="visible-xs">@Html.Raw(WebHelper.GetIconHtml(WebHelper.ActionButtonTypeEnum.save))</span>
+            <span class="hidden-xs">@Model.SubmitButtonText</span>
+          </button>
+        </div>
+      }
+    </div>
+
+  }
+
+  @if (Model.ShowSurveyTitle) {
+    <h3 class="surveyTitle">@(Model.SurveyInfo == null ? "" : Model.SurveyInfo.SurveyName)</h3>
+  }
+
+  @if (Model.ShowParticipantInfo) {
+    if (Model.PartInfo != null) {
+      <h4 class="surveyFor">Survey for: <span class="partName">@(Model.PartInfo == null ? "" : Model.PartInfo.FullName)</span></h4>
+      if (Model.PartInfo.IsSelf) {
+      } else {
+        <h4 class="surveyFor">Person seeking feedback: <span class="partName">@(Model.PartInfo == null ? "" : Model.PartInfo.SelfName)</span></h4>
+      }
+    }
+  }
+
+  <div class="survey-instructions">
+
+    @if (!Model.SurveyInstructionsHtml.IsNullOrEmpty()) {
+
+      @Html.Raw(Model.SurveyInstructionsHtml)
+
+    } else if (!Model.SurveyInfo.ReportType.IsIOS && Model.SurveyInfo.SurveyType != DbHelper.AlbertSurveys.SurveyTypeEnum.DevelopmentPlan) {
+
+      <h4>Welcome, @Model.PartInfo.FullName</h4>
+      if (Model.PartInfo.IsSelf) {
+        <p>Please rate your effectiveness on the following scale.</p>
+        <p>If you do not perform any of these activities due to your role complete that specific question as "NA"</p>
+      } else {
+        <p>Please rate <b>@Model.PartInfo.SelfName</b> on their effectiveness using the following scale.</p>
+        <p>Please select "NA" for any questions you do not feel you can accurately provide feedback on.</p>
+      }
+
+    }
+
+  </div>
+
+  @if (Model.QuestionsForPage?.TotalPages > 1) {
+    <div class="navTop">
+      <table cellspacing="0" cellpadding="0" border="0" width="">
+        <tr>
+          <td class="pr10">Page:</td>
+          <td><ul class="pagination pagination-sm no-margin">@Html.Raw(WebHelper.Surveys.GetPagination(Model.QuestionsForPage, Model.PartInfo))</ul></td>
+        </tr>
+      </table>
+    </div>
+  }
+
+  @if (!Model.HasVisibleQuestions) {
+    <div class="MsgNoQuestions">
+      <div class="survey-no-questions-icon"><img src="@(PathHelper.UrlPath.Images)survey-no-questions-icon.png" width="80" alt="No Questions" /></div>
+      <h4>No questions apply on this page.<br />Please continue on to the next page.</h4>
+    </div>
+  }
+
+  <form action="#" method="post" id="formSurvey">
+
+    <input type="hidden" name="@PathHelper.FormKeys.AjaxAction" value="@SurveyFormModel.AjaxAction.Update" />
+    <input type="hidden" name="@SurveyFormModel.FormFields.NextPageNumber" value="@(Model.CurrentPage + 1)" />
+
+    <div class="QnList">
+      @if (Model.HasVisibleQuestions) {
+        foreach (var qn in Model.QuestionsForPage.Questions) {
+          @Html.Raw(WebHelper.Surveys.GetSurveyQuestionHtml(qn, Model.PartInfo, Model.cachedOptionHtml))
+        }
+      }
+    </div>
+  </form>
+
+  @if (Model.SurveyInfo.SurveyType == DbHelper.AlbertSurveys.SurveyTypeEnum.DevelopmentPlan) {
+
+    <hr/>
+
+    if (!Model.IsViewingSharedSurvey) {
+      <div class="flex flex-fill">
+        <div>
+          @if (Model.CanDeleteDevPlan) {
+            <button type="button" id="btnDeleteDevPlan" class="btn btn-warning ml10" title="Delete Development Plan">@Html.Raw(WebHelper.Icon.Delete)</button>
+          }
+        </div>
+        <div><button type="button" class="btn btn-primary surveyForm-btn-update float-right">@Model.SubmitButtonText</button></div>
+      </div>
+    }
+
+    <div id="surveyForm-slideout-content" class="slideout-content hidden pl30 pr30 pt20 pb20">
+
+      @if (!Model.LatestSurveyAISummary.IsNullOrEmpty()) {
+        <div class="boxBorder ai-summary-box">
+          <div class="boxTitle"><h5>Capability Summary</h5></div>
+          <div>@Html.Raw(WebHelper.MarkdownToHtml(Model.LatestSurveyAISummary))</div>
+        </div>
+      }
+
+      @if (Model.HasLatest360) {
+
+        @Html.Raw(WebHelper.GetPartialLoaderHtml(new WebHelper.PartialLoaderOptions() {
+          ID = "partial_Focus",
+          Url = PathHelper.Partials.SurveyViewer_Focus(null, null),
+          InitialWidth = "100%",
+          InitialHeight = "400px",
+          DeferInitialLoad = true,
+          InitialStyle = WebHelper.PartialLoaderStyle.Blank,
+          LoaderStyle = WebHelper.PartialLoaderStyle.Chart
+        }))
+
+      }
+
+    </div>
+
+  } else {
+
+    <div class="survey-form-footer">
+      @if (Model.CanViewPrevButton) {
+        <button type="button" class="btn btn-secondary surveyForm-btn-update" data-nextpage="@(Model.CurrentPage - 1)">
+          <span class="visible-xs">@Html.Raw(WebHelper.GetIconHtml(WebHelper.ActionButtonTypeEnum.back))</span>
+          <span class="hidden-xs">Previous Page</span>
+        </button>
+      }
+      @if (!Model.SubmitButtonText.IsNullOrEmpty()) {
+        <button type="button" class="btn btn-primary surveyForm-btn-update" data-nextpage="@(Model.CurrentPage + 1)">
+          <span class="visible-xs">@Html.Raw(WebHelper.GetIconHtml(WebHelper.ActionButtonTypeEnum.save))</span>
+          <span class="hidden-xs">@Model.SubmitButtonText</span>
+        </button>
+      }
+      @if (Model.ShowSurveyRandomAnswersButton) {
+        <button type="button" class="btn-random btn btn-warning btn-large">Random [dev]</button>
+      }
+      @if (Model.ShowSurveyDataEntryButton) {
+        <a href="@PathHelper.JarvisPages.DataEntryUrl(Model.PartInfo.SurveyId, Model.PartInfo.PartId)" class="btn btn-secondary btn-large" target="_blank">Data Entry in Jarvis [dev]</a>
+      }
+    </div>
+
+  }
+
+</div>

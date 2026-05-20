@@ -1,0 +1,297 @@
+@model SurveyFormModel
+
+<link rel="stylesheet" type="text/css" href="@(PathHelper.UrlPath.CSS)survey-viewer-common.css" />
+<link rel="stylesheet" href="@(PathHelper.UrlPath.CSS)survey.css" />
+
+@if (!Model.IsSurveyLinkValid) {
+  <partial name="~/Views/Shared/Components/SurveyForm/_SurveyNotFound.cshtml" model="Model" />
+} else if (Model.IsSurveyClosed) {
+  <partial name="~/Views/Shared/Components/SurveyForm/_SurveyClosed.cshtml" model="Model" />
+} else {
+  <partial name="~/Views/Shared/Components/SurveyForm/_SurveyContent.cshtml" model="Model" />
+}
+
+<script>
+  (function ($) {
+
+    var $surveyForm;
+
+    $(document).ready(function () {
+
+      $surveyForm = $(".survey_page #formSurvey");
+
+      $(".survey_page .QnList").click(function (ev) {
+        QuestionListClicked($(ev.target)); // Clicked in the question list.
+      });
+
+      $(".survey_page .surveyForm-btn-update").click(UpdateButtonClicked);
+
+      $(".survey_page .btn-random").click(RandomButtonClicked);
+
+      SelectExistingResponses();
+    });
+
+    function SelectExistingResponses() {
+
+      $(".survey_page .QnList").children(".QnRow[data-qnid]").each(function (i, e) {
+
+        var $qnRow = $(e);
+        var qnId = parseInt($qnRow.data("qnid"));
+        var $formField = $qnRow.find('input:hidden[name="ans_' + qnId + '"]');
+
+        if ($formField.length == 1) {
+
+          var inputType = $qnRow.data("inptype");
+          var answerValue = $formField.val();
+          var $optButton = $qnRow.find('.QnOptionBtn[data-value="' + answerValue + '"]'); // for scales
+          var $extraTextControl = $qnRow.find(".qn_ExtraText input:text");
+
+          $extraTextControl.prop("disabled", true);
+
+          if ($optButton.length == 1) {
+            QuestionListClicked($optButton, true);
+          } else {
+            $optButton = $qnRow.find('input:radio[value="' + answerValue + '"]'); // for option lists (radios)
+            if ($optButton.length == 1) {
+              $optButton.prop("checked", true);
+              $optButton.trigger("change");
+              QuestionListClicked($optButton, true);
+            }
+          }
+        }
+      });
+
+      UpdatePage();
+    }
+
+    function QuestionListClicked($target, noFocusChange) {
+
+      // Show question "answered" tick when clicking on an option.
+      if ($target.is(".QnOptionBtn")) {
+
+        var $optRow = $target.closest(".QnOptions");
+        var $qnRow = $target.closest(".QnRow");
+        var $qnBody = $target.closest(".QnBody");
+        var $doneIcon = $optRow.find(".doneIcon");
+        var $extraText = $qnBody.children(".qn_ExtraText");
+        var $extraTextControl = $extraText.find(".form-control");
+        var inputType = $qnRow.data("inptype");
+        var qnId = $qnRow.data("qnid");
+        var $formField = $qnRow.find("input:hidden[name='ans_" + qnId + "']");
+        var optionValue = $target.data("value");
+
+        if (inputType == "o" || inputType == "scale" || inputType == "ranked") {
+          var makeSelected = !$target.hasClass("selected");
+          // Clear row.
+          $optRow.removeClass("selected");
+          $doneIcon.hide();
+          $optRow.find(".QnOptionBtn").removeClass("selected");
+          $extraText.removeClass("required");
+          $extraTextControl.removeAttr("placeholder");
+          if (makeSelected) {
+            $optRow.addClass("selected");
+            $doneIcon.show();
+            $target.addClass("selected");
+            $formField.val(optionValue);
+            $extraText.addClass("required");
+            $extraTextControl.prop("disabled", false);
+            if (!noFocusChange) $extraTextControl.focus();
+            $extraTextControl.attr("placeholder", "Type your priority here.");
+            if ($extraTextControl.data("old-value")) $extraTextControl.val($extraTextControl.data("old-value"));
+          } else {
+            $target.blur();
+            $formField.val("");
+            $extraTextControl.data("old-value", $extraTextControl.val());
+            $extraTextControl.val("").prop("disabled", true).change();
+          }
+        }
+      }
+      UpdatePage();
+    }
+
+    function UpdatePage() {
+
+      // Disable / enable unused ranked buttons on the page.
+      var $rankedQns = $(".survey_page .QnRow.inptype_ranked");
+      if ($rankedQns.length > 0) {
+        var values = [];
+        $rankedQns.eq(0).find("button[data-value]").map(function () { values.push($(this).data("value")); });
+        for (var i = 1; i < 6; i++) {
+          if ($(".survey_page .QnOptions.qntype_ranked button.selected[data-value='" + i + "']").length > 0) {
+            $(".survey_page .QnOptions.qntype_ranked button[data-value='" + i + "']:not(.selected)").prop("disabled", true);
+          } else {
+            $(".survey_page .QnOptions.qntype_ranked button[data-value='" + i + "']").prop("disabled", false);
+          }
+        }
+      }
+    }
+
+    function UpdateButtonClicked(evt) {
+
+      $(".survey_page .QnList").children(".QnRow[data-qnid]").each(function (i, e) {
+        var $qnRow = $(e);
+        var qnId = parseInt($qnRow.data("qnid"));
+        var $optButton = $qnRow.find(".QnOptionBtn.selected");
+        if ($optButton.length == 1) {
+          var answerValue = $optButton.data("value");
+          var $formField = $qnRow.find('input:hidden[name="ans_' + qnId + '"]');
+          if ($formField.length == 1) $formField.val(answerValue);
+        }
+      });
+
+      var $pageButton = $(evt.target).closest(".surveyForm-btn-update");
+      var nextPageNumber = $pageButton.data("nextpage");
+      $surveyForm.find('input:hidden[name="NextPageNumber"]').val(nextPageNumber);
+
+      AjaxSubmit({
+        url: "@Html.Raw(SystemWeb.RequestRawUrl)",
+        form: $surveyForm
+      });
+    };
+
+    function RandomButtonClicked() {
+
+      $(".survey_page .QnOptions.qntype_scale").each(function (i, e) {
+        var $opts = $(e).find(".QnOptionBtn[data-value!='na']");
+        if ($opts.length > 0) {
+          // For scales, select only among the top half of the options.
+          var halfOpts = Math.floor($opts.length / 2);
+          var randomOpt = Math.floor(Math.random() * halfOpts);
+          var $optButton = $opts.eq($opts.length - randomOpt - 1);
+          if (!$optButton.hasClass("selected")) $optButton.trigger("click"); // Only if not already selected.
+        }
+      });
+
+      $(".survey_page .QnOptions.qntype_o").each(function (i, e) {
+        var opts = $(e).find("input:radio[value!='na']");
+        if (opts.length > 0) {
+          opts.removeAttr("checked").trigger("change");
+          var opt = opts.eq(Math.floor(Math.random() * opts.length));
+          opt.attr("checked", true).trigger("change");
+        }
+      });
+
+      // Distribute values among ranked questions, no repeats.
+      var $rankedQns = $(".survey_page .QnRow.inptype_ranked");
+      if ($rankedQns.length > 0) {
+        // Clear all options.
+        $rankedQns.find(".QnOptionBtn[data-value].selected").each(function (i, e) { QuestionListClicked($(e)); }); // Deselect all selected.
+        $rankedQns.find(".qn_ExtraText input:text").val("").change();
+        $rankedQns.data("random-assigned", false);
+        // Get list of valid options.
+        $validOptions = $rankedQns.first().find('.QnOptionBtn[data-value!=""]');
+        // Loop thru valid options and assign each to a random unassigned question.
+        for (var iSelectOpt = 0; iSelectOpt < $validOptions.length; iSelectOpt++) {
+          var selectOptionValue = $validOptions.eq(iSelectOpt).attr("data-value");
+          var $unassignedQns = $rankedQns.filter(function () { // Get remaining unassigned qns.
+            return $(this).data("random-assigned") === false;
+          });
+          if ($unassignedQns.length > 0) {
+            var randomQnIndex = Math.floor(Math.random() * $unassignedQns.length); // Pick random unassigned qn.
+            $qnRow = $unassignedQns.eq(randomQnIndex);
+            if ($qnRow.length == 1) {
+              var $optButton = $qnRow.find('.QnOptionBtn[data-value="' + selectOptionValue + '"]');
+              if ($optButton.length == 1) {
+                QuestionListClicked($optButton);
+                $qnRow.data("random-assigned", true);
+                var $extraTextControl = $qnRow.find(".qn_ExtraText input:text");
+                if ($extraTextControl.length == 1) {
+                  var qnNumber = $qnRow.children(".QnNum").text();
+                  $extraTextControl.val("random text Q" + qnNumber);
+                }
+              } else {
+                console.log("Err: Failed to find option value \"" + selectOptionValue + "\"");
+              }
+            } else {
+              console.log("err: Failed to find random qn index " + randomQnIndex + " out of " + $unassignedQns.length + " unassigned qns.");
+            }
+          } else {
+            console.log("err: No unassigned qns left.");
+          }
+        }
+      }
+
+      UpdatePage();
+    }
+
+  })(jQuery);
+</script>
+
+@if (Model.IsDevelopmentPlan) {
+
+  <script type="text/javascript">
+    (function($) {
+
+      $(document).ready(function () {
+
+        @if (Model.CanDeleteDevPlan) {
+          <text>
+          $("#btnDeleteDevPlan").click(function () {
+            common_ConfirmDialog("Confirm", "Are you sure you want to delete this Development Plan, this action cannot be undone.", function (confirmed) {
+              if (confirmed) {
+                AjaxSubmit({
+                  form: $("#formSurvey"),
+                  action: "@SurveyFormModel.AjaxAction.Delete"
+                });
+              }
+            });
+          });
+          </text>
+        }
+
+        @if (Model.CanShowDevPlanReportSlideout) {
+          <text>
+          $("#@WebHelper.ElementID.SlideoutPanelTitle").html('<h4 class="sparkles">Capability Insights</h4>');
+          $("#@WebHelper.ElementID.SlideoutPanelBody").empty().append($("#surveyForm-slideout-content"));
+
+          $("#surveyForm-btn-slideout").click(function (ev) {
+            ev.preventDefault();
+            $("#surveyForm-slideout-content").show();
+            $("body").removeClass("slideout-show");
+            window.setTimeout(function () {
+              $("body").addClass("slideout-show");
+            }, 100);
+          });
+
+          $('.btn-sparkles').jBox('Tooltip', {
+            position: { y: 'top', x: 'right' },
+            title: 'Helpful hints',
+            content: 'Checkout some examples to fill your development plan.'
+          });
+
+          var intakeId = @Html.Raw(Model.ProfileInfo.UserActivity?.Latest360IntakeCodeId.ToStringOrDefaultIfNull("null"));
+          if (intakeId != null) {
+            setTimeout(function () {
+              LoadPartReport(intakeId);
+            }, 500);
+          }
+
+          function LoadPartReport(intakeId) {
+
+            var delay = 300;
+
+            $.EachPartial(function ($partial, partialInfo) {
+              if (partialInfo == null) return;
+              partialInfo.Clear();
+              if (isNumber(intakeId)) {
+                setTimeout(function (thisPartialInfo) {
+                  var extraValues = {
+                    "@PathHelper.AbleUrlKeys.SurveyIntakeCodeId": intakeId,
+                    "@PathHelper.AbleUrlKeys.CoacheeGuid": "@(Model.ProfileInfo.UserActivity?.Latest360CoacheeGuid.ToStringNoBracesOrNull())",
+                    "@PathHelper.AbleUrlKeys.SurveyViewerBenchmark": "@PathHelper.SurveyViewerBenchmarkEnum.Global"
+                  };
+                  thisPartialInfo.LoadUrl(thisPartialInfo.initialUrl, extraValues);
+                }, delay, partialInfo);
+                delay += 300;
+              }
+            });
+          }
+          </text>
+        }
+
+      }); // ready.
+
+    })(jQuery);
+  </script>
+
+}
