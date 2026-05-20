@@ -43,6 +43,7 @@ namespace Integral.Web.PortalSite.AppCode.PageBaseClasses {
         SetFallbackRedirect();
         return;
       }
+      layout.IsNewQuote = IsNewQuote;
 
       // ProjectJobNumber is provided if creating quote from the project area.
       string urlProjectJobNumber = WebHelper.GetQueryStringValue(PathHelper.AbleUrlKeys.ProjectJobNumber);
@@ -123,8 +124,10 @@ namespace Integral.Web.PortalSite.AppCode.PageBaseClasses {
         }
 
         IsNewQuote = false;
+        layout.IsNewQuote = IsNewQuote;
         IsAccepted = QuoteInfo.IsAccepted;
         CanViewQuoteInfo = SessionHelper.AppAccess.Quotes.CanViewQuoteInfo(QuoteInfo);
+        layout.CanViewQuoteInfo = CanViewQuoteInfo;
         CanCopyQuote = SessionHelper.AppAccess.Quotes.CanCopyQuote(QuoteInfo);
         CanEditQuote = SessionHelper.AppAccess.Quotes.CanEditQuote(QuoteInfo);
         CanEditQuoteDealSource = SessionHelper.AppAccess.Quotes.CanEditQuoteDealSource(QuoteInfo);

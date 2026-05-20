@@ -24,6 +24,7 @@ namespace Integral.Web.PortalSite.AppCode.PageBaseClasses {
       string urlProjectJobNumber = WebHelper.GetQueryStringValue(PathHelper.AbleUrlKeys.ProjectJobNumber);
 
       IsNewProject = urlProjectJobNumber == PathHelper.AbleUrlValues.IdNew;
+      layout.IsNewProject = IsNewProject;
 
       // Get project data if an id is given, or new Project object if adding a new one.
       if (IsNewProject) {

@@ -25,6 +25,7 @@ namespace Integral.Web.PortalSite.AppCode.PageBaseClasses {
 
       UrlCoacheeId = (int)WebHelper.GetQueryStringInt(PathHelper.AbleUrlKeys.CoacheeId, 0);
       IsNewCoachee = WebHelper.GetQueryStringValue(PathHelper.AbleUrlKeys.CoacheeId) == PathHelper.AbleUrlValues.IdNew;
+      layout.IsNewCoachee = IsNewCoachee;
 
       if (IsNewCoachee) {
 

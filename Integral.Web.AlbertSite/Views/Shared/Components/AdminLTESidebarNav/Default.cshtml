@@ -1,0 +1,289 @@
+@model AdminLTESidebarNavModel
+@using static Integral.Web.PortalSite.ViewComponents.AdminLTESidebarNavModel
+
+<!-- Left side column. contains the logo and sidebar -->
+<aside class="main-sidebar">
+  <!-- sidebar: style can be found in sidebar.less -->
+  <section class="sidebar">
+
+    <ul class="sidebar-menu">
+    @if (SessionHelper.AppAccess.PageAccess.CanAccessParticipantMenu()) {
+
+      if (SessionHelper.AppAccess.PageAccess.CanAccessParticipantAICoach()) {
+        @Html.Raw(Model.MenuItem(Model.TopMenuLink(PathHelper.Pages.ParticipantAICoach(), "AI Coach", "sparkles-outline")))
+      }
+
+      @Html.Raw(Model.MenuItem(Model.TopMenuLink(Model.GetUpcomingUrl(), "Upcoming", "calendar-outline")))
+
+      if (SessionHelper.AppAccess.PageAccess.CanAccessParticipantDevelopment()) {
+        @Html.Raw(Model.SubmenuItem(PathHelper.Pages.ParticipantDevelopment(), "Development", "analytics-outline"))
+      }
+
+      @Html.Raw(Model.MenuItem(Model.TopMenuLink(PathHelper.Pages.ParticipantSurveys(), MenuItems.Surveys, "bar-chart-outline",
+        PathHelper.Pages.SurveyQuestions(),
+        PathHelper.Pages.SurveyCompleted(null, null),
+        PathHelper.Pages.SurveyRaters(null, null))))
+
+      if (SessionHelper.AppAccess.PageAccess.CanAccessParticipantCoaching()) {
+        @Html.Raw(Model.MenuItem(Model.TopMenuLink(PathHelper.Pages.ParticipantCoaching(), "Coaching", "rocket-outline")))
+      }
+
+      if (SessionHelper.AppAccess.PageAccess.CanAccessDevelopmentPlan()) {
+        @Html.Raw(Model.MenuItem(Model.TopMenuLink(PathHelper.Pages.DevelopmentPlan(), MenuItems.DevelopmentPlan, "navigate-circle-outline",
+          PathHelper.Pages.DevelopmentPlanForm())))
+      }
+
+      if (SessionHelper.AppAccess.Content.CanViewContentTopLevelMenuItem()) {
+        @Html.Raw(Model.TopMenuLink(PathHelper.Pages.Content(), MenuItems.Microlearning, "archive-outline"))
+      }
+
+      if (SessionHelper.AppAccess.PageAccess.CanAccessPartnerProfile()) {
+        @Html.Raw(Model.TopMenuLink(PathHelper.Pages.CoachEdit(Model.UserInfo.UserId), MenuItems.MyProfile, "person-circle-outline", true))
+      }
+
+      if (SessionHelper.AppAccess.PageAccess.CanAccessAdminTools()) {
+        @Html.Raw(Model.MenuItem(Model.TopMenuLink(PathHelper.Pages.AdminTools(), "Admin Tools", "hammer-outline")))
+      }
+
+    } else {
+
+      string dashboardSubContent = "";
+      if (Model.CanExpandDashboardMenu()) {
+        string dashboardSub = Model.SubmenuItem(Model.GetUpcomingUrl(), "Upcoming", "calendar-outline");
+
+        if (SessionHelper.AppAccess.PageAccess.CanAccessPayruns()) {
+          dashboardSub += Model.SubmenuItem(PathHelper.Pages.OverviewPayruns(), "Pay Runs", "wallet-outline");
+        }
+        if (SessionHelper.AppAccess.PageAccess.CanAccessInvitePartner()) {
+          dashboardSub += Model.SubmenuItem(PathHelper.Pages.CoachEdit(Model.UserInfo.UserId, PathHelper.CoachTabEnum.partners), "Invite", "arrow-redo-outline");
+        }
+        if (SessionHelper.AppAccess.PageAccess.CanAccessPartnerProfile()) {
+          dashboardSub += Model.SubmenuItem(PathHelper.Pages.CoachEdit(Model.UserInfo.UserId), MenuItems.MyProfile, "person-circle-outline");
+        }
+        dashboardSubContent = Model.SubMenu(dashboardSub);
+      }
+
+      @Html.Raw(Model.MenuItemWithSubMenu(PathHelper.GetDefaultPostLoginURL(Model.UserInfo), MenuItems.Dashboard, "home-outline", dashboardSubContent))
+
+      if (SessionHelper.IsUserIOSClientHR) {
+        @Html.Raw(Model.MenuItem(Model.TopMenuLink(PathHelper.Pages.IOSParticipants(), "Participants", "people-outline")))
+      } else if (SessionHelper.AppAccess.PageAccess.CanAccessTopLevelParticipantsPageMenu()) {
+        @Html.Raw(Model.MenuItem(Model.TopMenuLink(PathHelper.Pages.Coachees(), MenuItems.Participants, "people-outline")))
+      }
+
+      if (SessionHelper.AppAccess.PageAccess.CanAccessProjectLevel()) {
+
+        <li class="@(MenuStyles.SubmenuClass + (Model.MenuThirdLayerActive_Program ? " menuThirdLayerActive" : ""))">
+
+          @Html.Raw(Model.MenuLink(PathHelper.Pages.Projects_List(), "Projects", "folder-open-outline", false))
+
+          @if (Model.CanExpandProjectMenu()) {
+            <ul class="@(MenuStyles.SubmenuClass + (Model.MenuThirdLayerActive_Program ? " menuThirdLayer" : ""))">
+
+              @if (Model.IsProjectPage && Model.IsNewProject) {
+
+                @if (SessionHelper.AppAccess.PageAccess.CanAccessProjectSettings(Model.ProjectInfo)) {
+                  @Html.Raw(Model.SubmenuItem(PathHelper.Pages.ProjectSettings(Model.ProjectInfo.JobNumber), "New Project", "settings-outline"))
+                }
+
+              } else {
+
+                @if (SessionHelper.AppAccess.PageAccess.CanAccessProgramLevel()) {
+                  <li class="@(MenuStyles.SubmenuClass + (Model.MenuThirdLayerActive_Program ? " menuThirdLayerHolder" : ""))">
+                    @Html.Raw(Model.MenuLink(PathHelper.Pages.ProjectPrograms(Model.ProjectInfo.JobNumber), "Programs", "list-outline", Model.MenuThirdLayerActive_Program))
+
+                    @if (Model.CanExpandProgramMenu()) {
+                      <ul class="@(MenuStyles.SubmenuClass + (Model.MenuThirdLayerActive_Program ? " menuThirdLayer" : ""))">
+
+                        @if (Model.IsProgramPage && Model.IsNewProgram) {
+
+                          @Html.Raw(Model.SubmenuItem(PathHelper.Pages.ProgramSettings(), "New Program", "add-outline"))
+
+                        } else {
+
+                          @if (SessionHelper.AppAccess.Programs.CanViewProgramSettings(Model.ProgramInfo)) {
+                            @Html.Raw(Model.SubmenuItem(PathHelper.Pages.ProgramSettings(Model.ProgramInfo.ProgramJobId), "Program Settings", "cog-outline"))
+                          }
+
+                          @if (SessionHelper.AppAccess.Programs.CanViewProgramOverview(Model.ProgramInfo)) {
+                            @Html.Raw(Model.SubmenuItem(PathHelper.Pages.ProgramOverview(Model.ProgramInfo.ProgramJobId), "Overview", "bookmark-outline"))
+                          }
+
+                          @if (SessionHelper.AppAccess.Programs.CanViewProgramInsights(Model.ProgramInfo)) {
+                            @Html.Raw(Model.SubmenuItem(PathHelper.Pages.ProgramInsights(Model.ProgramInfo.ProgramJobId), "Insights", "bar-chart-outline"))
+                          }
+
+                          @if (SessionHelper.AppAccess.PageAccess.CanAccessProgramInformation()) {
+                            @Html.Raw(Model.SubmenuItem(PathHelper.Pages.ProgramInformation(Model.ProgramInfo.ProgramJobId), "Information", "rocket-outline"))
+                          }
+
+                          @if (SessionHelper.AppAccess.PageAccess.CanAccessProgramContent()) {
+                            @Html.Raw(Model.SubmenuItem(PathHelper.Pages.ProgramContent(Model.ProgramInfo.ProgramJobId), MenuItems.Microlearning, "archive-outline"))
+                          }
+
+                          @if (SessionHelper.AppAccess.PageAccess.CanAccessProgramParticipants()) {
+                            @Html.Raw(Model.SubmenuItem(PathHelper.Pages.ProgramParticipants(Model.ProgramInfo.ProgramJobId), MenuItems.Participants, "people-outline"))
+                          }
+
+                          @if (SessionHelper.AppAccess.Programs.Workshops.CanViewWorkshops(Model.ProgramInfo)) {
+                            @Html.Raw(Model.SubmenuItem(PathHelper.Pages.Workshops_List(Model.ProgramInfo.ProgramJobId), "Workshops", "documents-outline"))
+                          }
+
+                          @if (SessionHelper.AppAccess.PageAccess.CanAccessProgramConsultingItems() && SessionHelper.AppAccess.Programs.Consulting.CanListConsultingItems(Model.ProgramInfo)) {
+                            @Html.Raw(Model.SubmenuItem(PathHelper.Pages.Consulting_List(Model.ProgramInfo.ProgramJobId), "Consulting", "hourglass-outline"))
+                          }
+
+                          @if (SessionHelper.AppAccess.PageAccess.CanAccessProgramCostItems() && SessionHelper.AppAccess.Programs.CanListCostItems(Model.ProgramInfo)) {
+                            @Html.Raw(Model.SubmenuItem(PathHelper.Pages.ProgramCostItems_List(Model.ProgramInfo.ProgramJobId), "Cost Items", "cash-outline"))
+                          }
+
+                          @if (SessionHelper.AppAccess.PageAccess.CanAccessProgramSurveyStatus(Model.ProgramInfo)) {
+                            @Html.Raw(Model.SubmenuItem(PathHelper.Pages.ProgramSurveyStatus(Model.ProgramInfo.ProgramJobId), MenuItems.Surveys, "podium-outline",
+                              PathHelper.Reports.EvalViewer(),
+                              PathHelper.Pages.ProgramSkillsViewer(Model.ProgramInfo)))
+                          }
+
+                          @if (SessionHelper.AppAccess.PageAccess.CanAccessProgramSendEmail() && SessionHelper.AppAccess.Programs.CanSendProgramEmail(Model.ProgramInfo)) {
+                            @Html.Raw(Model.SubmenuItem(PathHelper.Pages.ProgramSendEmail(Model.ProgramInfo.ProgramJobId), "Email", "mail-outline"))
+                          }
+
+                        }
+                      </ul>
+                    }
+                  </li>
+                }
+
+                @if (SessionHelper.AppAccess.PageAccess.CanAccessProjectSettings(Model.ProjectInfo) && SessionHelper.AppAccess.Projects.CanEditProject(Model.ProjectInfo)) {
+                  @Html.Raw(Model.SubmenuItem(PathHelper.Pages.ProjectSettings(Model.ProjectInfo.JobNumber), "Project Settings", "settings-outline"))
+                }
+
+                @if (SessionHelper.AppAccess.Projects.CanViewProject(Model.ProjectInfo)) {
+
+                  @if (SessionHelper.AppAccess.PageAccess.CanAccessProjectQuotes()) {
+                    <li class="@MenuStyles.SubmenuItemClass">
+                      @Html.Raw(Model.SubmenuItem(PathHelper.Pages.ProjectQuotes(Model.ProjectInfo.JobNumber), MenuItems.Quotes, "cash-outline"))
+                    </li>
+                  }
+
+                  @if (SessionHelper.AppAccess.PageAccess.CanAccessProjectComponents()) {
+                    @Html.Raw(Model.SubmenuItem(PathHelper.Pages.ProjectComponents(Model.ProjectInfo.JobNumber), "Components", "grid-outline"))
+                  }
+
+                  @if (SessionHelper.AppAccess.Projects.CanViewProjectInvoicing(Model.ProjectInfo)) {
+                    @Html.Raw(Model.SubmenuItem(PathHelper.Pages.ProjectInvoicing(Model.ProjectInfo.JobNumber), "Invoicing", "documents-outline"))
+                  }
+
+                  @if (SessionHelper.AppAccess.PageAccess.CanAccessProjectAccess(Model.ProjectInfo)) {
+                    @Html.Raw(Model.SubmenuItem(PathHelper.Pages.ProjectAccess_List(Model.ProjectInfo.JobNumber), "Access", "lock-open-outline"))
+                  }
+
+                  @if (SessionHelper.AppAccess.Projects.CanViewProjectCustomise(Model.ProjectInfo)) {
+                    @Html.Raw(Model.SubmenuItem(PathHelper.Pages.ProjectCustomise(Model.ProjectInfo.JobNumber), "Customise", "create-outline"))
+                  }
+                }
+
+              }
+            </ul>
+          }
+        </li>
+      }
+
+      @Html.Raw(Model.GetOrganisationMenu())
+
+      if (SessionHelper.AppAccess.PageAccess.CanAccessQuoteLevel()) {
+        @Html.Raw(Model.MenuItem(Model.TopMenuLink(PathHelper.Pages.QuoteList(), MenuItems.Quotes, "cash-outline")))
+      }
+
+      string insightsDefaultUrl = "";
+      if (SessionHelper.AppAccess.Insights.CanViewQuality()) insightsDefaultUrl = PathHelper.Reports.Quality();
+      if (SessionHelper.AppAccess.Insights.CanCurrentRoleViewIOSReports()) insightsDefaultUrl = PathHelper.Reports.InsightsIOSReports();
+      if (SessionHelper.AppAccess.Insights.CanViewSurveyViewer()) insightsDefaultUrl = PathHelper.Reports.SurveyViewer();
+      if (SessionHelper.AppAccess.Insights.CanViewSkillsViewer()) insightsDefaultUrl = PathHelper.Reports.SkillsViewer();
+
+      if (!insightsDefaultUrl.IsNullOrEmpty()) {
+
+        string insightsSub = "";
+        if (PathHelper.IsCurrentPage(PathHelper.Reports.Quality())
+          || PathHelper.IsCurrentPage(PathHelper.Reports.SurveyViewer())
+          || PathHelper.IsCurrentPage(PathHelper.Reports.SkillsViewer())
+          || PathHelper.IsCurrentPage(PathHelper.Reports.InsightsIOSReports())) {
+
+          string insightsItems = "";
+          if (SessionHelper.AppAccess.Insights.CanViewQuality()) {
+            insightsItems += Model.SubmenuItem(PathHelper.Reports.Quality(), "Quality reports", "cellular-outline");
+          }
+          if (SessionHelper.AppAccess.Insights.CanViewSurveyViewer()) {
+            insightsItems += Model.SubmenuItem(PathHelper.Reports.SurveyViewer(), "Survey Viewer", "bar-chart-outline");
+          }
+          if (SessionHelper.AppAccess.Insights.CanViewSkillsViewer()) {
+            insightsItems += Model.SubmenuItem(PathHelper.Reports.SkillsViewer(), "Capabilities", "bar-chart-outline");
+          }
+          if (SessionHelper.AppAccess.Insights.CanCurrentRoleViewIOSReports()) {
+            insightsItems += Model.SubmenuItem(PathHelper.Reports.InsightsIOSReports(), "IOS Reports", "bar-chart-outline");
+          }
+          insightsSub = Model.SubMenu(insightsItems);
+        }
+        @Html.Raw(Model.MenuItemWithSubMenu(insightsDefaultUrl, MenuItems.Insights, "bar-chart-outline", insightsSub))
+      }
+
+      if (SessionHelper.AppAccess.Content.CanViewContentTopLevelMenuItem()) {
+        @Html.Raw(Model.TopMenuLink(PathHelper.Pages.Content(), MenuItems.Microlearning, "archive-outline"))
+      }
+
+      if (SessionHelper.AppAccess.PageAccess.CanAccessPartnersLevel()) {
+
+        string partnersSub = "";
+        if (Model.CoachInfo != null && !PathHelper.IsCurrentPage(PathHelper.Pages.CoachReferrals()) && !Model.IsDisplayingProfileInDashboard()) {
+          string partnersItems = "";
+          if (SessionHelper.AppAccess.PageAccess.CanAccessPartnerProfile()) {
+            partnersItems += Model.SubmenuItem(PathHelper.Pages.CoachEdit(true), "Profile", "person-circle-outline");
+          }
+          if (SessionHelper.AppAccess.PageAccess.CanAccessPayruns() && SessionHelper.AppAccess.Coaches.CanViewPayRuns(Model.UserInfo, Model.ViewingEntityId)) {
+            partnersItems += Model.SubmenuItem(PathHelper.Pages.CoachPayRuns(true), "Pay Runs", "receipt-outline");
+          }
+          if (SessionHelper.AppAccess.PageAccess.CanAccessPartnerUpcoming()) {
+            partnersItems += Model.SubmenuItem(PathHelper.Pages.CoachUpcoming(true), "Upcoming", "calendar-outline");
+          }
+          if (SessionHelper.AppAccess.PageAccess.CanAccessInvitePartner()) {
+            partnersItems += Model.SubmenuItem(PathHelper.Pages.CoachEdit(Model.UserInfo.UserId, PathHelper.CoachTabEnum.partners), "Invite", "arrow-redo-outline");
+          }
+          partnersSub = Model.SubMenu(partnersItems);
+        }
+        @Html.Raw(Model.MenuItemWithSubMenu(PathHelper.Pages.Coaches(), "Partners", "people-outline", partnersSub))
+      }
+
+      if (SessionHelper.AppAccess.Settings.CanUpdateSettings()) {
+
+        string settingsSub = "";
+        if (Model.TenantOrgInfo != null) {
+          string settingsItems = Model.SubmenuItem(PathHelper.Pages.Settings.General(), "General", "business-outline");
+          if (SessionHelper.AppAccess.Settings.CanUpdateBilling(Model.TenantOrgInfo)) {
+            settingsItems += Model.SubmenuItem(PathHelper.Pages.Settings.Billings(), "Subscriptions", "calendar-outline");
+          }
+          settingsSub = Model.SubMenu(settingsItems);
+        }
+        @Html.Raw(Model.MenuItemWithSubMenu(PathHelper.Pages.Settings.General(), "Settings", "settings-outline", settingsSub))
+      }
+
+      if (SessionHelper.AppAccess.PageAccess.CanAccessAdminTools()) {
+        @Html.Raw(Model.MenuItem(Model.TopMenuLink(PathHelper.Pages.AdminTools(), "Admin Tools", "hammer-outline")))
+      }
+
+      if (SessionHelper.AppAccess.PageAccess.CanAccessContactLevel()) {
+        @Html.Raw(Model.MenuItem(Model.TopMenuLink(ConfigHelper.HelpUrls.ContactUs, "Contact", WebHelper.MenuIconName[WebHelper.MenuIconTypeEnum.Contact], true)))
+      }
+
+      if (SessionHelper.AppAccess.PageAccess.CanAccessHelpLevel()) {
+        @Html.Raw(Model.MenuItem(Model.TopMenuLink(ConfigHelper.HelpUrls.Help, "Help", WebHelper.MenuIconName[WebHelper.MenuIconTypeEnum.Help], true)))
+      }
+
+      @Html.Raw(Model.GetUserRoleSubmenuHtml())
+
+      @Html.Raw(Model.MenuItem(Model.TopMenuLink(PathHelper.Pages.Logout(), "Log Out", WebHelper.MenuIconName[WebHelper.MenuIconTypeEnum.Logout], true)))
+
+    }
+    </ul>
+
+  </section>
+
+</aside>

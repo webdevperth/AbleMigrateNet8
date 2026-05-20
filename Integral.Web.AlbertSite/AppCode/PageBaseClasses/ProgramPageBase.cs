@@ -39,6 +39,7 @@ namespace Integral.Web.PortalSite.AppCode.PageBaseClasses {
 
       ProjectJobNumber = WebHelper.GetQueryStringValue(PathHelper.AbleUrlKeys.ProjectJobNumber);
       isProgramSettingsPage = PathHelper.IsCurrentPage(PathHelper.Pages.ProgramSettings());
+      layout.IsNewProgram = IsNewProgram;
 
       // Get program data if an id is given, or new Program object if adding a new one.
       if (IsNewProgram) {

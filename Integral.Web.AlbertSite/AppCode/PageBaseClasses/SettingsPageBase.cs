@@ -26,6 +26,9 @@ namespace Integral.Web.PortalSite.AppCode.PageBaseClasses {
       // Every user has a valid OrgId, never null.
       TenantOrgInfo = DbHelper.TenantOrg.GetTenantOrgById(SessionHelper.UserInfo.OrgId);
 
+      // Mirror onto LayoutModel for future ViewComponent consumers. See LayoutModel.cs.
+      LayoutModel.GetCurrent().TenantOrgInfo = TenantOrgInfo;
+
       // Certain pages restricted to just the owner.
       if (PathHelper.IsCurrentPage(PathHelper.Pages.Settings.Billings())
         || PathHelper.IsCurrentPage(PathHelper.Pages.Settings.Invoices())

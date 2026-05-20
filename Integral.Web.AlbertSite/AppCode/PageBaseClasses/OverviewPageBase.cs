@@ -13,6 +13,9 @@ namespace Integral.Web.PortalSite.AppCode.PageBaseClasses {
 
       base.Page_Init(sender, e);
       DashboardMenuIsActive = true;
+      // Mirror onto LayoutModel for future ViewComponent consumers. See LayoutModel.cs.
+      // (base.Page_Init mirrored DashboardMenuIsActive=false; re-mirror the corrected value.)
+      LayoutModel.GetCurrent().DashboardMenuIsActive = DashboardMenuIsActive;
       WebHelper.AddBodyClass("BasePage-Overview");
 
       if (SessionHelper.IsUserRoleAdmin || SessionHelper.IsUserRoleCoach) {

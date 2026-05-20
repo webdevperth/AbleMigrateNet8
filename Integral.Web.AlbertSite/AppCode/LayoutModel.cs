@@ -66,6 +66,30 @@ namespace Integral.Web.PortalSite.AppCode {
     /// <summary>Shared-survey record backing IsViewingSharedSurvey. Mirrors LoggedInPageBase.SharedSurveyInfo.</summary>
     public DbHelper.SurveyShare.SharedSurveysInfo SharedSurveyInfo { get; set; } = null;
 
+    /// <summary>True when the current request is adding a new Participant. Mirrors CoacheeInfoBase.IsNewCoachee.</summary>
+    public bool IsNewCoachee { get; set; } = false;
+
+    /// <summary>True when the current request is adding a new Project. Mirrors ProjectPageBase.IsNewProject.</summary>
+    public bool IsNewProject { get; set; } = false;
+
+    /// <summary>True when the current request is adding a new Program. Mirrors ProgramPageBase.IsNewProgram.</summary>
+    public bool IsNewProgram { get; set; } = false;
+
+    /// <summary>True when the current request is adding a new Quote. Mirrors QuotePageBase.IsNewQuote.</summary>
+    public bool IsNewQuote { get; set; } = false;
+
+    /// <summary>True when the current user can view the Quote in scope. Mirrors QuotePageBase.CanViewQuoteInfo.</summary>
+    public bool CanViewQuoteInfo { get; set; } = false;
+
+    /// <summary>True when the current request is adding a new Company. Mirrors CompanyInfoBase.IsNewCompany.</summary>
+    public bool IsNewCompany { get; set; } = false;
+
+    /// <summary>True when the current user can update the Company in scope. Mirrors CompanyInfoBase.CanUpdateCompany.</summary>
+    public bool CanUpdateCompany { get; set; } = false;
+
+    /// <summary>Tenant Org for the current request. Mirrors SettingsPageBase.TenantOrgInfo. Non-null implies the page is a SettingsPageBase.</summary>
+    public DbHelper.TenantOrg.TenantOrgInfo TenantOrgInfo { get; set; } = null;
+
     private const string RequestItemKey = "Integral.Web.PortalSite.LayoutModel";
 
     public static LayoutModel GetCurrent() {

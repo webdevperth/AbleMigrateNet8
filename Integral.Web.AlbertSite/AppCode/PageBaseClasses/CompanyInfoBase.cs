@@ -30,6 +30,7 @@ namespace Integral.Web.PortalSite.AppCode.PageBaseClasses {
 
       // Mirror onto LayoutModel for future ViewComponent consumers. See LayoutModel.cs.
       var layout = LayoutModel.GetCurrent();
+      layout.IsNewCompany = IsNewCompany;
 
       if (IsNewCompany) {
         // If adding new company, must be allowed to update, and only on Settings page.
@@ -37,6 +38,7 @@ namespace Integral.Web.PortalSite.AppCode.PageBaseClasses {
         CompanyInfo = new DbHelper.ClientCompanies.AlbertCompanyInfo();
         layout.CompanyInfo = CompanyInfo;
         CanUpdateCompany = SessionHelper.AppAccess.Companies.CanCreate();
+        layout.CanUpdateCompany = CanUpdateCompany;
 
         if (!CanUpdateCompany) {
           SetFallbackRedirect();
@@ -54,6 +56,7 @@ namespace Integral.Web.PortalSite.AppCode.PageBaseClasses {
         }
 
         CanUpdateCompany = SessionHelper.AppAccess.Companies.CanEdit(CompanyInfo);
+        layout.CanUpdateCompany = CanUpdateCompany;
       }
 
       if (!CheckUserPageAccess()) {
