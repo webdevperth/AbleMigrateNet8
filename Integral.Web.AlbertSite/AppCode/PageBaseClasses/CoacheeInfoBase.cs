@@ -2,7 +2,7 @@
 
 namespace Integral.Web.PortalSite.AppCode.PageBaseClasses {
 
-  public class CoacheeInfoBase : LoggedInPageBase {
+  public class CoacheeInfoBase : LoggedInPageModel {
 
     public int UrlCoacheeId { get; protected set; }
     public bool IsNewCoachee { get; protected set; }
@@ -11,11 +11,11 @@ namespace Integral.Web.PortalSite.AppCode.PageBaseClasses {
     public bool CanChangeProgramStatus, CanChangeCoach, CanChangeMeetCoachDate, CanApplyCoachingToProgram, CanDeleteParticipant, LimitedEdit;
     public bool CanUpdateCoaching, CanViewParticipantProfile;
 
-    protected override void Page_Init(object sender, EventArgs e) {
+    protected override void InitializePage() {
+
+      base.InitializePage();
 
       if (WebHelper.IsRequestExiting()) return;
-
-      base.Page_Init(sender, e);
 
       // Mirror onto LayoutModel for future ViewComponent consumers. See LayoutModel.cs.
       var layout = LayoutModel.GetCurrent();

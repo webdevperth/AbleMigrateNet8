@@ -9,11 +9,11 @@ namespace Integral.Web.PortalSite.AppCode.PageBaseClasses {
     protected DbHelper.Reports.Company.SurveyStats SurveyStats;
     protected string BenchmarkDisplayName;
 
-    protected override void Page_Init(object sender, EventArgs e) {
+    protected override void InitializePage() {
+
+      base.InitializePage();
 
       if (WebHelper.IsRequestExiting()) return;
-
-      base.Page_Init(sender, e);
 
       if (!SessionHelper.AppAccess.Companies.CanViewOrganisationCapabilities(CompanyInfo)) {
         RespondMessageAndEnd("No access to report.");

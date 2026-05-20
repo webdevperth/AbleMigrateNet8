@@ -44,7 +44,7 @@ namespace Integral.Web.PortalSite.AppCode.PageBaseClasses {
       await next();
     }
 
-    protected void InitializePage() {
+    protected virtual void InitializePage() {
 
       SystemWeb.SetRequestItemValue(ConfigHelper.RequestItems.IsLoggedInPage, true);
 

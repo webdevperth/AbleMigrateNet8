@@ -2,7 +2,7 @@
 
 namespace Integral.Web.PortalSite.AppCode.PageBaseClasses {
 
-  public class ModulePageBase : LoggedInPageBase {
+  public class ModulePageBase : LoggedInPageModel {
 
     public bool IsNewModule, IsProgramView, IsNewContent, IsParticipantView;
 
@@ -10,11 +10,11 @@ namespace Integral.Web.PortalSite.AppCode.PageBaseClasses {
     public DbHelper.Content.ContentInfo ContentInfo { get; set; }
     public DbHelper.Modules.ParticipantModuleInfo ParticipantModuleInfo = null;
 
-    protected override void Page_Init(object sender, EventArgs e) {
+    protected override void InitializePage() {
+
+      base.InitializePage();
 
       if (WebHelper.IsRequestExiting()) return;
-
-      base.Page_Init(sender, e);
 
       FallbackUrl = PathHelper.Pages.Content();
 

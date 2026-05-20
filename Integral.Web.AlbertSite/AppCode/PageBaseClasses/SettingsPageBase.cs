@@ -1,18 +1,16 @@
-﻿using System;
+﻿namespace Integral.Web.PortalSite.AppCode.PageBaseClasses {
 
-namespace Integral.Web.PortalSite.AppCode.PageBaseClasses {
-
-  public class SettingsPageBase : LoggedInPageBase {
+  public class SettingsPageBase : LoggedInPageModel {
 
     // Note we get the current OrgId from the current user's OrgId,
 
     public DbHelper.TenantOrg.TenantOrgInfo TenantOrgInfo { get; private set; }
 
-    protected override void Page_Init(object sender, EventArgs e) {
+    protected override void InitializePage() {
+
+      base.InitializePage();
 
       if (WebHelper.IsRequestExiting()) return;
-
-      base.Page_Init(sender, e);
 
       WebHelper.AddBodyClass("BasePage-Org");
 

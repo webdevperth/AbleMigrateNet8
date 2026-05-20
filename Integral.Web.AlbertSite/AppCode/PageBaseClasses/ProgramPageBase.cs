@@ -2,7 +2,7 @@
 
 namespace Integral.Web.PortalSite.AppCode.PageBaseClasses {
 
-  public class ProgramPageBase : LoggedInPageBase {
+  public class ProgramPageBase : LoggedInPageModel {
 
     public bool IsNewProgram { get; protected set; }
     public string RevenueTextDisplay { get; protected set; }
@@ -12,11 +12,12 @@ namespace Integral.Web.PortalSite.AppCode.PageBaseClasses {
     public bool CanViewHiddenPartners { get; protected set; } = false;
     public bool CanViewInactivePartners { get; protected set; } = false;
 
-    protected override void Page_Init(object sender, EventArgs e) {
+    protected override void InitializePage() {
+
+      base.InitializePage();
 
       if (WebHelper.IsRequestExiting()) return;
 
-      base.Page_Init(sender, e);
       MenuThirdLayerActive_Programs = ProjectMenuIsActive = true;
       IsNewProgram = false;
       ProgramInfo = null;

@@ -2,7 +2,7 @@
 
 namespace Integral.Web.PortalSite.AppCode.PageBaseClasses {
 
-  public class CoacheeReportPartialBase : LoggedInPageBase {
+  public class CoacheeReportPartialBase : LoggedInPageModel {
 
     // Querystring inputs.
     public int ParticipantUserId;
@@ -21,11 +21,11 @@ namespace Integral.Web.PortalSite.AppCode.PageBaseClasses {
     public bool IsSelfOnly;
     public bool AllowReportWithoutRaters, Hide360ReportNorms;
 
-    protected override void Page_Init(object sender, EventArgs e) {
+    protected override void InitializePage() {
+
+      base.InitializePage();
 
       if (WebHelper.IsRequestExiting()) return;
-
-      base.Page_Init(sender, e);
 
       // "Context Coachee" is the coachee from which the report was accessed.
       // It may be different to the survey's coachee, since surveys from past programs can appear on a later coachee's page.
@@ -46,8 +46,7 @@ namespace Integral.Web.PortalSite.AppCode.PageBaseClasses {
 
       var contextCoachee = DbHelper.AlbertCoachees.GetCoacheeInfo(contextCoacheeGuid);
       if (contextCoachee == null || (!SessionHelper.AppAccess.Reports.CanViewIndividualReport(contextCoachee) && !IsViewingSharedSurvey)) {
-        Response.Write("No access to report.");
-        WebHelper.EndRequest();
+        WebHelper.WriteAndEnd("No access to report.");
         return;
       }
 
@@ -99,8 +98,7 @@ namespace Integral.Web.PortalSite.AppCode.PageBaseClasses {
           AND ac.UserId = @UserId",
         dr => {
           if (dr.GetInt("TotalCount") > 1) {
-            Response.Write("Multiple participants found for same User.");
-            WebHelper.EndRequest();
+            WebHelper.WriteAndEnd("Multiple participants found for same User.");
             return;
           }
           CoacheeId = dr.GetInt("CoacheeId");
@@ -130,8 +128,7 @@ namespace Integral.Web.PortalSite.AppCode.PageBaseClasses {
 
       if (!IsSelfOnly) { // If raters are allowed.
         if (RaterCount == 0 && !AllowReportWithoutRaters) { // If no raters and not allowed to view report without them.
-          Response.Write("No completed raters in this survey.");
-          WebHelper.EndRequest();
+          WebHelper.WriteAndEnd("No completed raters in this survey.");
           return;
         }
       }

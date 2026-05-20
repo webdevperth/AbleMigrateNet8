@@ -3,17 +3,17 @@ using System;
 
 namespace Integral.Web.PortalSite.AppCode.PageBaseClasses {
 
-  public class SkillsViewerPartialBase : LoggedInPageBase {
+  public class SkillsViewerPartialBase : LoggedInPageModel {
 
     protected DbHelper.Reports.NormEnum BenchmarkType = DbHelper.Reports.NormEnum.Global;
     protected DbHelper.Reports.SkillsViewer.SurveyStats SurveyStats;
     protected string BenchmarkDisplayName;
 
-    protected override void Page_Init(object sender, EventArgs e) {
+    protected override void InitializePage() {
+
+      base.InitializePage();
 
       if (WebHelper.IsRequestExiting()) return;
-
-      base.Page_Init(sender, e);
 
       var projectJobNumber = WebHelper.GetQueryStringValue(PathHelper.AbleUrlKeys.ProjectJobNumber);
       var programJobIds = WebHelper.GetQueryStringIntList(PathHelper.AbleUrlKeys.ProgramJobId, null);

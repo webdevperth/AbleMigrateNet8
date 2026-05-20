@@ -1,8 +1,6 @@
-﻿using System;
+﻿namespace Integral.Web.PortalSite.AppCode.PageBaseClasses {
 
-namespace Integral.Web.PortalSite.AppCode.PageBaseClasses {
-
-  public class CoachInfoBase : LoggedInPageBase {
+  public class CoachInfoBase : LoggedInPageModel {
 
     // Note, unlike other site areas, the Coach (Partner) pages can operate without an ID given in the querystring.
     // If CoachId is missing from the querystring, we assume the ID of the currently logged in user User.
@@ -15,11 +13,11 @@ namespace Integral.Web.PortalSite.AppCode.PageBaseClasses {
     public bool CanViewHiddenPartners { get; protected set; } = false;
     public bool CanViewInactivePartners { get; protected set; } = false;
 
-    protected override void Page_Init(object sender, EventArgs e) {
+    protected override void InitializePage() {
+
+      base.InitializePage();
 
       if (WebHelper.IsRequestExiting()) return;
-
-      base.Page_Init(sender, e);
 
       WebHelper.AddBodyClass("BasePage-Coach");
 

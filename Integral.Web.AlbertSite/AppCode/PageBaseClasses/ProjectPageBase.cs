@@ -1,16 +1,15 @@
-﻿using System;
+﻿namespace Integral.Web.PortalSite.AppCode.PageBaseClasses {
 
-namespace Integral.Web.PortalSite.AppCode.PageBaseClasses {
-
-  public class ProjectPageBase : LoggedInPageBase {
+  public class ProjectPageBase : LoggedInPageModel {
 
     public bool IsNewProject { get; protected set; }
 
-    protected override void Page_Init(object sender, EventArgs e) {
+    protected override void InitializePage() {
+
+      base.InitializePage();
 
       if (WebHelper.IsRequestExiting()) return;
 
-      base.Page_Init(sender, e);
       ProjectMenuIsActive = true;
       IsNewProject = false;
       ProjectInfo = null;

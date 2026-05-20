@@ -1,20 +1,19 @@
-﻿using System;
+﻿namespace Integral.Web.PortalSite.AppCode.PageBaseClasses {
 
-namespace Integral.Web.PortalSite.AppCode.PageBaseClasses {
-
-  public class OverviewPageBase : LoggedInPageBase {
+  public class OverviewPageBase : LoggedInPageModel {
 
     public int urlCoachUserId { get; protected set; } = 0;
     public DbHelper.AlbertCoaches.AlbertCoachInfo OverviewCoachInfo { get; protected set; }
 
-    protected override void Page_Init(object sender, EventArgs e) {
+    protected override void InitializePage() {
+
+      base.InitializePage();
 
       if (WebHelper.IsRequestExiting()) return;
 
-      base.Page_Init(sender, e);
       DashboardMenuIsActive = true;
       // Mirror onto LayoutModel for future ViewComponent consumers. See LayoutModel.cs.
-      // (base.Page_Init mirrored DashboardMenuIsActive=false; re-mirror the corrected value.)
+      // (base.InitializePage mirrored DashboardMenuIsActive=false; re-mirror the corrected value.)
       LayoutModel.GetCurrent().DashboardMenuIsActive = DashboardMenuIsActive;
       WebHelper.AddBodyClass("BasePage-Overview");
 

@@ -2,7 +2,7 @@
 
 namespace Integral.Web.PortalSite.AppCode.PageBaseClasses {
 
-  public class QuotePageBase : LoggedInPageBase {
+  public class QuotePageBase : LoggedInPageModel {
 
     public bool IsNewQuote { get; private set; }
     public bool CanCreateQuote { get; private set; } = false;
@@ -17,11 +17,11 @@ namespace Integral.Web.PortalSite.AppCode.PageBaseClasses {
 
     public DbHelper.AbleQuotes.QuoteInfo QuoteInfo { get; protected set; } = null;
 
-    protected override void Page_Init(object sender, EventArgs e) {
+    protected override void InitializePage() {
+
+      base.InitializePage();
 
       if (WebHelper.IsRequestExiting()) return;
-
-      base.Page_Init(sender, e);
 
       PageTitle = "";
       PageSubtitle = "";

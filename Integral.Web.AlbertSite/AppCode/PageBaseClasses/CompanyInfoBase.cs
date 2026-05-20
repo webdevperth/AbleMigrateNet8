@@ -1,8 +1,6 @@
-﻿using System;
+﻿namespace Integral.Web.PortalSite.AppCode.PageBaseClasses {
 
-namespace Integral.Web.PortalSite.AppCode.PageBaseClasses {
-
-  public class CompanyInfoBase : LoggedInPageBase {
+  public class CompanyInfoBase : LoggedInPageModel {
 
     protected string newCompanyIdValue = "new";
     protected int urlCompanyId = 0;
@@ -10,11 +8,11 @@ namespace Integral.Web.PortalSite.AppCode.PageBaseClasses {
     public DbHelper.ClientCompanies.AlbertCompanyInfo CompanyInfo;
     public bool CanUpdateCompany;
 
-    protected override void Page_Init(object sender, EventArgs e) {
+    protected override void InitializePage() {
+
+      base.InitializePage();
 
       if (WebHelper.IsRequestExiting()) return;
-
-      base.Page_Init(sender, e);
 
       if (SessionHelper.IsUserRoleAdmin || SessionHelper.IsUserRoleCoach) FallbackUrl = PathHelper.Pages.Organisations();
 

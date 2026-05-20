@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Integral.Web.PortalSite.AppCode.PageBaseClasses {
 
-  public class SurveyViewerPartialBase : LoggedInPageBase {
+  public class SurveyViewerPartialBase : LoggedInPageModel {
 
     public List<int> IntakeCodeIdList, PreIntakeCodeIdList;
     public int ScoringGblAnswerTypeId = 0;
@@ -31,11 +31,11 @@ namespace Integral.Web.PortalSite.AppCode.PageBaseClasses {
     int foundIntakes = 0;
     int distinctAnswerTypes = 0;
 
-    protected override void Page_Init(object sender, EventArgs e) {
+    protected override void InitializePage() {
+
+      base.InitializePage();
 
       if (WebHelper.IsRequestExiting()) return;
-
-      base.Page_Init(sender, e);
 
       IntakeCodeIdList = WebHelper.GetQueryStringIntList(PathHelper.AbleUrlKeys.SurveyIntakeCodeId);
       PreIntakeCodeIdList = WebHelper.GetQueryStringIntList(PathHelper.AbleUrlKeys.PreSurveyIntakeId);
