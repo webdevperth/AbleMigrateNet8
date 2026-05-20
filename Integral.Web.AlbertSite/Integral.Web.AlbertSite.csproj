@@ -85,6 +85,7 @@
     <Compile Include="AppCode\AmplitudeHelper.cs" />
     <Compile Include="AppCode\LayoutModel.cs" />
     <Compile Include="AppCode\OrgReportContext.cs" />
+    <Compile Include="AppCode\Coachee360Context.cs" />
     <Compile Include="AppCode\Reports.OrgReports.cs" />
   </ItemGroup>
 

@@ -1,0 +1,24 @@
+@model ChartAlbert360DetailedModel
+
+<div class="RptPub360Detailed row">
+
+  <div class="col-xs-12 col-md-9">
+
+    <div class="row mt20 mb20">
+      <div class="col-md-6">
+        <h4>All questions</h4>
+      </div>
+      <div class="col-md-6">
+        <div class="legend">
+          @if (!Model.reportResults.SurveyInfo.IsRatersOnly) {
+            <span class="self circle"></span>@:Self @(OrgReports.Benchmark_Display_Text.UCaseFirstChar())
+          }
+          <span class="rater circle"></span>Rater @(OrgReports.Benchmark_Display_Text.UCaseFirstChar())
+        </div>
+      </div>
+    </div>
+
+    @Html.Raw(Model.GetQuestions())
+
+  </div>
+</div>

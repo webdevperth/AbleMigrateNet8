@@ -1,0 +1,67 @@
+@model ChartAlbert360FunctionTableModel
+
+@* Note requires reports.css *@
+
+<div class="ctlCA360FT">
+
+  <div class="table-responsive">
+    <table class="table tblScores">
+      <colgroup>
+        <col width="30">
+        <col width="370">
+        <col width="150">
+        <col width="300">
+        <col width="250">
+        <col width="">
+      </colgroup>
+      <thead>
+        <tr>
+          <td>&nbsp;</td>
+          <td class="cTitle">Overall Leadership Indicators</td>
+          <td class="cProg">Progress</td>
+          <td class="cProg">Comparison to @(OrgReports.Benchmark_Display_Text.UCaseFirstChar())</td>
+          <td class="cFeedb">Your Feedback</td>
+          <td>&nbsp;</td>
+        </tr>
+      </thead>
+      <tbody>
+        @foreach (var tableRowItem in Model.TableRows.Values) {
+          Model.TableRowCount++;
+          <tr class="rowSkill rowid_@(tableRowItem.RowCount) @(Model.GetRowProgressClass(tableRowItem))">
+            <td>&nbsp;</td>
+            <td class="cTitle">@tableRowItem.QuestionInfo.RptQnGrpHeading</td>
+            <td class="cProg"><span class="glyphicon glyphicon-@(Model.GetProgressPercentGlyphicon(tableRowItem))"></span><span class="progressPercent">@(Model.GetProgressPercent(tableRowItem))%</span></td>
+            <td class=""><span class="progPts">@(Model.GetBenchComparisonPoints(tableRowItem))pt</span> <span class="progPtsText">@(Model.GetBenchComparisonPointsText(tableRowItem))</span></td>
+            <td class="cFeedb">
+              <div class="scoreBars">
+                <div class="scoreBar">
+                  <div class="barTitle">Self</div>
+                  <div class="barBg">
+                    <span class="barLine barSelf" style="width:@Model.GetCSSPercentFromScore(tableRowItem.QuestionInfo.Scores.ScoreSelf.Avg)"></span>
+                    <span class="barMark"></span>
+                    <span class="barMark"></span>
+                    <span class="barDot dotSelf" title="@Model.GetScoreFormatted(tableRowItem.QuestionInfo.Scores.ScoreBenchSelf.Avg)"
+                      style="left:@Model.GetCSSPercentFromScore(tableRowItem.QuestionInfo.Scores.ScoreBenchSelf.Avg)"></span>
+                  </div>
+                  <div class="barScore">@Model.GetScoreFormatted(tableRowItem.QuestionInfo.Scores.ScoreSelf.Avg)</div>
+                </div>
+                <div class="barInterGap"></div>
+                <div class="scoreBar">
+                  <div class="barTitle">Raters</div>
+                  <div class="barBg">
+                    <span class="barLine barRater" style="width:@Model.GetCSSPercentFromScore(tableRowItem.QuestionInfo.Scores.ScoreRater.Avg)"></span>
+                    <span class="barMark"></span>
+                    <span class="barMark"></span>
+                    <span class="barDot dotRater" title="@Model.GetScoreFormatted(tableRowItem.QuestionInfo.Scores.ScoreBenchRater.Avg)"
+                      style="left:@Model.GetCSSPercentFromScore(tableRowItem.QuestionInfo.Scores.ScoreBenchRater.Avg)"></span>
+                  </div>
+                  <div class="barScore">@Model.GetScoreFormatted(tableRowItem.QuestionInfo.Scores.ScoreRater.Avg)</div>
+                </div>
+              </div>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>

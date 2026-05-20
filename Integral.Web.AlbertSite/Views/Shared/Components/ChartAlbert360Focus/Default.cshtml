@@ -1,0 +1,14 @@
+@model ChartAlbert360FocusModel
+
+@* Note requires reports.css *@
+
+<div class="RptPub360Focus row">
+
+  <div class="comments col-xs-12 col-md-9">
+    <div class="legend">
+      <span class="self circle"></span>Self @(OrgReports.Benchmark_Display_Text.UCaseFirstChar())
+      <span class="rater circle"></span>Rater @(OrgReports.Benchmark_Display_Text.UCaseFirstChar())
+    </div>
+    @Html.Raw(Model.GetFocusHtml())
+  </div>
+</div>
