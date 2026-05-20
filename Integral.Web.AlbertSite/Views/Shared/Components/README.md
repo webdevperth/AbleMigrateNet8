@@ -91,11 +91,73 @@ close to plain HTML + bindings as possible.
 
 ## Legacy `.ascx` files
 
-The original `.ascx` and `.ascx.cs` files **remain on disk** during the
-migration so that legacy `.aspx` pages can keep referencing them if the
-old Framework build is restored for diff/reference purposes. The
-codebehinds are already excluded from compilation via
-`<Compile Remove="**\*.ascx.cs" />` in the csproj.
+The original `.ascx` and `.ascx.cs` files under `/UserControls/` have been
+**deleted** at the end of the ViewComponent migration. The `.ascx` codebehind
+exclusion remains in the csproj:
 
-The `.ascx` files will be deleted in the final cleanup migration step,
-once every page that referenced them has been moved to Razor.
+```xml
+<Compile Remove="**\*.ascx.cs" />
+```
+
+It is still required because `/Partials/` contains `.aspx` host pages with
+`.aspx.cs` codebehinds that are out of scope for this migration phase.
+
+## Status
+
+Every `.ascx` user control formerly under `/UserControls/` has been migrated
+to a ViewComponent. The original `.ascx` and `.ascx.cs` files have been
+removed from disk.
+
+The `?ctrlname=...` AJAX URL contract used by the legacy
+`LoadControl("~/UserControls/" + RequestedCtrlName + ".ascx")` callers is
+preserved by two dispatcher classes. The future page-migration phase
+should use these dispatchers (rather than re-coding the string-to-class
+mapping) when wiring host pages to `Component.InvokeAsync`.
+
+### OrgRpt_* family — dispatcher: `OrgReportPartialDispatcher`
+
+Request-scoped data is loaded once per request via
+[`OrgReportContext`](../../../AppCode/OrgReportContext.cs) (`GetOrLoad`).
+
+| Original `.ascx`              | ViewComponent class      | `?ctrlname=` value      |
+| ----------------------------- | ------------------------ | ----------------------- |
+| `OrgRpt_TopFilters.ascx`      | `OrgRpt_TopFilters`      | `orgrpt_topfilters`     |
+| `OrgRpt_Detailed.ascx`        | `OrgRpt_Detailed`        | `orgrpt_detailed`       |
+| `OrgRpt_Focus.ascx`           | `OrgRpt_Focus`           | `orgrpt_focus`          |
+| `OrgRpt_Categories.ascx`      | `OrgRpt_Categories`      | `orgrpt_categories`     |
+| `OrgRpt_Comments.ascx`        | `OrgRpt_Comments`        | `orgrpt_comments`       |
+| `OrgRpt_HeatMap.ascx`         | `OrgRpt_HeatMap`         | `orgrpt_heatmap`        |
+| `OrgRpt_Ovw_TopChart.ascx`    | `OrgRpt_Ovw_TopChart`    | `orgrpt_ovw_topchart`   |
+| `OrgRpt_Ovw_IOIDirs.ascx`     | `OrgRpt_Ovw_IOIDirs`     | `orgrpt_ovw_ioidirs`    |
+| `OrgRpt_Ovw_Quadrants.ascx`   | `OrgRpt_Ovw_Quadrants`   | `orgrpt_ovw_quadrants`  |
+
+### ChartAlbert360_* family — dispatcher: `ChartAlbert360PartialDispatcher`
+
+Request-scoped data is loaded once per request via
+[`Coachee360Context`](../../../AppCode/Coachee360Context.cs) (`GetOrLoad`).
+
+| Original `.ascx`                      | ViewComponent class            | `?ctrlname=` value             |
+| ------------------------------------- | ------------------------------ | ------------------------------ |
+| `ChartAlbert360TopNav.ascx`           | `ChartAlbert360TopNav`         | `chartalbert360topnav`         |
+| `ChartAlbert360Detailed.ascx`         | `ChartAlbert360Detailed`       | `chartalbert360detailed`       |
+| `ChartAlbert360Focus.ascx`            | `ChartAlbert360Focus`          | `chartalbert360focus`          |
+| `ChartAlbert360FunctionTable.ascx`    | `ChartAlbert360FunctionTable`  | `chartalbert360functiontable`  |
+| `ChartAlbert360ScoreOverTime.ascx`    | `ChartAlbert360ScoreOverTime`  | `chartalbert360scoreovertime`  |
+
+### Standalone components — no dispatcher
+
+These controls are invoked directly (not through the `?ctrlname=` AJAX
+contract), so callers should use `await Component.InvokeAsync(nameof(...))`
+against the class name directly.
+
+| Original `.ascx`             | ViewComponent class    | Notes                                                                                                  |
+| ---------------------------- | ---------------------- | ------------------------------------------------------------------------------------------------------ |
+| `SurveyForm.ascx`            | `SurveyForm`           | POST handling is plumbed in `SurveyFormPostHandler` but not yet wired to any endpoint — see notes.     |
+| `AdminLTEHeaderNav.ascx`     | `AdminLTEHeaderNav`    | Invoked from the future Razor `_Layout.cshtml`.                                                        |
+| `AdminLTESidebarNav.ascx`    | `AdminLTESidebarNav`   | Invoked from the future Razor `_Layout.cshtml`.                                                        |
+
+### Removed (no migration)
+
+| Original `.ascx`                       | Reason                                                                                                  |
+| -------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| `AlbertRptPublic360Comments.ascx`      | Dead code — no references in any `.aspx`, `.cs`, `.cshtml`, JS dispatcher map, or anywhere else.        |
