@@ -1,0 +1,25 @@
+@page
+@model Integral.Web.PortalSite.Pages_Albert.ProgramInformation
+@{ Layout = "_Layout_AdminLTE"; }
+
+<h3 class="mt0">Your Team</h3>
+
+<div class="flex-wrap gap25">
+  @Html.Raw(Model.GetTeamCardsHtml())
+</div>
+
+<hr />
+
+<div class="programNotes">
+  @Html.Raw(Model.GetNotesHtml())
+</div>
+
+@section PostScriptContent {
+
+  <script type="text/javascript">
+    (function($) {
+
+      })(jQuery);
+  </script>
+
+}

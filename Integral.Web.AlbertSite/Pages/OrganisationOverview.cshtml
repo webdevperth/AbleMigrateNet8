@@ -1,0 +1,78 @@
+@page
+@model Integral.Web.PortalSite.Pages_Albert.OrganisationOverview
+@{ Layout = "_Layout_AdminLTE"; }
+
+<div class="table-title">Metrics</div>
+<div class="flex flex-wrap gap20 mb25">
+  @Html.Raw(WebHelper.GetPeopleMetrics(Model.CompanyInfo))
+  @Html.Raw(WebHelper.GetCompanyLeadBox(Model.CompanyInfo))
+</div>
+
+@Html.Raw(WebHelper.GetPartialLoaderHtml(new WebHelper.PartialLoaderOptions() {
+  Url = PathHelper.Partials.ActivityChartForCompany(Model.CompanyInfo.CompanyId, PathHelper.ActivityChartUnits.Minutes),
+  InitialWidth = "100%",
+  InitialHeight = "320px",
+  DeferInitialLoad = false,
+  InitialStyle = WebHelper.PartialLoaderStyle.Blank,
+  LoaderStyle = WebHelper.PartialLoaderStyle.Chart
+}))
+
+<div class="table-title">Monthly Progress</div>
+<div class="pos-relative h250 mb25"><canvas id="chart-monthly-progress"></canvas></div>
+
+@section PostScriptContent {
+
+  <script>
+
+    (function ($) {
+
+      $(document).ready(function () {
+
+        CreateMonthlyProgressChart();
+
+        function CreateMonthlyProgressChart() {
+
+          var ctx = document.getElementById("chart-monthly-progress").getContext("2d");
+          var dataJson = @Html.Raw(Model.GetMonthlyProgressChartJson());
+
+          var myChart = new Chart(ctx, {
+            type: 'line',
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              layout: {
+                padding: {
+                  left: -8
+                }
+              },
+              legend: {
+                position: 'left',
+                reverse: true,
+                labels: {
+                  boxWidth: 15,
+                  boxHeight: 13,
+                  fontSize: 14,
+                  fontColor: '#333',
+                  padding: 10,
+                  usePointStyle: false
+                }
+              },
+              scales: {
+                yAxes: [{
+                  ticks: {
+                    beginAtZero: false,
+                    max: 10 // Max score
+                  }
+                }]
+              }
+            },
+            data: dataJson
+          });
+        }
+
+      });
+
+    })(jQuery);
+  </script>
+
+}

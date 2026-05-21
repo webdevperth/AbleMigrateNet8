@@ -1,0 +1,26 @@
+@page
+@model Integral.Web.PortalSite.Pages_Albert.ProgramInsights
+@{ Layout = "_Layout_AdminLTE"; }
+
+@Html.Raw(WebHelper.GetPartialLoaderHtml(new WebHelper.PartialLoaderOptions() {
+  Url = PathHelper.Partials.ActivityChartForProgram(Model.ProgramInfo.ProgramJobId),
+  InitialWidth = "100%",
+  InitialHeight = "320px",
+  DeferInitialLoad = false,
+  InitialStyle = WebHelper.PartialLoaderStyle.Blank,
+  LoaderStyle = WebHelper.PartialLoaderStyle.Chart
+}))
+
+@section PostScriptContent {
+
+  <script type="text/javascript">
+    (function($) {
+
+      $(document).ready(function() {
+
+      }); // ready.
+
+    })(jQuery);
+  </script>
+
+}

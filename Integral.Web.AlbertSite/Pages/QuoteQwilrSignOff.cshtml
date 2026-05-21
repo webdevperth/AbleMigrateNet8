@@ -1,0 +1,106 @@
+@page
+@model Integral.Web.PortalSite.Pages_Albert.QuoteQwilrSignOff
+@{ Layout = "_Layout_Public"; }
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="crossorigin">
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+
+<div class="heading">
+  <h2>@Model.QuoteInfo.QuoteTitle.HTMLEncode()</h2>
+  <p>@Html.Raw(WebHelper.GetLink(new WebHelper.LinkInfo(PathHelper.Pages.QuotePublicPDF(Model.QuoteInfo.PublicGuid), "Download PDF", true) { ClickDisableSeconds = 10, ClickSpinnerSeconds = 10 }))</p>
+</div>
+
+@if (Model.FormVisible) {
+
+  <form id="signform" class="form-horizontal" method="post" action="@PathHelper.Pages.QuoteQwilrSignOff(Model.QuoteInfo.PublicGuid)" onsubmit="return false">
+
+    <input type="hidden" name="@PathHelper.FormKeys.AjaxAction" value="complete" />
+    <input type="hidden" name="quoteitemid" value="@Model.QuoteItemIds" />
+
+    <h3>Contacts</h3>
+
+    <div class="container">
+      <div class="row">
+        <div class="col"><input type="text" autocomplete="off" class="form-control" name="ClientFirstName" value="@Model.ClientFirstName" placeholder="Client First Name" /></div>
+        <div class="col">&nbsp;</div>
+        <div class="col"><input type="text" autocomplete="off" class="form-control" name="ClientLastName" value="@Model.ClientLastName" placeholder="Client Last Name" /></div>
+      </div>
+      <div class="row"><div class="col"></div></div>
+      <div class="row">
+        <div class="col-3"><input autocomplete="off" type="text" class="form-control" name="ClientEmail" value="@Model.ClientEmailAddress" placeholder="Client Email" /></div>
+      </div>
+      <div class="row"><div class="col"></div></div>
+      <div class="row">
+        <div class="col"><input type="text" autocomplete="off" class="form-control" name="AccFirstName" value="" placeholder="Accounts Payable First Name" /></div>
+        <div class="col">&nbsp;</div>
+        <div><input type="text" autocomplete="off" class="form-control" name="AccLastName" value="" placeholder="Accounts Payable Last Name" /></div>
+      </div>
+      <div class="row"><div class="col"></div></div>
+      <div class="row">
+        <div class="col-3"><input autocomplete="off" type="text" class="form-control" name="AccEmail" value="" placeholder="Accounts Payable Email" /></div>
+      </div>
+    </div>
+
+    <div class="totalbox">
+      Total Amount: @Model.TotalAmount.ToString("C")
+    </div>
+
+    @Html.Raw(WebHelper.CustomCheckBox("agree", "1", false, "", "I have read and agreed on the " + WebHelper.GetSimpleLink(ConfigHelper.ExternalUrls.AbleTermsAndConditionsUrl, "Terms and Conditions", true) + "."))
+
+    <button type="button" id="btnSign" class="btn btn-primary">Sign Proposal</button>
+
+  </form>
+
+  <div id="thankyou" style="display:none">
+    <h1>Proposal Accepted, Thank You!</h1>
+  </div>
+
+}
+
+@if (Model.AcceptedVisible) {
+
+  <center>
+    <h1>Proposal Accepted</h1>
+    <p>This proposal was accepted on @WebHelper.DisplayDate(Model.QuoteInfo.ClientAcceptedUtc.UtcToTZOrNull()).</p>
+  </center>
+
+}
+
+@section PostScriptContent {
+
+  <script type="text/javascript">
+    (function($) {
+
+      var $btnSign = $("#btnSign");
+      $(document).ready(function () {
+
+        $("input[name=ClientFirstName]").focus();
+        $("#btnSign").click(clickSign);
+
+      });
+
+      function clickSign(ev) {
+
+        AjaxSubmit({
+          form: $("#signform"),
+          onSuccess: function (jqXHR, returnData) {
+            ShowThankYou();
+          },
+          onFail: function (jqXHR, returnData) {
+          },
+          onAlways: function () {
+          }
+        });
+      }
+
+      function ShowThankYou() {
+
+        if (!app_isDev) $("form").hide();
+        $("#thankyou").show();
+      }
+
+    })(jQuery);
+  </script>
+
+}

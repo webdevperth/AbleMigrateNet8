@@ -1,0 +1,131 @@
+@page
+@model Integral.Web.PortalSite.Pages_Albert.ProjectSettings
+@{ Layout = "_Layout_AdminLTE"; }
+
+<div class="container-fluid form-horizontal">
+
+  <form id="formSettings" method="post" action="#" onsubmit="return false" class="form-horizontal">
+
+    @if (Model.CanChangeTenantOrg) {
+      @Html.Raw(WebHelper.GetSelectRow("Organisation:", Integral.Web.PortalSite.Pages_Albert.ProjectSettings.FormFields.TenantOrgId, 5, Model.GetTenantOrgOptions(), "", Model.isReadOnly))
+    }
+
+    @if (Model.CanChangeProjectCompany) {
+      @Html.Raw(WebHelper.GetSelectRow("Customer Company:", Integral.Web.PortalSite.Pages_Albert.ProjectSettings.FormFields.CompanyId, 5,
+        @"<option value="""">[Select or add Company]</option>"
+      + @"<option value=""new"">[Add New Company]</option>"
+      + Model.GetCompanyOptions(), "", Model.isReadOnly))
+
+      <div id="newCompanyInfo" class="add-new-fields displaynone">
+        @Html.Raw(WebHelper.GetTextInput("New Company Name:", Integral.Web.PortalSite.Pages_Albert.ProjectSettings.FormFields.NewCompanyName, "", 5))
+      </div>
+    }
+
+    @if (!Model.IsNewProject) {
+      @Html.Raw(WebHelper.GetTextInput("Project/Job Number:", Integral.Web.PortalSite.Pages_Albert.ProjectSettings.FormFields.JobNumber, Model.ProjectInfo.JobNumber, 3, "", true))
+    }
+
+    @Html.Raw(WebHelper.GetTextInput("Project Title:", Integral.Web.PortalSite.Pages_Albert.ProjectSettings.FormFields.ProjectName, Model.ProjectInfo.ProjectName, 5, "", Model.isReadOnly))
+
+    @if (!Model.IsNewProject && Model.CanEditInvoiceTypeId) {
+
+      @Html.Raw(WebHelper.GetSelectRow("Invoice Type:", Integral.Web.PortalSite.Pages_Albert.ProjectSettings.FormFields.InvoiceType, 5, Model.GetInvoiceTypeOptions(), "", Model.isReadOnly))
+
+      <div class="invoiceSettings">
+
+        @Html.Raw(WebHelper.GetPercentInput("Cost Item Markup Percentage:", Integral.Web.PortalSite.Pages_Albert.ProjectSettings.FormFields.DefaultCostItemMarkupPercent, Model.GetMarkupCostPercentage(), 2, 2, 3, "", !Model.CanUpdateDefaultCostItemMarkupPercent))
+
+        @Html.Raw(WebHelper.CustomCheckBoxRow("Allow Cost Item Manual Overwrite:", Integral.Web.PortalSite.Pages_Albert.ProjectSettings.FormFields.AllowCostItemUnitPriceManualOverwrite, "1", Model.ProjectInfo.AllowCostItemUnitPriceManualOverwrite, !Model.CanAllowCostItemPriceOverwrite, ""))
+
+        @Html.Raw(WebHelper.GetSelectRow("Xero Client:", Integral.Web.PortalSite.Pages_Albert.ProjectSettings.FormFields.XeroContactId, 5, Model.GetXeroContactOptions(), "", Model.isReadOnly))
+
+        @Html.Raw(WebHelper.CustomCheckBoxRow("Purchase Order Required:", Integral.Web.PortalSite.Pages_Albert.ProjectSettings.FormFields.PurchaseOrderRequired, "1", Model.ProjectInfo.PurchaseOrderRequired, Model.isReadOnly, ""))
+
+        @Html.Raw(WebHelper.GetTextInput("Purchase Order Number:", Integral.Web.PortalSite.Pages_Albert.ProjectSettings.FormFields.InvoiceNumber, Model.ProjectInfo.PurchaseOrderNumber, 5, "", Model.isReadOnly))
+
+        @if (Model.CanEditXeroAccountCode) {
+          @Html.Raw(WebHelper.GetSelectRow("Account:", Integral.Web.PortalSite.Pages_Albert.ProjectSettings.FormFields.XeroAccountCode, 5, Model.GetXeroAccountOptions(), "", Model.isReadOnly))
+        }
+
+        @Html.Raw(WebHelper.GetRichTextArea("Invoice Notes:", Integral.Web.PortalSite.Pages_Albert.ProjectSettings.FormFields.InvoicingNotes, 2, 7, Model.ProjectInfo.InvoicingNotes, "", Model.isReadOnly))
+
+      </div>
+
+    }
+
+    @Html.Raw(WebHelper.GetRichTextArea("Intent of Project:", Integral.Web.PortalSite.Pages_Albert.ProjectSettings.FormFields.ProjectIntent, 2, 7, Model.ProjectInfo.ProjectIntent, "", Model.isReadOnly))
+
+    @Html.Raw(WebHelper.GetRichTextArea("Program Context:", Integral.Web.PortalSite.Pages_Albert.ProjectSettings.FormFields.ProgramContext, 2, 7, Model.ProjectInfo.ProgramContext, "", Model.isReadOnly))
+
+    @if (!Model.isReadOnly) {
+      <div class="btnholder">
+        <button type="button" class="btn btn-primary btnUpdate floatright" id="btnUpdate">@(Model.IsNewProject ? "Create" : "Update") Project</button>
+      </div>
+    }
+
+  </form>
+
+</div>
+
+@section PostScriptContent {
+
+  <script type="text/javascript">
+    (function($) {
+
+      var btnUpdate, formSettings, isNewProject
+      var selCompanyId, newCompanyInfo, selInvoiceType;
+
+      $(document).ready(function() {
+
+        selCompanyId = $('select[name="@Integral.Web.PortalSite.Pages_Albert.ProjectSettings.FormFields.CompanyId"]');
+        selInvoiceType = $('select[name="@Integral.Web.PortalSite.Pages_Albert.ProjectSettings.FormFields.InvoiceType"]');
+        newCompanyInfo = $("#newCompanyInfo");
+        btnUpdate = $("#btnUpdate");
+        formSettings = $("#formSettings");
+        isNewProject = @(Model.IsNewProject ? "true" : "false");
+
+        // Company dropdown.
+        selCompanyId.change(function(e) { ChangeCompany(); });
+        ChangeCompany();
+
+        selInvoiceType.change(UpdateInvoiceLayout);
+        UpdateInvoiceLayout();
+
+        btnUpdate.click(UpdateProject);
+
+        if (isNewProject) formSettings.find("input:text:not(:disabled):first").trigger("focus");
+
+      }); // ready.
+
+      function UpdateInvoiceLayout() {
+        var invoiceTypeId = selInvoiceType.val();
+
+        if (invoiceTypeId == @ConfigHelper.InvoiceInstructionTypeId_NoTransaction) {
+
+          $('.invoiceSettings').hide();
+
+        } else {
+
+          $('.invoiceSettings').show();
+        }
+      }
+
+      function ChangeCompany() {
+        var cid = selCompanyId.val();
+        if (cid == "new") newCompanyInfo.slideDown(300, function() { formSettings[0]["@Integral.Web.PortalSite.Pages_Albert.ProjectSettings.FormFields.NewCompanyName"].focus(); });
+        else newCompanyInfo.slideUp(300);
+        cid = parseInt(cid, 10) || 0;
+      }
+
+      function UpdateProject(options) {
+
+        AjaxSubmit({
+          form: formSettings,
+          action: "@Integral.Web.PortalSite.Pages_Albert.ProjectSettings.AjaxAction.Update"
+        });
+      }
+
+    })(jQuery);
+  </script>
+
+}

@@ -1,0 +1,119 @@
+@page
+@model Integral.Web.PortalSite.Pages_Albert.ParticipantDevelopment
+@{ Layout = "_Layout_AdminLTE"; }
+
+<link rel="stylesheet" type="text/css" href="@(PathHelper.UrlPath.CSS)survey-viewer-common.css" />
+
+<br/>
+
+<section class="content">
+
+  @Html.Raw(WebHelper.ParticipantActivities.GetPeopleDetailsHeaderHtml(Model.ProfileInfo))
+  <br/>
+
+  @if (SessionHelper.AppAccess.Reports.CanViewOrgPeopleDetails360Results(Model.ProfileInfo.UserGuid)) {
+
+    <div class="flex-wrap gap15 mb20">
+      @if (Model.ProfileInfo.UserActivity?.Latest360IntakeCodeId != null) {
+        <div class="minw300">
+          @Html.Raw(WebHelper.GetPartialLoaderHtml(new WebHelper.PartialLoaderOptions() {
+            ID = "partial_Overview",
+            Url = PathHelper.Partials.SurveyViewer_Overview(null, null),
+            InitialWidth = "400px",
+            InitialHeight = "200px",
+            DeferInitialLoad = true,
+            InitialStyle = WebHelper.PartialLoaderStyle.Blank,
+            LoaderStyle = WebHelper.PartialLoaderStyle.Chart
+          }))
+        </div>
+      }
+      @if (!Model.ProfileInfo.UserActivity.AISummaryText.IsNullOrEmptyOrWhitespace()) {
+        <div class="boxBorder ai-summary-box mw600">
+          <div class="boxTitle"><h4>AI Coach Development Summary</h4></div>
+          <div>@Model.ProfileInfo.UserActivity?.AISummaryText.HTMLEncode()</div>
+        </div>
+      }
+    </div>
+
+    @if (Model.HasLatest360) {
+
+      <div class="flex gap15 flex-fill flex-column-lg">
+
+        @Html.Raw(WebHelper.GetPartialLoaderHtml(new WebHelper.PartialLoaderOptions() {
+          ID = "partial_Categories",
+          Url = PathHelper.Partials.SurveyViewer_Categories(null, null),
+          InitialWidth = "100%",
+          InitialHeight = "400px",
+          DeferInitialLoad = true,
+          InitialStyle = WebHelper.PartialLoaderStyle.Blank,
+          LoaderStyle = WebHelper.PartialLoaderStyle.Chart
+        }))
+
+        @Html.Raw(WebHelper.GetPartialLoaderHtml(new WebHelper.PartialLoaderOptions() {
+          ID = "partial_FocusHighest",
+          Url = PathHelper.Partials.SurveyViewer_Focus(null, null, PathHelper.Partials.SurveyViewer_Focus_ShowSection.Highest),
+          InitialWidth = "100%",
+          InitialHeight = "400px",
+          DeferInitialLoad = true,
+          InitialStyle = WebHelper.PartialLoaderStyle.Blank,
+          LoaderStyle = WebHelper.PartialLoaderStyle.Chart
+        }))
+
+        @Html.Raw(WebHelper.GetPartialLoaderHtml(new WebHelper.PartialLoaderOptions() {
+          ID = "partial_FocusLowest",
+          Url = PathHelper.Partials.SurveyViewer_Focus(null, null, PathHelper.Partials.SurveyViewer_Focus_ShowSection.Lowest),
+          InitialWidth = "100%",
+          InitialHeight = "400px",
+          DeferInitialLoad = true,
+          InitialStyle = WebHelper.PartialLoaderStyle.Blank,
+          LoaderStyle = WebHelper.PartialLoaderStyle.Chart
+        }))
+
+      </div>
+
+    }
+  }
+
+</section>
+
+@section PostScriptContent {
+
+  <script type="text/javascript">
+
+    (function ($) {
+
+      $(document).ready(function () {
+        var intakeId = @Html.Raw(Model.ProfileInfo.UserActivity?.Latest360IntakeCodeId.ToStringOrDefaultIfNull("null"));
+        if (intakeId != null) LoadReport(intakeId);
+      });
+
+      function LoadReport(intakeId) {
+
+        var delay = 300;
+
+        @if (Model.ProfileInfo.UserActivity?.Latest360IntakeCodeId != null && Model.Latest360CoacheeInfo != null) {
+          <text>
+          $.EachPartial(function ($partial, partialInfo) {
+            partialInfo.Clear();
+            if (isNumber(intakeId)) {
+              setTimeout(function (thisPartialInfo) {
+                var extraValues = {
+                  "@PathHelper.AbleUrlKeys.SurveyIntakeCodeId": intakeId,
+                  "@PathHelper.AbleUrlKeys.CoacheeGuid": "@Model.Latest360CoacheeInfo.CoacheeUID.ToStringNoBraces()",
+                  "@PathHelper.AbleUrlKeys.PreSurveyPartId": @Model.PreSurveyPartId,
+                  "@PathHelper.AbleUrlKeys.PreSurveyIntakeId": @Model.PreSurveyIntakeId,
+                  "@PathHelper.AbleUrlKeys.SurveyViewerBenchmark": "@PathHelper.SurveyViewerBenchmarkEnum.Global"
+                };
+                thisPartialInfo.LoadUrl(thisPartialInfo.initialUrl, extraValues);
+              }, delay, partialInfo);
+              delay += 300;
+            }
+          });
+          </text>
+        }
+      }
+
+    })(jQuery);
+  </script>
+
+}

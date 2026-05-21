@@ -1,0 +1,107 @@
+@page
+@model Integral.Web.PortalSite.Pages_Albert.ProjectQuotes
+@{ Layout = "_Layout_AdminLTE"; }
+
+@if (Model.QuoteList.IsNullOrEmpty()) {
+
+  @Html.Raw(Model.GetEmptyStateHtml())
+
+} else {
+
+  <div class="content-action-bar">
+    <div class="right">
+      @if (Model.CanCreateQuoteInProject) {
+        <a class="btn btn-primary" href="@PathHelper.Pages.ProjectQuoteCreate(Model.ProjectInfo.JobNumber)">New Quote</a>
+      }
+      @if (Model.CanRequestQuote) {
+        @Html.Raw(Model.GetRequestQuoteButtonHtml())
+      }
+    </div>
+  </div>
+
+  <div class="table-responsive">
+    <table class="tblQuotes table table-bordered table-hover table-rowlink" data-rowlink-url="">
+      <thead>
+        <tr>
+          <th class="w125 align-center">Created</th>
+          <th>Title</th>
+          <th class="type-user-nameWithAvatar">Deal Owner</th>
+          <th class="w125 align-center">Status</th>
+          <th class="w75 align-center">Items</th>
+          <th class="w125 align-right pr20">Total ex-GST</th>
+          <th class="w75"></th>
+        </tr>
+      </thead>
+      <tbody>
+        @if (!Model.QuoteList.IsNullOrEmpty()) {
+          foreach (var qi in Model.QuoteList) {
+            <tr tabindex="0" class="rowData" data-rowlink-url="@Model.GetRowLinkUrl(qi)">
+              <td class="align-center">@qi.CreatedUtc.UtcToTZ(null).ToString("d MMM yyyy")</td>
+              <td><p class="project-name">@Model.GetQuoteOrProjectName(qi).HTMLEncode()</p><p class="company-name">@Model.GetCompanyName(qi).HTMLEncode()</p></td>
+              <td class="type-user-nameWithAvatar">@Html.Raw(WebHelper.GetAvatarForTable_User(PathHelper.Images.UserPhoto(qi, PathHelper.Images.UserPhotoSize.Thumbnail, true), qi.OwnerFullName, qi.OwnerUserId))</td>
+              <td class="align-center">@Html.Raw(WebHelper.GetStatusBadge(qi.QuoteStatusText.HTMLEncode()))</td>
+              <td class="align-center">@qi.QuoteItemCount</td>
+              <td class="align-right pr20">@((qi.IsAccepted ? qi.ClientAcceptedAmount.GetValueOrDefault(0) : qi.QuoteItemTotalAmount).ToString("C"))</td>
+              <td class="w75">@Html.Raw(Model.GetQuoteViewIcon(qi))</td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+
+}
+
+@section PostScriptContent {
+
+  <script type="text/javascript">
+    (function($) {
+
+      $(document).ready(function () {
+
+        @if (!Model.CanRoleViewQuotes) {
+          <text>
+          $('.table').data('@WebHelper.DataAttrName.RowLinkNewTab', true);
+          </text>
+        }
+
+        @if (Model.CanRequestQuote) {
+          <text>
+          $("#btnRequestQuote").click(ShowQuoteRequestModal)
+          </text>
+        }
+
+      });
+
+      function ShowQuoteRequestModal() {
+
+        BootstrapDialog.show({
+          title: "Request Quote",
+          onshow: function (dialogRef) {
+            var modalDialog = dialogRef.getModalDialog();
+            modalDialog.css("width", "780px");
+            modalDialog.data("@WebHelper.DataAttrName.DialogRef", dialogRef);
+            var modalBody = dialogRef.getModalBody();
+            modalBody.busyLoad("show");
+            modalBody.load('@PathHelper.Partials.QuoteRequestModal(Model.ProjectInfo.JobNumber)',
+              function (data) {
+                modalBody.html(data);
+                modalBody.busyLoad("hide");
+                common_UpdateUI(modalBody);
+              }
+            );
+          },
+          onhide: function (dialogRef) {
+            var modalDialog = dialogRef.getModalDialog();
+            modalDialog.find("textarea.tinymce").each(function (i, e) {
+              var mce = $(e).data("editor");
+              if (mce != null) mce.remove();
+            });
+          }
+        });
+      }
+
+    })(jQuery);
+  </script>
+
+}

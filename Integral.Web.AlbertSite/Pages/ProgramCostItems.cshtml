@@ -1,0 +1,219 @@
+@page
+@model Integral.Web.PortalSite.Pages_Albert.ProgramCostItems
+@{ Layout = "_Layout_AdminLTE"; }
+
+@if (Model.ProgramCostItemListVisible) {
+
+  if (Model.CanSubmitPOtoXero) {
+
+    <form class="form-horizontal" id="formNewPO" action="#" method="post" onsubmit="return false;">
+      <input type="hidden" name="@PathHelper.FormKeys.AjaxAction" value="@Integral.Web.PortalSite.Pages_Albert.ProgramCostItems.AjaxAction.AssignPO" />
+      <input type="hidden" name="@Integral.Web.PortalSite.Pages_Albert.ProgramCostItems.FormFields.SelectedItemIds" value="" />
+
+      <div class="mb5">New PO Number:</div>
+      <div class="mb20"><input class="form-control" type="text" name="@Integral.Web.PortalSite.Pages_Albert.ProgramCostItems.FormFields.NewXeroPurchaseOrderNumber" size="10" value="@Model.GetNextPONumber()" /></div>
+
+      <div class="mt20 mb5">New PO Name:</div>
+      <div class="mb20"><input class="form-control" type="text" name="@Integral.Web.PortalSite.Pages_Albert.ProgramCostItems.FormFields.NewXeroPurchaseOrderName" size="40" /></div>
+
+      <div class="mt20 mb5">Xero Contact:</div>
+      <div class="flex gap30 flex-align-center flex-wrap">
+        <div class="flex0">
+          @Html.Raw(WebHelper.GetSelect(new WebHelper.SelectInfo(
+                  Integral.Web.PortalSite.Pages_Albert.ProgramCostItems.FormFields.NewXeroPurchaseOrderContactId,
+                  Model.GetXeroContactOptionsHtml())))
+        </div>
+        <div class="flex1">
+          <button class="btn btn-primary" id="btnAssignPO">Submit Purchase Order To Xero</button>
+        </div>
+      </div>
+
+    </form>
+
+  }
+
+  if (Model.CanAddCostItem) {
+    <div class="content-action-bar mt20">
+      <div class="right">
+        <a href="@PathHelper.Pages.ProgramCostItems_Add(Model.ProgramInfo.ProgramJobId)" class="btn btn-primary">Add Cost Item</a>
+      </div>
+    </div>
+  }
+
+  <div class="table-responsive">
+    <table class="tblProgramCostItems table table-bordered table-rowlink" data-rowlink-url="@PathHelper.Pages.ProgramCostItems_Edit(Model.ProgramInfo.ProgramJobId, null)">
+      <thead>
+        <tr>
+          @if (Model.CanSubmitPOtoXero) {
+            <th class="type-checkbox">Add to PO</th>
+          }
+          <th class="type-description">Description / Link</th>
+          <th class="type-xeronumber">Xero PO Number</th>
+          <th class="type-qty">Qty</th>
+          <th class="type-money">Unit Cost</th>
+          <th class="type-money">Unit Price</th>
+          <th class="type-yesno">GST</th>
+          <th class="type-yesno">Bill Client</th>
+          <th class="type-money">Cost Incurred</th>
+        </tr>
+      </thead>
+      <tbody>
+        @foreach (var costItem in Model.ProgramCostItemList) {
+          <tr tabindex="0" class="rowData" data-rowlink-id="@costItem.ProgramCostItemId">
+            @if (Model.CanSubmitPOtoXero) {
+              <td class="type-checkbox">@Html.Raw(Model.GetItemCheckBox(costItem))</td>
+            }
+            <td class="type-description">@Html.Raw(Model.GetDescriptionLink(costItem))</td>
+            <td class="type-xeronumber">@costItem.XeroPurchaseOrderNumber.HTMLEncode()</td>
+            <td class="type-qty">@costItem.Quantity.ToString()</td>
+            <td class="type-money">@costItem.UnitCost.ToString("C")</td>
+            <td class="type-money">@costItem.UnitPrice.ToString("C")</td>
+            <td class="type-yesno">@(costItem.GSTApplicable ? "Yes" : "No")</td>
+            <td class="type-yesno">@(costItem.BillToClient ? "Yes" : "No")</td>
+            <td class="type-money">@costItem.CostIncurredUtc.UtcToTZOrNull(ConfigHelper.DefaultTimeZoneInfo).ToString("d MMM yyyy")</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+}
+
+@if (Model.ProgramCostItemFormVisible) {
+
+  <form id="formItem" method="post" action="#" onsubmit="return false" class="form-horizontal">
+
+    <input type="hidden" name="@Integral.Web.PortalSite.Pages_Albert.ProgramCostItems.FormFields.ProgramJobId" value="@Model.ProgramInfo.ProgramJobId" />
+    <input type="hidden" name="@Integral.Web.PortalSite.Pages_Albert.ProgramCostItems.FormFields.ProgramCostItemId" value="@(Model.IsNewCostItem ? "" : Model.CostItemInfo.ProgramCostItemId.ToString())" />
+
+    @Html.Raw(WebHelper.GetTextInput("Description:", Integral.Web.PortalSite.Pages_Albert.ProgramCostItems.FormFields.Description, Model.CostItemInfo.Description, 7, "", !Model.CanEditCostItem))
+    @Html.Raw(WebHelper.GetTextArea("Notes:", Integral.Web.PortalSite.Pages_Albert.ProgramCostItems.FormFields.Notes, 2, 7, Model.CostItemInfo.Notes, "", !Model.CanEditCostItem))
+
+    @Html.Raw(WebHelper.GetTextInput("Quantity:", Integral.Web.PortalSite.Pages_Albert.ProgramCostItems.FormFields.Quantity, Model.CostItemInfo.Quantity.ToString(), 2, "", !Model.CanEditCostAndQty))
+
+    @Html.Raw(WebHelper.GetCurrencyInput("Unit Cost:", Integral.Web.PortalSite.Pages_Albert.ProgramCostItems.FormFields.UnitCost, Model.CostItemInfo.UnitCost, 2, 2, "", !Model.CanEditCostAndQty))
+    @Html.Raw(Model.GetCostItemMarkupPercent())
+
+    @Html.Raw(WebHelper.CustomCheckBoxRow("GST Applicable:", Integral.Web.PortalSite.Pages_Albert.ProgramCostItems.FormFields.GSTApplicable, "1", Model.IsNewCostItem ? true : Model.CostItemInfo.GSTApplicable, ""))
+
+    @Html.Raw(WebHelper.GetInputDateRow("Cost Incurred:", Integral.Web.PortalSite.Pages_Albert.ProgramCostItems.FormFields.CostIncurred, Model.CostItemInfo.CostIncurredUtc.UtcToTZOrNull(), "", !Model.CanEditCostItem))
+
+    @if (SessionHelper.AppAccess.Programs.CanSetQuoteItem(Model.ProgramInfo)) {
+      @Html.Raw(WebHelper.GetSelectRow("Quote Item:", Integral.Web.PortalSite.Pages_Albert.ProgramCostItems.FormFields.QuoteItemId, 7, Model.GetQuoteItemOptions(), Model.IsNewCostItem ? "" :
+            WebHelper.GetComponentQuoteTooltipAndLink(Model.CostItemInfo?.ComponentQuoteInfo.QuotePublicGuid, Model.CostItemInfo?.ComponentQuoteInfo?.QuoteItemDescription), !Model.CanEditCostItem))
+    }
+
+    @if (!Model.IsNewCostItem && SessionHelper.AppAccess.Programs.CanMoveToProgram(Model.ProgramInfo)) {
+      @Html.Raw(WebHelper.GetSelectRow("Move to Program:", Integral.Web.PortalSite.Pages_Albert.ProgramCostItems.FormFields.MoveToProgramJobId, 7, Model.GetMoveToProgramOptions(), "", !Model.CanEditCostItem))
+    }
+
+    <div class="btnholder">
+      @if (Model.CanEditCostItem || Model.CanEditUnitPrice) {
+        <button type="button" class="btn btn-primary btnUpdate floatright" id="btnUpdate">@(Model.IsNewCostItem ? "Add New" : "Update") Item</button>
+        @if (!Model.IsNewCostItem && Model.CanDeleteCostItem) {
+          <button type="button" class="btn btn-warning btnDelete floatleft" @Html.Raw(Model.disableDelete ? (" title=\"" + Integral.Web.PortalSite.Pages_Albert.ProgramCostItems.disableDeleteMsg + "\"") : "") id="btnDelete">Delete Item</button>
+        }
+      }
+      <button type="button" class="btn btn-secondary btnCancel @(!Model.CanEditCostItem ? "floatleft" : "floatright mr20")"
+        data-mode="cancel">@(!Model.CanEditCostItem ? "Back" : "Cancel")</button>
+    </div>
+
+  </form>
+
+}
+
+@section PostScriptContent {
+
+  <script type="text/javascript">
+    (function($) {
+
+      var btnUpdate, formItem, isNewItem, defaultCostItemMarkupPercent, canOverwriteUnitPrice;
+      var btnAssignPO;
+      var disableDelete, formNewPO;
+      var tlTimeout = null;
+
+      $(document).ready(function() {
+
+        btnAssignPO = $("#btnAssignPO");
+        formNewPO = $("#formNewPO");
+
+        btnUpdate = $("#btnUpdate");
+        btnDelete = $("#btnDelete");
+        formItem = $("#formItem");
+        isNewItem = @(Model.IsNewCostItem ? "true" : "false");
+        disableDelete = @(Model.disableDelete ? "true" : "false");
+        defaultCostItemMarkupPercent = @(Model.ProjectInfo.DefaultCostItemMarkupPercent.GetValueOrDefault(ConfigHelper.DefaultCostItemMarkupPercent));
+        canOverwriteUnitPrice = @Model.CanEditUnitPrice.ToJSTrueFalse();
+
+        btnUpdate.click(UpdateItem);
+        btnDelete.click(DeleteItem);
+        btnAssignPO.click(AssignPO);
+
+        $(".btnCancel").click(function (e) { history.go(-1); });
+
+        if (isNewItem) formItem.find("input:text:not(:disabled):first").trigger("focus");
+
+        @if (Model.CanEditCostAndQty) {
+          <text>$('input[name="@Integral.Web.PortalSite.Pages_Albert.ProgramCostItems.FormFields.UnitCost"]').on("keyup change", CalculateUnitPrice);</text>
+        }
+
+      }); // ready.
+
+      function CalculateUnitPrice() {
+
+        if (canOverwriteUnitPrice) return;
+
+        // Get the value of UnitCost input removing currency symbol and convert it to a float
+        var unitCost = parseFloat($(this).val().replace(/[^0-9.]/g, ''));
+
+        // Check if the unitCost is a valid number
+        if (!isNaN(unitCost)) {
+          // Calculate unit Price using unitCost and markup percentage if unitCost is valid
+          var unitPrice = unitCost * (1 + defaultCostItemMarkupPercent);
+
+          // Set the value of UnitPrice input to the calculated value
+          $('input[name="@Integral.Web.PortalSite.Pages_Albert.ProgramCostItems.FormFields.UnitPrice"]').val(unitPrice);
+        } else {
+          // Clear the value of UnitPrice input if Cost is invalid
+          $('input[name="@Integral.Web.PortalSite.Pages_Albert.ProgramCostItems.FormFields.UnitPrice"]').val("");
+        }
+      }
+
+      function AssignPO() {
+
+        var selectedItemIds = "";
+        $('input[name^="@Integral.Web.PortalSite.Pages_Albert.ProgramCostItems.FormFields.ChkItemId"]:checked').each(function(i, e) {
+          if (selectedItemIds.length > 0) selectedItemIds += ",";
+          selectedItemIds += e.value;
+        });
+        $('input[name="@Integral.Web.PortalSite.Pages_Albert.ProgramCostItems.FormFields.SelectedItemIds"]').val(selectedItemIds);
+
+        AjaxSubmit({ form: formNewPO });
+      }
+
+      function DeleteItem() {
+
+        if (disableDelete) {
+          common_InfoDialog("@Integral.Web.PortalSite.Pages_Albert.ProgramCostItems.disableDeleteMsg");
+          return;
+        }
+
+        if (!confirm("Delete this Item?")) return;
+
+        AjaxSubmit({
+          form: formItem,
+          action: "@Integral.Web.PortalSite.Pages_Albert.ProgramCostItems.AjaxAction.DeleteItem"
+        });
+      }
+
+      function UpdateItem() {
+        AjaxSubmit({
+          form: formItem,
+          action: "@Integral.Web.PortalSite.Pages_Albert.ProgramCostItems.AjaxAction.UpdateItem"
+        });
+      }
+
+    })(jQuery);
+  </script>
+
+}

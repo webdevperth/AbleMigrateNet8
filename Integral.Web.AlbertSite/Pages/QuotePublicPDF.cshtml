@@ -1,0 +1,160 @@
+@page
+@model Integral.Web.PortalSite.Pages_Albert.QuotePublicPDF
+@{ Layout = "_Layout_Public"; }
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+
+<style>
+  .content { padding: 25px 50px; }
+
+  @@media only screen and (max-width: 480px) {
+    .content { padding: 25px 20px; }
+  }
+</style>
+
+<div class="quoteView">
+  <div class="heading heading-pdf w100p">
+    <div class="logo"><img src="@PathHelper.Images.TenantOrgLogo(Model.QuoteInfo, true)" /></div>
+    <div class="title">
+      <h2>@Model.QuoteInfo.QuoteTitle.HTMLEncode()</h2>
+      <p>Job Number: @Model.QuoteInfo.JobNumber</p>
+    </div>
+  </div>
+</div>
+
+<section class="signform content quoteView">
+
+  @if (Model.Panel_Overview_Visible) {
+    <div class="tab-panel" id="Panel_Overview">
+
+      <div class="quote-overview-box">
+        @Html.Raw(Model.QuoteInfo.CoverLetterHtml)
+      </div>
+
+    </div>
+  }
+
+  @if (Model.Panel_Team_Visible) {
+    <div class="tab-panel" id="Panel_Team">
+
+      <h3>Your Project Team</h3>
+      <p>Your project team includes a Program Lead Consultant, a Program Coodinator and the program delivery team.</p>
+      @Html.Raw(Model.GetTeamHtml())
+
+    </div>
+  }
+
+  @if (Model.Panel_Costing_Visible) {
+    <div class="tab-panel" id="Panel_Costing">
+
+      <h4 class="mt20">Quote Components</h4>
+
+      <table class="tblItems w100p">
+        <thead>
+          <tr>
+            <th class="w125">Type</th>
+            <th>Description</th>
+            <th class="w75 align-center">Option</th>
+            <th class="w125 pl0 pr0 align-center">Qty</th>
+            <th class="w100 align-right pl0 pr0">$ / Unit</th>
+            <th class="w125 align-right">Total Price</th>
+          </tr>
+        </thead>
+        <tbody>
+          @foreach (var QuoteItem in Model.QuoteInfo.QuoteItems) {
+            <tr class="item-row" data-item="@QuoteItem.QuoteItemId">
+              <td class="item-td-cat">@QuoteItem.CategoryName</td>
+              <td class="item-td-des">@Html.Raw(QuoteItem.ItemDescription)</td>
+              <td class="item-td-opt align-center pl0 pr0">@Model.GetOptional(QuoteItem)</td>
+              <td class="item-td-qty align-center pl0 pr0">@(QuoteItem.Quantity == null ? "" : (((decimal)QuoteItem.Quantity).ToString("0.##")) + QuoteItem.QuantityDescr.HTMLEncode().EnsureStartsWith(" ", true))</td>
+              <td class="item-td-amt align-right pl0 pr0">@(QuoteItem.UnitPrice == null ? "" : ((decimal)QuoteItem.UnitPrice).ToString("C"))</td>
+              <td class="item-td-tot align-right item-linetotal" data-amount="@(QuoteItem.UnitPrice == null || QuoteItem.Quantity == null ? "" : (QuoteItem.UnitPrice.GetValueOrDefault(0) * QuoteItem.Quantity.GetValueOrDefault(0)).ToString())">@(QuoteItem.UnitPrice == null || QuoteItem.Quantity == null ? "" : (QuoteItem.UnitPrice.GetValueOrDefault(0) * QuoteItem.Quantity.GetValueOrDefault(0)).ToString("C"))</td>
+            </tr>
+          }
+        </tbody>
+        <tfoot>
+          <tr>
+            <td colspan="5" class="total-title">Sub-Total</td>
+            <td class="total-amount total-amount-no-gst">@Model.QuoteTotalExGST.ToString("C")</td>
+          </tr>
+          <tr>
+            <td colspan="5" class="total-title">GST</td>
+            <td class="total-amount total-amount-gst">@Model.QuoteTotalGST.ToString("C")</td>
+          </tr>
+          <tr>
+            <td colspan="5" class="total-title">Total</td>
+            <td class="total-amount total-amount-inc-gst">@Model.QuoteTotalIncGST.ToString("C")</td>
+          </tr>
+        </tfoot>
+      </table>
+
+    </div>
+  }
+
+  @if (Model.Panel_Contact_Visible) {
+    <div class="tab-panel" id="Panel_Contact">
+
+      <div class="signformbox">
+
+        <h4>Main Contact</h4>
+
+        <div class="container w100p mb20">
+          <div class="row-info">
+            <div class="input-text-dual">
+              <input type="text" readonly autocomplete="off" class="form-control" name="ClientFirstName" value="@Model.ClientFirstName" placeholder="Client First Name" />
+              <input type="text" readonly autocomplete="off" class="form-control" name="ClientLastName" value="@Model.ClientLastName" placeholder="Client Last Name" />
+            </div>
+          </div>
+          <div class="row-info">
+            <input readonly autocomplete="off" type="text" class="form-control" name="ClientEmail" value="@Model.ClientEmailAddress" placeholder="Client Email" />
+          </div>
+        </div>
+
+        <h4>Accounts Payable Contact</h4>
+
+        <div class="container" width="100%">
+          <div class="row-info">
+            <div class="input-text-dual">
+              <input type="text" autocomplete="off" class="form-control" name="AccFirstName" value="@Model.QuoteInfo.AccPayFirstName" />
+              <input type="text" autocomplete="off" class="form-control" name="AccLastName" value="@Model.QuoteInfo.AccPayLastName" />
+            </div>
+          </div>
+          <div class="row-info">
+            <input autocomplete="off" type="text" class="form-control" name="AccEmail" value="@Model.QuoteInfo.AccPayEmailAddress" />
+          </div>
+        </div>
+
+        <div class="total-amount mt20">
+          Total Amount: <span class="total-amount-inc-gst amount">@((Model.QuoteGSTApplicable ? Model.QuoteTotalIncGST : Model.QuoteTotalExGST).ToString("C"))</span> <small>@(Model.QuoteGSTApplicable ? "inc" : "ex") GST</small>
+        </div>
+
+        @if (!Model.QuoteInfo.IsAccepted) {
+          <h4 class="mt20">Please see our @Html.Raw(WebHelper.GetSimpleLink(ConfigHelper.ExternalUrls.AbleTermsAndConditionsUrl, "Terms and Conditions", true)).</h4>
+        }
+
+        @if (Model.QuoteInfo.IsAccepted) {
+          <h4 class="mt20">Proposal accepted on: @WebHelper.DisplayDate(Model.QuoteInfo.ClientAcceptedUtc.UtcToTZOrNull()).</h4>
+        }
+
+      </div>
+
+    </div>
+  }
+
+</section>
+
+@section PostScriptContent {
+
+  <script type="text/javascript">
+    (function($) {
+
+      $(document).ready(function () {
+
+      });
+
+    })(jQuery);
+  </script>
+
+}

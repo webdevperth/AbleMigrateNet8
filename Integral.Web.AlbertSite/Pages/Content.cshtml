@@ -1,0 +1,165 @@
+@page
+@model Integral.Web.PortalSite.Pages_Albert.Content
+@{ Layout = "_Layout_AdminLTE"; }
+
+<div class="content-action-bar">
+  <div class="left">
+    @if (Model.CanSearchContent) {
+      <div class="search-input">
+        <i class="fa fa-search"></i>
+        <input type="text" id="txtSearch" name="@Integral.Web.PortalSite.Pages_Albert.Content.FormFields.SearchTerm" value="" placeholder="Search any keyword..." autofocus="autofocus">
+      </div>
+    }
+  </div>
+
+  <div class="right">
+    @if (Model.CanAddModule) {
+      <a class="btn btn-primary float-right" href="@PathHelper.Pages.ModuleEdit_AddContent()">Add Module</a>
+    }
+    @if (Model.CanAddContent) {
+      <a class="btn btn-primary float-right" href="@PathHelper.Pages.ContentDetails_AddContent()">Add Microlearning</a>
+    }
+  </div>
+</div>
+
+<div class="@WebHelper.Content.CSS.ContentContainer"></div>
+
+@section PostScriptContent {
+
+  <script type="text/javascript">
+    (function ($) {
+
+      var txtSearch, contentContainer, canSearchContent, lastSearchValue, isPageLoad;
+      var keyTimeout = null;
+
+      $(document).ready(function () {
+
+        isPageLoad = true;
+        lastSearchValue = "";
+        canSearchContent = @Html.Raw(Model.CanSearchContent.ToJSTrueFalse());
+        contentContainer = $(".@WebHelper.Content.CSS.ContentContainer");
+        txtSearch = canSearchContent ? $("#txtSearch") : $("<input>").attr({ type: "text", id: "txtSearch" });;
+        txtSearch.val("");
+
+        txtSearch.keyup(SearchKeyUp);
+        SearchContent();
+
+        $(document).on('click', '.@WebHelper.Content.CSS.FavouriteContentButton', HandleFavouriteContent);
+
+        $(document).on('click', '.@WebHelper.Modules.CSS.BtnShowModuleLibrary', function (e) {
+
+          var $library = $('.@WebHelper.Modules.CSS.ModuleLibraryShowPanel');
+          var $button = $(this);
+
+          if ($library.hasClass('displaynone')) {
+            // Show the library
+            $library.removeClass('displaynone');
+            // Change button style and text
+            $button.removeClass('btn-primary').addClass('btn-secondary').text('@WebHelper.Modules.BtnShowModuleLibrary_HideLibrary');
+          } else {
+            // Hide the library
+            $library.addClass('displaynone');
+            // Change button style and text
+            $button.removeClass('btn-secondary').addClass('btn-primary').text('@WebHelper.Modules.BtnShowModuleLibrary_ExploreLibrary');
+          }
+        });
+
+      }); // ready.
+
+      function HandleFavouriteContent(ev) {
+        var btnFavourite = $(ev.target).closest('.@WebHelper.Content.CSS.FavouriteContentButton');
+        var contentId = $(ev.target).closest('.@WebHelper.Content.CSS.FavouriteContentButton').data('contentid');
+        var isFavourite = $(ev.target).closest('.@WebHelper.Content.CSS.FavouriteContentButton').data('isfavourited') == "1" ? "0" : "1"; // Toggle favorite status
+        var contentCardHtml = $(ev.target).closest('.@WebHelper.Content.CSS.ContentCard');
+        var cardIonIcon = contentCardHtml.find('.@WebHelper.Content.CSS.FavouriteContentButton ion-icon');
+
+        AjaxSubmit({
+          url: "@PathHelper.CurrentUrl",
+          action: "@Integral.Web.PortalSite.Pages_Albert.Content.AjaxAction.UpdateFavourite",
+          data: {
+            "@Integral.Web.PortalSite.Pages_Albert.Content.FormFields.ContentId": contentId,
+            "@Integral.Web.PortalSite.Pages_Albert.Content.FormFields.IsFavourite": isFavourite
+          },
+          onSuccess: function (jqXHR, data) {
+
+            btnFavourite.attr('data-isfavourited', isFavourite); // Update new favorite value
+            isFavourite = isFavourite == "1";
+            var iconName = isFavourite ? "heart" : "heart-outline";
+            cardIonIcon.attr("name", iconName);
+
+            // Add card to favourites panel if favourited, otherwise remove it
+            if (isFavourite) {
+              $('#panel-@Integral.Web.PortalSite.Pages_Albert.Content.ParticipantTabsEnum.Favourites .@WebHelper.Content.CSS.ContentCardContainer').append(contentCardHtml.clone());
+
+              if ($('#panel-@Integral.Web.PortalSite.Pages_Albert.Content.ParticipantTabsEnum.Favourites .badge-no-record').length > 0) {
+                $('#panel-@Integral.Web.PortalSite.Pages_Albert.Content.ParticipantTabsEnum.Favourites .badge-no-record').remove();
+              }
+
+            } else {
+              $('#panel-@Integral.Web.PortalSite.Pages_Albert.Content.ParticipantTabsEnum.Favourites .@WebHelper.Content.CSS.ContentCard').filter(function () {
+                return $(this).find('.@WebHelper.Content.CSS.FavouriteContentButton').data('contentid') === contentId;
+              }).remove();
+            }
+
+          },
+          onFail: function (jqXHR, data) {
+          },
+          onError: function (jqXHR, textStatus, errorThrown) {
+            common_InfoDialog("Failed to toggle favourite, please try again later.");
+          },
+          onAlways: function (data_or_jqXHR, textStatus, jqXHR_or_errorThrown) {
+            contentCardHtml.focus();
+          }
+        });
+      }
+
+      function SearchKeyUp(ev, data) {
+        var isImmediate = (data && data.immediate);
+        if (keyTimeout) clearTimeout(keyTimeout);
+        if (isImmediate) SearchContent();
+        else keyTimeout = setTimeout(function () { keyTimeout = null; SearchContent(); }, 800);
+      }
+
+      function SearchContent() {
+        var searchValue = txtSearch.val();
+        var minSearchVal = 3;
+
+        if (searchValue != lastSearchValue || searchValue.length > minSearchVal || isPageLoad) {
+
+          // Get active tab
+          var activeTabName = $('.content-container ul.nav li.active').length ? $('.content-container ul.nav li.active').attr('data-tabname') : "";
+          contentContainer.empty();
+          lastSearchValue = searchValue;
+          isPageLoad = false;
+
+          AjaxSubmit({
+            url: "@PathHelper.CurrentUrl",
+            action: "@Integral.Web.PortalSite.Pages_Albert.Content.AjaxAction.SearchContent",
+            data: {
+              "@Integral.Web.PortalSite.Pages_Albert.Content.FormFields.SearchTerm": searchValue
+            },
+            onSuccess: function (jqXHR, data) {
+              contentContainer.append(data["@Integral.Web.PortalSite.Pages_Albert.Content.AjaxReturnData.ContentHtml"]);
+              common_UpdateUI(contentContainer);
+
+              if (activeTabName) {
+                // Trigger click on active tab before consult
+                $('.content-container ul.nav li[data-tabname="' + activeTabName + '"] a').trigger('click');
+              }
+            },
+            onFail: function (jqXHR, data) {
+            },
+            onError: function (jqXHR, textStatus, errorThrown) {
+              common_InfoDialog("Failed to get content, please try again later.");
+            },
+            onAlways: function (data_or_jqXHR, textStatus, jqXHR_or_errorThrown) {
+              txtSearch.focus();
+            }
+          });
+        }
+      }
+
+    })(jQuery);
+  </script>
+
+}

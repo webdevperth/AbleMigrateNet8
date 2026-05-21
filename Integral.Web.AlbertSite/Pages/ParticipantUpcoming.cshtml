@@ -1,0 +1,131 @@
+@page
+@model Integral.Web.PortalSite.Pages_Albert.ParticipantUpcoming
+@{ Layout = "_Layout_AdminLTE"; }
+
+@Html.Raw(Model.GetUserActionCards())
+@Html.Raw(Model.GetUserProjectOptions())
+
+<div id="paxUpcoming">
+  @if (!Model.ProjectsUserIsIn.IsNullOrEmpty() && Model.ProjectsUserIsIn.Count < 2) {
+    @Html.Raw(Model.GetProjectUserHtml())
+  }
+</div>
+
+@section PostScriptContent {
+
+  <script type="text/javascript">
+    (function($) {
+
+      var selJobNumbers, divPaxUpcoming, actionsBarHeight, cardContainer, IsShowMoreToggleInPage;
+
+      $(document).ready(function() {
+
+        selJobNumbers = $('select[name="@Integral.Web.PortalSite.Pages_Albert.ParticipantUpcoming.FormFields.ProjectJobNumber"]');
+        divPaxUpcoming = $("#paxUpcoming");
+        cardContainer = $('.action-cards-container');
+        IsShowMoreToggleInPage = $('.updateShowActions').length > 0;
+        LoadBlockingModal();
+        UpdateUpcomingPage();
+        selJobNumbers.change(UpdateUpcomingPage);
+
+        if (IsShowMoreToggleInPage) {
+          actionsBarHeight = GetActionsRowHeight();
+          cardContainer.height(actionsBarHeight); // Set initial height of action bar
+        }
+
+        UpdateShowActionCards();
+        UpdateUpcomingPage();
+
+        $(window).on('resize', function () {
+          if (IsShowMoreToggleInPage) {
+            actionsBarHeight = GetActionsRowHeight();
+            if (cardContainer.hasClass('action-cards-container-row')) {
+              // Apply only if in collapsed state
+              cardContainer.height(actionsBarHeight);
+            }
+          }
+        });
+
+      }); // ready.
+
+      function LoadBlockingModal() {
+
+        @if (Model.ShowBlockingModal) {
+
+          <text>
+          BootstrapDialog.show({
+            title: "Purchase Services",
+            closable: false,          // Remove the close button
+            closeByBackdrop: false,  // Prevent closing when clicking backdrop
+            closeByKeyboard: false,  // Prevent closing with ESC key
+            onshow: function (dialogRef) {
+              var modalDialog = dialogRef.getModalDialog();
+              modalDialog.data("@WebHelper.DataAttrName.DialogRef", dialogRef);
+              var modalBody = dialogRef.getModalBody();
+              modalBody.busyLoad("show");
+              modalBody.load("@PathHelper.Partials.PurchaseServices()",
+                function (data) {
+                  modalBody.html(data);
+                  modalBody.busyLoad("hide");
+                  common_UpdateUI(modalBody);
+                }
+              );
+            }
+          });
+          </text>
+        }
+      }
+
+      function UpdateShowActionCards() {
+        $('.updateShowActions').on('click', function () {
+
+          // Check which class is currently applied and toggle accordingly
+          if (cardContainer.hasClass('action-cards-container-row')) {
+
+            cardContainer.css('height', 'auto'); // Expand
+            cardContainer.removeClass('action-cards-container-row').addClass('action-cards-container-all');
+            $(this).text('Show Less');
+
+          } else if (cardContainer.hasClass('action-cards-container-all')) {
+
+            cardContainer.height(actionsBarHeight); // Collapse
+            cardContainer.removeClass('action-cards-container-all').addClass('action-cards-container-row');
+            $(this).text('Show All');
+          }
+        });
+      }
+
+      function UpdateUpcomingPage() {
+
+        if (selJobNumbers.length == 0) return;
+
+        var projectJobNumber = selJobNumbers.val();
+        AjaxSubmit({
+          action: "@Integral.Web.PortalSite.Pages_Albert.ParticipantUpcoming.AjaxAction.ChangeProject",
+          data: {
+            "@Integral.Web.PortalSite.Pages_Albert.ParticipantUpcoming.FormFields.ProjectJobNumber": projectJobNumber
+          },
+          onSuccess: function (jqXHR, data) {
+            divPaxUpcoming.empty();
+            var upcomingHtml = data["@Integral.Web.PortalSite.Pages_Albert.ParticipantUpcoming.AjaxReturnData.UpcomingHtml"];
+            divPaxUpcoming.html(upcomingHtml);
+            common_UpdateUI(divPaxUpcoming);
+          },
+          onError: function (jqXHR, textStatus, errorThrown) {
+
+          }
+        });
+      }
+
+      function GetActionsRowHeight() {
+        let height = 0;
+        $('.action-card').slice(0, 1).each(function () { // Adjust the slice range as needed
+          height += $(this).outerHeight(true); // true to include margin
+        });
+        return height;
+      }
+
+    })(jQuery);
+  </script>
+
+}

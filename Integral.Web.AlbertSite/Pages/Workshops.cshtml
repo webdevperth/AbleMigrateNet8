@@ -1,0 +1,497 @@
+@page
+@model Integral.Web.PortalSite.Pages_Albert.Workshops
+@{ Layout = "_Layout_AdminLTE"; }
+
+@if (Model.WorkshopListVisible) {
+
+  if (Model.WorkshopEventList.IsNullOrEmpty()) {
+
+    @Html.Raw(WebHelper.GetEmptyStatePageHtml(
+      title: "Workshops",
+      description: $"No workshops yet.{(Model.CanAddWorkshop ? " Add the first one!" : "")}",
+      addActionHtml: Model.CanAddWorkshop,
+      actionButtonText: "Add Workshop",
+      actionButtonPath: PathHelper.Pages.Workshops_Add(Model.ProgramInfo.ProgramJobId)))
+
+  } else {
+
+    <script>
+      (function ($) {
+        $(document).ready(function () {
+
+          $("#@WebHelper.ElementID.SlideoutPanelTitle").text("Workshop Booking");
+
+          $(".cal-book-link").click(function (evt) {
+            evt.preventDefault();
+
+            $("body").removeClass("slideout-show");
+
+            // Copy details from row daya into slideout content.
+            var row = $(evt.target).closest("tr.rowData");
+            $('.details-list span[data-name]').each(function (i, e) {
+              var $e = $(e);
+              $e.html("");
+              if (row.length === 1) $e.html(row.data($e.data("name")));
+            });
+            // Set the iframe calendly url.
+            $(".booking-iframe").prop("src", row.data("calendly-url"));
+
+            // Show slideout with a bit of a delay.
+            window.setTimeout(function () {
+              $("body").addClass("slideout-show");
+            }, 500);
+          });
+        });
+      })(jQuery);
+    </script>
+
+    <div class="flex flex-column h100p" data-appendTo="@WebHelper.ElementID.SlideoutPanelBody">
+      <ul class="details-list flex0">
+        <li><label>Name</label><span data-name="title" class="strong"></span></li>
+        <li><label>Date</label><span data-name="date-text"></span></li>
+        <li><label>Project</label><span data-name="project-name"></span></li>
+        <li class="instructions"><label>Instructions</label><span data-name="instructions-html"></span></li>
+      </ul>
+      <iframe class="booking-iframe flex1" src="about:blank"></iframe>
+    </div>
+
+    if (Model.CanAddWorkshop) {
+      <div class="content-action-bar">
+        <div class="right">
+          <a href="@PathHelper.Pages.Workshops_Add(Model.ProgramInfo.ProgramJobId)" class="btn btn-primary">Add Workshop</a>
+        </div>
+      </div>
+    }
+
+    <div class="table-responsive">
+      <table class="table table-bordered" @Html.Raw(Model.GetWorkshopTableRowLinkAttr())>
+        <thead>
+          <tr>
+            <th class="type-datetime-2lines">Time</th>
+            <th class="type-description">Title</th>
+            <th class="type-user-nameWithAvatar">Facilitator</th>
+            <th class="type-delivery">Type</th>
+            <th class="type-status">Status</th>
+            <th class="type-evalscore">Eval Score</th>
+            @if (Model.CanViewTotalRevenue) {
+              <th class="type-money-sm">@Model.RevenueTextDisplay</th>
+            }
+            @if (Model.CanViewPartnerRevenue) {
+              <th class="type-money-sm">Partner</th>
+            }
+            @if (Model.CanSeeBookingColumn) {
+              <th class="w100"></th>
+            }
+          </tr>
+        </thead>
+        <tbody>
+          @if (Model.WorkshopEventList != null) {
+            foreach (var workshop in Model.WorkshopEventList) {
+              <tr tabindex="0" class="rowData"
+                data-rowlink-id="@workshop.WorkshopEventId"
+                data-title="@workshop.WorkshopTitle.HTMLEncode()"
+                data-date-text="@Model.GetStartDateForSlideout(workshop).HTMLEncode()"
+                data-project-name="@((Model.ProjectInfo.ProjectName + " > " + workshop.ProgramJobName).HTMLEncode())"
+                data-instructions-html="@workshop.WorkshopNotes.SafeHTML().HTMLEncode().ValueIfNullOrEmpty("n/a")"
+                data-calendly-url="@Model.GetCalendlyGroupBookingUrl(workshop, true)">
+
+                <td class="type-datetime-2lines">@Html.Raw(Model.GetWorkshopStartDateTimeHtml(workshop))</td>
+                <td class="type-description">@workshop.WorkshopTitle.HTMLEncode()</td>
+                <td class="type-user-nameWithAvatar">
+                    @Html.Raw(WebHelper.GetAvatarForTable_User(PathHelper.Images.UserPhoto(workshop, PathHelper.Images.UserPhotoSize.Thumbnail, true),
+                            workshop.KeyFacilitatorFirstName + " " + workshop.KeyFacilitatorLastName.HTMLEncode(), workshop.KeyFacilitatorUserId))
+                </td>
+                <td class="type-delivery">@Html.Raw(WebHelper.GetDeliveryBadge(!workshop.IsVirtual)) </td>
+                <td class="type-status">@Html.Raw(WebHelper.GetStatusBadge(workshop.WorkshopStatusName.HTMLEncode()))</td>
+                <td class="type-evalscore">@Html.Raw(Model.GetEvalScore(workshop))</td>
+                @if (Model.CanViewTotalRevenue) {
+                  <td class="type-money-sm">@workshop.WorkshopRevenue.GetValueOrDefault(0).ToString("C")</td>
+                }
+                @if (Model.CanViewPartnerRevenue) {
+                  <td class="type-money-sm">@Html.Raw(WebHelper.GetPartnerRevenueValue(workshop.WorkshopRevenue, Model.ProgramInfo.Partner_DeliveryPercentage, workshop.KeyFacilitatorUserId == Model.userInfo.UserId, Model.CanViewAllDeliveryTeamRevenue))</td>
+                }
+                @if (Model.CanSeeBookingColumn) {
+                  <td class="">@Html.Raw(Model.GetListBookingLink(workshop))</td>
+                }
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+
+  }
+
+}
+
+@if (Model.WorkshopFormVisible) {
+
+  <div class="container-fluid">
+
+    <ul class="nav nav-tabs nav-tabs-underlined" id="formTabs">
+      <li role="presentation" class="active" data-tabname="@Integral.Web.PortalSite.Pages_Albert.Workshops.TabName.Details">
+        <a class="nav-link" id="tab-@Integral.Web.PortalSite.Pages_Albert.Workshops.TabName.Details" data-toggle="tab" href="#panel-@Integral.Web.PortalSite.Pages_Albert.Workshops.TabName.Details" role="tab" aria-controls="panel-@Integral.Web.PortalSite.Pages_Albert.Workshops.TabName.Details">Workshop Details</a>
+      </li>
+      @if (!Model.IsNewWorkshop) {
+        <li role="presentation" data-tabname="@Integral.Web.PortalSite.Pages_Albert.Workshops.TabName.Attendance">
+          <a class="nav-link" id="tab-@Integral.Web.PortalSite.Pages_Albert.Workshops.TabName.Attendance" data-toggle="tab" href="#panel-@Integral.Web.PortalSite.Pages_Albert.Workshops.TabName.Attendance" role="tab" aria-controls="panel-@Integral.Web.PortalSite.Pages_Albert.Workshops.TabName.Attendance" aria-selected="true">Attendance</a>
+        </li>
+      }
+    </ul>
+
+    <div class="tab-content">
+      <div class="tab-pane tab-quote tab-@Integral.Web.PortalSite.Pages_Albert.Workshops.TabName.Details fade in active" id="panel-@Integral.Web.PortalSite.Pages_Albert.Workshops.TabName.Details" role="tabpanel" aria-labelledby="tab-@Integral.Web.PortalSite.Pages_Albert.Workshops.TabName.Details"></div>
+      <div class="tab-pane tab-quote tab-@Integral.Web.PortalSite.Pages_Albert.Workshops.TabName.Attendance fade in" id="panel-@Integral.Web.PortalSite.Pages_Albert.Workshops.TabName.Attendance" role="tabpanel" aria-labelledby="tab-@Integral.Web.PortalSite.Pages_Albert.Workshops.TabName.Attendance"></div>
+    </div>
+
+    <div class="tab-panel" data-appendTo="panel-@Integral.Web.PortalSite.Pages_Albert.Workshops.TabName.Details">
+
+      <div class="row mb10">
+        <div class="col-md-6"><h4>Workshop Details</h4></div>
+        @if (Model.CanCopyWorkshop) {
+          <div class="btnholder-header floatright">
+            <button type="button" id="btnCopy" class="btn btn-info" title="Copy Workshop">@Html.Raw(WebHelper.Icon.Copy)</button>
+          </div>
+        }
+      </div>
+
+      <form id="formWorkshop" method="post" action="#" onsubmit="return false" class="form-horizontal">
+
+        <input type="hidden" name="@PathHelper.FormKeys.AjaxAction" value="UpdateWorkshop" />
+
+        @if (Model.WorkshopEventInfo.HasEvalScore) {
+          @Html.Raw(WebHelper.GetTextDisplayRow("Workshop Eval Results:", 10, Model.GetEvalLink(Model.WorkshopEventInfo)))
+        }
+
+        @if (!Model.IsNewWorkshop) {
+
+          @Html.Raw(WebHelper.GetTextDisplayRow("Workshop Booking Link:", 10, Model.GetViewBookingLink()))
+
+          @Html.Raw(WebHelper.GetTextInput("Workshop ID:", Integral.Web.PortalSite.Pages_Albert.Workshops.FormFields.FriendlyWorkshopId, Model.WorkshopEventInfo.FriendlyWorkshopId, 2,
+              Model.IsNewWorkshop ? "(Update to see assigned ID)" : "", true))
+
+        }
+
+        @Html.Raw(WebHelper.GetTextInput("Workshop Title:", Integral.Web.PortalSite.Pages_Albert.Workshops.FormFields.WorkshopTitle, Model.WorkshopEventInfo.WorkshopTitle, 5, "", Model.IsLimitedEdit || Model.IsReadOnly, false, WebHelper.InputMaxLength.WorkshopTitle))
+
+        @Html.Raw(WebHelper.GetSelectRow("Session Type:", Integral.Web.PortalSite.Pages_Albert.Workshops.FormFields.SessionTypeId, 5, Model.GetSessionTypeOptions(), "", Model.IsLimitedEdit || Model.IsReadOnly))
+
+        <div class="form-group ajaxSubmit-field row">
+          <label class="control-label col-md-2">Workshop Type:</label>
+          <div class="col-md-6 col-sm-12 col-xs-12" id="SessionTypeBadge"></div>
+        </div>
+
+        @Html.Raw(WebHelper.GetTextInput("Location:", Integral.Web.PortalSite.Pages_Albert.Workshops.FormFields.Location, Model.WorkshopEventInfo.Location, 5, "", Model.IsLimitedEdit || Model.IsReadOnly))
+
+        @Html.Raw(Model.GetStatusOptions("Workshop Status:"))
+
+        @if (Model.CanViewTotalRevenue) {
+          @Html.Raw(WebHelper.GetCurrencyInput("Workshop Revenue:", Integral.Web.PortalSite.Pages_Albert.Workshops.FormFields.WorkshopRevenue, Model.WorkshopEventInfo.WorkshopRevenue.GetValueOrDefault(0), 2, 4, "", Model.IsLimitedEdit || Model.IsReadOnly, true))
+        }
+
+        @if (Model.PartnerRevenue != 0 && Model.CanViewPartnerRevenue) {
+          @Html.Raw(WebHelper.GetCurrencyInput("Partner Revenue:", Integral.Web.PortalSite.Pages_Albert.Workshops.FormFields.PartnerRevenue, Model.PartnerRevenue, 2, 4, "", true))
+        }
+
+        @if (Model.PLCRevenue != 0) {
+          @Html.Raw(WebHelper.GetCurrencyInput("PLC Revenue:", Integral.Web.PortalSite.Pages_Albert.Workshops.FormFields.PLCRevenue, Model.PLCRevenue, 2, 4, "", true))
+        }
+
+        @if (Model.SalesRevenue != 0) {
+          @Html.Raw(WebHelper.GetCurrencyInput("Sales Revenue:", Integral.Web.PortalSite.Pages_Albert.Workshops.FormFields.SalesRevenue, Model.SalesRevenue, 2, 4, "", true))
+        }
+
+        @Html.Raw(WebHelper.GetSelectRow("Time Zone:", Integral.Web.PortalSite.Pages_Albert.Workshops.FormFields.TimeZoneIdIana, 4, Model.GetTimeZoneOptions(), "", Model.IsReadOnly))
+
+        @Html.Raw(WebHelper.GetInputDateRow("Date:", Integral.Web.PortalSite.Pages_Albert.Workshops.FormFields.StartDate, Model.WorkshopEventInfo.WhenStartLocal, "", Model.IsReadOnly))
+        @Html.Raw(WebHelper.GetTimePickerRow("Start Time:", Integral.Web.PortalSite.Pages_Albert.Workshops.FormFields.StartTime, Model.WorkshopEventInfo.WhenStartLocal, "", Model.IsReadOnly))
+        @Html.Raw(WebHelper.GetTimePickerRow("End Time:", Integral.Web.PortalSite.Pages_Albert.Workshops.FormFields.EndTime, Model.WorkshopEventInfo.WhenEndLocal, "", Model.IsReadOnly))
+
+        @if (Model.IsLimitedEdit || Model.IsReadOnly) {
+          @Html.Raw(WebHelper.GetTextDisplayRow("Key Facilitator:", (Model.WorkshopEventInfo.KeyFacilitatorFirstName + " " + Model.WorkshopEventInfo.KeyFacilitatorLastName).HTMLEncode()))
+          @Html.Raw(WebHelper.GetTextDisplayRow("Co-Facilitator:", (Model.WorkshopEventInfo.CoFacilitatorFirstName + " " + Model.WorkshopEventInfo.CoFacilitatorLastName).HTMLEncode()))
+        } else {
+          @Html.Raw(Model.GetPartnerDropdownHtml("Key Facilitator:", Integral.Web.PortalSite.Pages_Albert.Workshops.FormFields.KeyFacilitatorUserId, 4, Model.WorkshopEventInfo.KeyFacilitatorUserId))
+          @Html.Raw(Model.GetPartnerDropdownHtml("Co-Facilitator:", Integral.Web.PortalSite.Pages_Albert.Workshops.FormFields.CoFacilitatorUserId, 4, Model.WorkshopEventInfo.CoFacilitatorUserId))
+        }
+
+        @Html.Raw(WebHelper.CustomCheckBoxRow("Disable Evals:", Integral.Web.PortalSite.Pages_Albert.Workshops.FormFields.DisableEvals, WebHelper.DefaultCheckboxValue, Model.WorkshopEventInfo.DisableEvals, Model.IsReadOnly, ""))
+
+        @Html.Raw(WebHelper.CustomCheckBoxRow("Add PAX To Invite:", Integral.Web.PortalSite.Pages_Albert.Workshops.FormFields.AddParticipantsToInvite, WebHelper.DefaultCheckboxValue, Model.WorkshopEventInfo.AddParticipantsToInvite, Model.IsReadOnly, ""))
+
+        @Html.Raw(WebHelper.CustomCheckBoxRow("Hide From Program Content:", Integral.Web.PortalSite.Pages_Albert.Workshops.FormFields.HideFromProgramContent, WebHelper.DefaultCheckboxValue, Model.WorkshopEventInfo.HideFromProgramContent, Model.IsReadOnly, ""))
+
+        @Html.Raw(WebHelper.GetRichTextArea("Additional PAX Info:", Integral.Web.PortalSite.Pages_Albert.Workshops.FormFields.ParticipantAdditionalInfo, 2, 6, Model.WorkshopEventInfo.ParticipantAdditionalInfo, "", Model.IsReadOnly))
+
+        @Html.Raw(WebHelper.GetTextArea("Workshop Notes:", Integral.Web.PortalSite.Pages_Albert.Workshops.FormFields.WorkshopNotes, 2, 6, Model.WorkshopEventInfo.WorkshopNotes, "", Model.IsReadOnly))
+
+        @if (Model.CanSetQuoteItem) {
+          @Html.Raw(WebHelper.GetQuoteItemSelectRow("Quote Item:", 6,
+                  Integral.Web.PortalSite.Pages_Albert.Workshops.FormFields.QuoteItemId,
+                  Model.IsNewWorkshop, Model.WorkshopEventInfo.ComponentQuoteInfo,
+                  Model.GetQuoteItemOptions(),
+                  Model.IsLimitedEdit || Model.IsReadOnly))
+        }
+
+        @if (!Model.IsReadOnly && Model.CanMoveToProgram) {
+          @Html.Raw(WebHelper.GetSelectRow("Move to Program:", Integral.Web.PortalSite.Pages_Albert.Workshops.FormFields.MoveToProgramJobId, 6, Model.GetMoveToProgramOptions(), "", Model.IsLimitedEdit || Model.IsReadOnly))
+        }
+
+        <div class="btnholder">
+          @if (!Model.IsReadOnly) {
+            <button type="button" class="btn btn-primary btnUpdate floatright" id="btnUpdate">@(Model.IsNewWorkshop ? "Add New" : "Update") Workshop</button>
+            if (Model.CanDeleteWorkshop) {
+              <button type="button" class="btn btn-warning btnDelete floatleft" id="btnDelete">Delete Workshop</button>
+            }
+          }
+          <button type="button" class="btn btn-secondary btnCancel @(Model.IsReadOnly ? "floatleft" : "floatright mr20")" data-mode="cancel">@(Model.IsReadOnly ? "Back" : "Cancel")</button>
+        </div>
+
+      </form>
+
+      <div id="dlgCopyWorkshop" class="displaynone">
+        <form id="frmCopyWorkshop" method="post" action="#" onsubmit="return false;">
+          <div class="row pl20 form-horizontal">
+            @Html.Raw(WebHelper.GetTextInput("New Workshop title:", Integral.Web.PortalSite.Pages_Albert.Workshops.FormFields.CopyWorkshopTitle, "", 8))
+            @Html.Raw(WebHelper.GetSelectRow("Quote Item:", Integral.Web.PortalSite.Pages_Albert.Workshops.FormFields.CopyWorkshopQuoteItemId, 8, Model.GetQuoteItemOptions(), ""))
+          </div>
+        </form>
+      </div>
+
+    </div>
+
+    @if (!Model.IsNewWorkshop) {
+      <div class="tab-panel" data-appendTo="panel-@Integral.Web.PortalSite.Pages_Albert.Workshops.TabName.Attendance">
+
+        <div class="row mb10"><div class="col-md-6"><h4>Workshop Attendance</h4></div></div>
+
+        @if (Model.AttendanceList.Count() != 0) {
+
+          <form id="formWorkshopAttendance" method="post" action="#" onsubmit="return false" class="form-horizontal">
+
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Participant</th>
+                  <th>Attended</th>
+                  <th>Confirmed by</th>
+                </tr>
+              </thead>
+              <tbody>
+                @foreach (var item in Model.AttendanceList) {
+                  <tr>
+                    <td>@item.CoacheeFullname</td>
+                    <td>@Html.Raw(WebHelper.CustomCheckBox(Integral.Web.PortalSite.Pages_Albert.Workshops.FormFields.WorkshopAttendanceIds, item.CoacheeId.ToString(), item.IsConfirmed, ""))</td>
+                    <td>
+                      <p>@item.ConfirmedByUser</p>
+                      <p>@WebHelper.DisplayDate(item.ConfirmedDateTimeUtc.UtcToTZOrNull(null), "")</p>
+                  </td>
+                </tr>
+                }
+              </tbody>
+            </table>
+
+            <div class="row mt30">
+              <div class="col-md-12 align-center">
+                <button type="button" class="btn btn-secondary btnCancel mr30" data-mode="cancel">Cancel</button>
+                <button type="button" class="btn btn-primary btnUpdate" id="btnUpdateAttendance">Save changes</button>
+              </div>
+            </div>
+
+          </form>
+
+        } else {
+          <p>No record of attendance.</p>
+        }
+
+      </div>
+    }
+
+  </div>
+
+}
+
+@section PostScriptContent {
+
+  <script type="text/javascript">
+    (function($) {
+
+      var btnUpdate, formWorkshop, isNewWorkshop, inpStartDate;
+      var $btnCopy, $inpCopyWorkshopTitle, $frmCopyWorkshop;
+
+      $(document).ready(function() {
+
+        btnUpdate = $("#btnUpdate");
+        btnDelete = $("#btnDelete");
+        formWorkshop = $("#formWorkshop");
+        isNewWorkshop = @Html.Raw(Model.IsNewWorkshop.ToJSTrueFalse());
+        inpStartDate = $('input[name="@Integral.Web.PortalSite.Pages_Albert.Workshops.FormFields.StartDate"]');
+        $btnCopy = $("#btnCopy");
+        $frmCopyWorkshop = $("#frmCopyWorkshop");
+        $inpCopyWorkshopTitle = $frmCopyWorkshop.find('input[name="@Integral.Web.PortalSite.Pages_Albert.Workshops.FormFields.CopyWorkshopTitle"]');
+
+        $(".btnCancel").click(function (e) { history.go(-1); });
+        $btnCopy.click(DoCopy);
+
+        inpStartDate.on("change", DateChanged);
+
+        btnUpdate.click(UpdateWorkshop);
+        btnDelete.click(DeleteWorkshopModal);
+
+        $("#selFindJob").select2({
+          placeholder: "Job # or Name",
+          minimumInputLength: 3,
+          width: 500,
+          dropdownAutoWidth: true,
+          ajax: {
+            url: "#",
+            dataType: "json",
+            data: function (params) { return { search: params.term, mode: "sel2" }; },
+            delay: 750
+          }
+        })
+        .change(function(e) {
+          var jobId = $(this).val();
+        });
+
+        if (isNewWorkshop) formWorkshop.find("input:text:not(:disabled):first").trigger("focus");
+
+        GetSessionTypeBadge();
+        $('select[name="@Integral.Web.PortalSite.Pages_Albert.Workshops.FormFields.SessionTypeId"]').change(GetSessionTypeBadge);
+
+
+      }); // ready.
+
+      function DoCopy() {
+        $inpCopyWorkshopTitle.val("");
+        ShowCopyDialog();
+      }
+
+      function ShowCopyDialog() {
+        var dlg = common_InfoDialog("#dlgCopyWorkshop", {
+          name: "CopyWorkshop",
+          title: "Copy Workshop",
+          width: 800,
+          focus: $inpCopyWorkshopTitle,
+          buttons: [
+            { text: "Cancel", class: "btn-secondary mr20", isDefault: false, isPrimary: false, close: true },
+            { text: "Create Copy", id: "btnCopyCreate", isDefault: true, isPrimary: true, close: false, click: function (ev) { CopyDialogSubmit(ev, dlg); } }
+          ],
+          shown: function () { },
+          hide: function () { }
+        });
+      }
+
+      function CopyDialogSubmit(clickEvent, dialog) {
+
+        var $btnCopyCreate = $("#btnCopyCreate");
+
+        AjaxSubmit({
+          form: $frmCopyWorkshop,
+          action: "@Integral.Web.PortalSite.Pages_Albert.Workshops.AjaxAction.CopyWorkshop",
+          onError: function (jqXHR, textStatus, errorThrown) {
+            common_InfoDialog("Process failed, please try again later.");
+          }
+        });
+      }
+
+      function GetSessionTypeBadge() {
+        var selDataWorkshopType = $('select[name="@Integral.Web.PortalSite.Pages_Albert.Workshops.FormFields.SessionTypeId"]').find(':selected').data('@Integral.Web.PortalSite.Pages_Albert.Workshops.DataAttr.WorkshopType');
+        var badgeHtml = "N/A";
+
+        if (selDataWorkshopType) {
+          var badgeText = selDataWorkshopType == '@Integral.Web.PortalSite.Pages_Albert.Workshops.WorkshopTypeEnum.F2F' ? "In person" : "Online";
+          var badgeIcon = selDataWorkshopType == '@Integral.Web.PortalSite.Pages_Albert.Workshops.WorkshopTypeEnum.F2F' ? "storefront-outline" : "laptop-outline";
+
+          // Construct the badge HTML
+          badgeHtml = '<div class="type-delivery"><span class="badge"><ion-icon name="' + badgeIcon + '" role="img"></ion-icon>&nbsp;' + badgeText + '</span></div>';
+        }
+        // Set the HTML content of the div with badge
+        $('#SessionTypeBadge').html(badgeHtml);
+      }
+
+
+      function DateChanged(e) {
+        if ($(e.target).val() == "") {
+          $('select[name^="@Integral.Web.PortalSite.Pages_Albert.Workshops.FormFields.StartTime"]').val("").trigger("change");
+          $('select[name^="@Integral.Web.PortalSite.Pages_Albert.Workshops.FormFields.EndTime"]').val("").trigger("change");
+        }
+      }
+
+      function DeleteWorkshopModal() {
+
+        BootstrapDialog.show({
+          type: BootstrapDialog.TYPE_WARNING,
+          title: 'Confirmation',
+          message: "Delete this Workshop?",
+          buttons: [
+            {
+              label: 'No', cssClass: 'btn-secondary',
+              action: function (dialog) { dialog.close(); }
+            },
+            {
+              label: 'Yes', cssClass: 'btn-primary',
+              action: function (dialog) { dialog.close(); DeleteWorkshop(); }
+            }
+          ]
+        });
+      }
+
+      function DeleteWorkshop() {
+
+        AjaxSubmit({
+          form: formWorkshop,
+          action: "DeleteWorkshop",
+          onError: function (jqXHR, textStatus, errorThrown) {
+            common_InfoDialog("Couldn't delete the Workshop. Please try again later.");
+          }
+        });
+      }
+
+      function UpdateWorkshop() {
+
+        AjaxSubmit({
+          form: formWorkshop,
+          action: "UpdateWorkshop",
+          onError: function (jqXHR, textStatus, errorThrown) {
+            common_InfoDialog("Couldn't update the Workshop. Please try again later.");
+          }
+        });
+      }
+
+    })(jQuery);
+  </script>
+
+  <script type="text/javascript">
+    (function ($) {
+
+      var btnUpdateAttendance;
+      var formWorkshopAttendance;
+
+      $(document).ready(function () {
+
+        formWorkshopAttendance = $("#formWorkshopAttendance");
+        btnUpdateAttendance = $("#btnUpdateAttendance");
+        btnUpdateAttendance.click(UpdateAttendance);
+
+        $(".btnCancel").click(function (e) { history.go(-1); });
+
+      }); // ready.
+
+      function UpdateAttendance() {
+
+        AjaxSubmit({
+          form: formWorkshopAttendance,
+          action: "UpdateAttendance",
+          onSuccess: function (jqXHR, data) {
+            location.reload();
+          },
+          onError: function (jqXHR, textStatus, errorThrown) {
+            common_InfoDialog("Couldn't update the Workshop's Attendance. Please try again later.");
+          }
+        });
+      }
+
+    })(jQuery);
+  </script>
+}

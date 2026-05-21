@@ -1,0 +1,163 @@
+@page
+@model Integral.Web.PortalSite.Pages_Albert.PartnerUpcoming
+@{ Layout = "_Layout_AdminLTE"; }
+
+<div class="alert alert-info" role="alert">
+  Only items that are booked will appear here.<br/>
+  For example, coaching sessions that are not yet booked will not appear until they are booked.
+</div>
+
+<div class="table-title">Coaching Sessions</div>
+
+<div class="table-responsive">
+  <table class="tblCoachees table table-bordered table-hover table-rowlink" data-rowlink-url="">
+    <thead>
+      <tr>
+        <th class="type-datetime">Date &amp; Time</th>
+        <th class="type-fullname">Coachee</th>
+        <th class="type-description">Job / Program</th>
+        <th class="type-money">Delivery</th>
+      </tr>
+    </thead>
+    <tbody>
+      @foreach (var coachingSession in Model.SessionList) {
+        <tr tabindex="0" class="rowData" data-rowlink-id="@PathHelper.Pages.CoacheeEdit(coachingSession.CoacheeId, PathHelper.CoacheeTabEnum.summary)">
+          <td class="type-datetime">@Html.Raw(Model.GetSessionTime(coachingSession))</td>
+          <td class="type-fullname">@((coachingSession.CoacheeFirstName + " " + coachingSession.CoacheeLastName).HTMLEncode())</td>
+          <td class="type-description">
+            @((coachingSession.ProgramJobNumber + ": " + coachingSession.CompanyName + " - " + coachingSession.ProgramJobName).HTMLEncode())
+          </td>
+          <td class="type-money">@Model.GetCoacheeDeliveryAmount(coachingSession).ToString("C")</td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>
+
+<div class="table-title">Workshops</div>
+
+<div class="table-responsive">
+  <table class="tblWorkshops table table-bordered table-hover table-rowlink" data-rowlink-url="@PathHelper.Pages.Workshops_List(null)">
+    <thead>
+      <tr>
+        <th class="type-datetime">Date &amp; Time</th>
+        <th class="w125 align-center">Status</th>
+        <th class="type-description">Title</th>
+        <th class="type-description">Job / Program</th>
+        <th class="type-money">Delivery</th>
+      </tr>
+    </thead>
+    <tbody>
+      @foreach (var workshopEvent in Model.WorkshopList) {
+        <tr tabindex="0" class="rowData" data-rowlink-id="@workshopEvent.ProgramJobId">
+          <td class="type-datetime">@Html.Raw(Model.GetWorkshopTime(workshopEvent))</td>
+          <td class="align-center pl0 pr0">@workshopEvent.WorkshopStatusName.HTMLEncode()</td>
+          <td class="mw300 overflow-ellipsis">@workshopEvent.WorkshopTitle.HTMLEncode()</td>
+          <td class="mw400 overflow-ellipsis">@((workshopEvent.ProgramJobNumber + ": " + workshopEvent.CompanyName + " - " + workshopEvent.ProgramJobName).HTMLEncode())</td>
+          <td class="type-money">@Model.GetWorkshopDeliveryAmount(workshopEvent).ToString("C")</td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>
+
+<div class="table-title">Consulting Items</div>
+
+<div class="table-responsive">
+  <table class="tblConsulting table table-bordered table-hover table-rowlink" data-rowlink-url="@PathHelper.Pages.Consulting_List(null)">
+    <thead>
+      <tr>
+        <th class="type-datetime">Completion</th>
+        <th class="type-description">Description</th>
+        <th class="type-description">Job / Program</th>
+        <th class="type-money">Delivery</th>
+      </tr>
+    </thead>
+    <tbody>
+      @foreach (var consultingItem in Model.ConsultingItemList) {
+        <tr tabindex="0" class="rowData" data-rowlink-id="@consultingItem.ProgramJobId">
+          <td class="type-datetime">@consultingItem.CompletionDateUtc.UtcToTZOrNull(ConfigHelper.DefaultTimeZoneInfo).ToString("d MMM yyyy")</td>
+          <td class="type-description">@consultingItem.ItemTitle.HTMLEncode()</td>
+          <td class="type-description">@((consultingItem.JobNumber + ": " + consultingItem.CompanyName + " - " + consultingItem.JobName).HTMLEncode())</td>
+          <td class="type-money">@Model.GetConsultingDeliveryAmount(consultingItem).ToString("C")</td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>
+
+<div class="table-title">Sales Revenue</div>
+
+<div class="table-responsive">
+  <table class="tblSales table table-bordered">
+    <thead>
+      <tr>
+        <th class="type-datetime">Date</th>
+        <th class="type-description">Description</th>
+        <th class="type-description">Job / Program</th>
+        <th class="type-money">Revenue</th>
+      </tr>
+    </thead>
+    <tbody>
+      @foreach (var salesItem in Model.SalesItemList) {
+        <tr tabindex="0" class="rowData" data-rowlink-id="@salesItem.ProgramJobId">
+          <td class="type-datetime">@salesItem.ItemDateUtc.UtcToTZ(ConfigHelper.DefaultTimeZoneInfo).ToString("d MMM yyyy")</td>
+          <td class="type-description">@salesItem.ItemName.HTMLEncode()</td>
+          <td class="type-description">@((salesItem.JobNumber + ": " + salesItem.CompanyName + " - " + salesItem.CompanyName).HTMLEncode())</td>
+          <td class="type-money">@salesItem.SalesRevenue.ToString("C")</td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>
+
+<div class="table-title">PLC Revenue</div>
+
+<div class="table-responsive">
+  <table class="tblPLC table table-bordered">
+    <thead>
+      <tr>
+        <th class="type-datetime">Date</th>
+        <th class="type-description">Description</th>
+        <th class="type-description">Job / Program</th>
+        <th class="type-money">Revenue</th>
+      </tr>
+    </thead>
+    <tbody>
+      @foreach (var plcItem in Model.PLCItemList) {
+        <tr tabindex="0" class="rowData" data-rowlink-id="@plcItem.ProgramJobId">
+          <td class="type-datetime">@plcItem.ItemDateUtc.UtcToTZ(ConfigHelper.DefaultTimeZoneInfo).ToString("d MMM yyyy")</td>
+          <td class="type-description">@plcItem.ItemName.HTMLEncode()</td>
+          <td class="type-description">@((plcItem.JobNumber + ": " + plcItem.JobName + " - " + plcItem.CompanyName).HTMLEncode())</td>
+          <td class="type-money">@plcItem.PLCRevenue.ToString("C")</td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>
+
+@section PostScriptContent {
+
+  <script type="text/javascript">
+    (function($) {
+
+      var selPayRuns;
+
+      $(document).ready(function() {
+
+        selPayRuns = $("#selPayRuns");
+
+        selPayRuns.change(function (e) {
+          var payRunId = selPayRuns.val();
+          if (payRunId == "")
+            location.href = "@PathHelper.Pages.CoachPayRuns(Model.CoachInfo.UserId)";
+          else
+            location.href = "@PathHelper.Pages.CoachPayRuns(Model.CoachInfo.UserId, null)" + payRunId;
+        });
+
+      }); // ready.
+
+    })(jQuery);
+  </script>
+
+}

@@ -1,0 +1,360 @@
+@page
+@model Integral.Web.PortalSite.Pages_Albert.QuotePublicView
+@{ Layout = "_Layout_Public"; }
+
+<style>
+  /* Override (proposal tab has no padding) */
+  .tab-content {
+    padding: 0px
+  }
+  .tabMargin{
+    margin-top: 20px
+  }
+</style>
+
+<div class="container quoteView">
+
+  <div class="heading flex-wrap-sm">
+    <div class="logo"><img src="@PathHelper.Images.TenantOrgLogo(Model.QuoteInfo, true)" /></div>
+    <div class="title">
+      <h2>@Model.QuoteInfo.QuoteTitle.HTMLEncode()</h2>
+    </div>
+  </div>
+
+  @if (!Model.QuoteInfo.IsAccepted) {
+
+    <div class="signform">
+
+      <div class="main-tabs-outer">
+        <ul class="nav nav-tabs nav-tabs-underlined" id="">
+          @if (Model.QuoteHasOverview) {
+            <li role="presentation" data-tabname="@Integral.Web.PortalSite.Pages_Albert.QuotePublicView.TabName.Overview">
+              <a class="nav-link" id="tab-@Integral.Web.PortalSite.Pages_Albert.QuotePublicView.TabName.Overview" data-toggle="tab" href="#panel-@Integral.Web.PortalSite.Pages_Albert.QuotePublicView.TabName.Overview" role="tab" aria-controls="panel-@Integral.Web.PortalSite.Pages_Albert.QuotePublicView.TabName.Overview" aria-selected="true">Overview</a>
+            </li>
+          }
+          @if (Model.ShowProposalTab) {
+            <li role="presentation" data-tabname="@Integral.Web.PortalSite.Pages_Albert.QuotePublicView.TabName.Proposal">
+              <a class="nav-link" id="tab-@Integral.Web.PortalSite.Pages_Albert.QuotePublicView.TabName.Proposal" data-toggle="tab" href="#panel-@Integral.Web.PortalSite.Pages_Albert.QuotePublicView.TabName.Proposal" role="tab" aria-controls="panel-@Integral.Web.PortalSite.Pages_Albert.QuotePublicView.TabName.Proposal" aria-selected="true">Proposal</a>
+            </li>
+          }
+          @if (Model.QuoteHasTeam) {
+            <li role="presentation" data-tabname="@Integral.Web.PortalSite.Pages_Albert.QuotePublicView.TabName.Team">
+              <a class="nav-link" id="tab-@Integral.Web.PortalSite.Pages_Albert.QuotePublicView.TabName.Team" data-toggle="tab" href="#panel-@Integral.Web.PortalSite.Pages_Albert.QuotePublicView.TabName.Team" role="tab" aria-controls="panel-@Integral.Web.PortalSite.Pages_Albert.QuotePublicView.TabName.Team">Team</a>
+            </li>
+          }
+          <li role="presentation" data-tabname="@Integral.Web.PortalSite.Pages_Albert.QuotePublicView.TabName.Costing">
+            <a class="nav-link" id="tab-@Integral.Web.PortalSite.Pages_Albert.QuotePublicView.TabName.Costing" data-toggle="tab" href="#panel-@Integral.Web.PortalSite.Pages_Albert.QuotePublicView.TabName.Costing" role="tab" aria-controls="panel-@Integral.Web.PortalSite.Pages_Albert.QuotePublicView.TabName.Costing">Costing</a>
+          </li>
+          @if (Model.CanViewSigningTab) {
+            <li role="presentation" data-tabname="@Integral.Web.PortalSite.Pages_Albert.QuotePublicView.TabName.Accept">
+              <a class="nav-link" id="tab-@Integral.Web.PortalSite.Pages_Albert.QuotePublicView.TabName.Accept" data-toggle="tab" href="#panel-@Integral.Web.PortalSite.Pages_Albert.QuotePublicView.TabName.Accept" role="tab" aria-controls="panel-@Integral.Web.PortalSite.Pages_Albert.QuotePublicView.TabName.Accept">Accept</a>
+            </li>
+          }
+          <li role="presentation" class="tab-pdflink dropdown " title="Download PDF">
+
+            <a href="#" class="dropdown-toggle pdflink" data-toggle="dropdown" tabindex="-1">
+              @Html.Raw(WebHelper.Icon.PDF_outline.ToString())
+            </a>
+            <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in" aria-labelledby="userDropdown">
+              <a class="dropdown-item" href="@PathHelper.Pages.QuotePublicPDF(Model.QuoteInfo.PublicGuid)" target="_blank">Download Quote PDF</a>
+
+              @if (!Model.QuoteInfo.QwilrPDFUrl.IsNullOrEmptyOrWhitespace()) {
+                <div class="dropdown-divider"></div>
+                <a class="dropdown-item" href="@Model.QuoteInfo.QwilrPDFUrl" target="_blank">Download Proposal PDF</a>
+              }
+            </div>
+
+          </li>
+        </ul>
+      </div>
+
+      <form id="signform" class="form-horizontal" method="post" action="@PathHelper.Pages.QuotePublicView(Model.QuoteInfo.PublicGuid)" onsubmit="return false">
+        <div class="tab-content">
+          @if (Model.QuoteHasOverview) {
+            <div class="tab-pane tab-quote tab-@Integral.Web.PortalSite.Pages_Albert.QuotePublicView.TabName.Overview fade in tabMargin" id="panel-@Integral.Web.PortalSite.Pages_Albert.QuotePublicView.TabName.Overview" role="tabpanel" aria-labelledby="tab-@Integral.Web.PortalSite.Pages_Albert.QuotePublicView.TabName.Overview">
+            </div>
+          }
+          @if (Model.ShowProposalTab) {
+            <div class="tab-pane tab-quote tab-@Integral.Web.PortalSite.Pages_Albert.QuotePublicView.TabName.Proposal fade in" id="panel-@Integral.Web.PortalSite.Pages_Albert.QuotePublicView.TabName.Proposal" role="tabpanel" aria-labelledby="tab-@Integral.Web.PortalSite.Pages_Albert.QuotePublicView.TabName.Proposal"></div>
+          }
+          @if (Model.QuoteHasTeam) {
+            <div class="tab-pane tab-quote tab-@Integral.Web.PortalSite.Pages_Albert.QuotePublicView.TabName.Team fade in tabMargin" id="panel-@Integral.Web.PortalSite.Pages_Albert.QuotePublicView.TabName.Team" role="tabpanel" aria-labelledby="tab-@Integral.Web.PortalSite.Pages_Albert.QuotePublicView.TabName.Team"></div>
+          }
+          <div class="tab-pane tab-quote tab-@Integral.Web.PortalSite.Pages_Albert.QuotePublicView.TabName.Costing fade in tabMargin" id="panel-@Integral.Web.PortalSite.Pages_Albert.QuotePublicView.TabName.Costing" role="tabpanel" aria-labelledby="tab-@Integral.Web.PortalSite.Pages_Albert.QuotePublicView.TabName.Costing"></div>
+          <div class="tab-pane tab-quote tab-@Integral.Web.PortalSite.Pages_Albert.QuotePublicView.TabName.Accept fade in tabMargin" id="panel-@Integral.Web.PortalSite.Pages_Albert.QuotePublicView.TabName.Accept" role="tabpanel" aria-labelledby="tab-@Integral.Web.PortalSite.Pages_Albert.QuotePublicView.TabName.Accept"></div>
+        </div>
+      </form>
+
+      @if (Model.QuoteHasOverview) {
+        <div class="" data-appendTo="panel-@Integral.Web.PortalSite.Pages_Albert.QuotePublicView.TabName.Overview">
+          <div class="quote-overview-box">
+            @Html.Raw(Model.QuoteInfo.CoverLetterHtml)
+          </div>
+        </div>
+      }
+
+      @if (Model.QuoteHasUrlId) {
+        <div class=" iframe-parent" data-appendTo="panel-@Integral.Web.PortalSite.Pages_Albert.QuotePublicView.TabName.Proposal">
+          <iframe src="@Model.SalesContentUrl.HTMLEncode()" class="proposal-frame"></iframe>
+        </div>
+      }
+
+      @if (Model.QuoteHasWebPageUrl) {
+        <div class=" iframe-parent" data-appendTo="panel-@Integral.Web.PortalSite.Pages_Albert.QuotePublicView.TabName.Proposal">
+          <iframe src="@Model.QuoteInfo.QuoteSalesContentWebPageUrl.HTMLEncode()" class="proposal-frame"></iframe>
+        </div>
+      }
+
+      @if (Model.QuoteHasQwilrEmbedded) {
+        <div class=" iframe-parent" data-appendTo="panel-@Integral.Web.PortalSite.Pages_Albert.QuotePublicView.TabName.Proposal">
+          <iframe src="@Model.QuoteInfo.QwilrUrl" class="proposal-frame"></iframe>
+        </div>
+      }
+
+      @if (Model.QuoteHasPDF) {
+        <div class="iframe-parent" data-appendTo="panel-@Integral.Web.PortalSite.Pages_Albert.QuotePublicView.TabName.Proposal">
+          <iframe
+              src="@(PathHelper.UrlPath.JS)/pdfjs/web/viewer.html?file=@PathHelper.PDF.QuoteSalesPDFUrl(Model.QuoteInfo)#page=1&zoom=75%"
+            class="proposal-frame quote-pdf"
+            title="Proposal PDF"></iframe>
+          <!-- Fallback -->
+          <a href="@PathHelper.PDF.QuoteSalesPDFUrl(Model.QuoteInfo)">Download Quote PDF Here</a>
+        </div>
+      }
+
+      @if (Model.QuoteHasTeam) {
+        <div class="mb20" data-appendTo="panel-@Integral.Web.PortalSite.Pages_Albert.QuotePublicView.TabName.Team">
+          <h3 class="mt0">Your Project Team</h3>
+          <p class="mb20">Your project team includes a Program Lead Consultant, a Program Coodinator and the program delivery team.</p>
+          <div class="team-list">
+            @Html.Raw(Model.GetTeamHtml())
+          </div>
+          <div class="mt30 mb20"><button type="button" class="btn btn-primary btn-next">Costing &gt;</button></div>
+        </div>
+      }
+
+      <div class="" data-appendTo="panel-@Integral.Web.PortalSite.Pages_Albert.QuotePublicView.TabName.Costing">
+
+        <div class="table-responsive">
+          <table class="table w100pc">
+            <thead>
+              <tr>
+                <th class="w125 hidden-xs hidden-sm">Type</th>
+                <th class="w50 pl0 pr0">&nbsp;</th>
+                <th>Description</th>
+                <th class="w125 pl0 pr0 align-center">Qty</th>
+                <th class="w100 align-right pl0 pr0">$ / Unit</th>
+                <th class="w125 align-right">Total Price</th>
+              </tr>
+            </thead>
+            <tbody>
+              @foreach (var quoteItem in Model.QuoteInfo.QuoteItems) {
+                <tr class="item-row" data-item="@quoteItem.QuoteItemId">
+                  <td class="item-td-cat pr0 hidden-xs hidden-sm">@quoteItem.CategoryName</td>
+                  <td class="item-td-opt pl0 pr0">@Html.Raw(Model.GetOptional(quoteItem))</td>
+                  <td class="item-td-des">
+                    <div class="item-des-body">
+                      <div class="visible-xs visible-sm"><div class="cat-title">@quoteItem.CategoryName</div></div>
+                      @Html.Raw(quoteItem.ItemDescription)
+                    </div>
+                  </td>
+                  <td class="item-td-qty align-center pl0 pr0">@quoteItem.Quantity.ToString("0.##", "")</td>
+                  <td class="item-td-amt align-right pl0 pr0">@quoteItem.UnitPrice.ToString("C", "")</td>
+                  <td class="item-td-tot align-right item-linetotal" data-amount="@(quoteItem.UnitPrice == null || quoteItem.Quantity == null ? "" : (quoteItem.UnitPrice.GetValueOrDefault(0) * quoteItem.Quantity.GetValueOrDefault(0)).ToString())">@(quoteItem.UnitPrice == null || quoteItem.Quantity == null ? "" : (quoteItem.UnitPrice.GetValueOrDefault(0) * quoteItem.Quantity.GetValueOrDefault(0)).ToString("C"))</td>
+                </tr>
+              }
+            </tbody>
+            <tfoot>
+              <tr>
+                <td colspan="6" class="pl0 pr0">
+                  <table class="w100pc">
+                    <tr>
+                      <td class="pl20">
+                        <p class="mt10 mb5"><b>Client Approval</b></p>
+                        <p>Please click below to indicate your acceptance of the quote.</p>
+                        <button type="button" class="btn btn-primary btn-next mt15 mb0">Accept</button>
+                      </td>
+                      <td align="right" class="pt10">
+                        <table class="table noborder" width="100%">
+                          <tr>
+                            <td class="nowrap total-title pt0 pr0">Sub-Total</td>
+                            <td class="nowrap w125 total-amount pt0 total-amount-no-gst"></td>
+                          </tr>
+                          <tr>
+                            <td class="nowrap total-title pt0 pr0">GST</td>
+                            <td class="nowrap total-amount pt0 total-amount-gst"></td>
+                          </tr>
+                          <tr>
+                            <td class="nowrap total-title pt0 pr0">Total</td>
+                            <td class="nowrap total-amount pt0 total-amount-inc-gst"></td>
+                          </tr>
+                        </table>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+
+      <div class="" data-appendTo="panel-@Integral.Web.PortalSite.Pages_Albert.QuotePublicView.TabName.Accept">
+        <div class="">
+          <h3 class="mb10">Client Contact</h3>
+          <div class="row-info">
+            <div class="input-text-dual">
+              <input type="text" readonly autocomplete="off" class="form-control" name="ClientFirstName" value="@Model.ClientFirstName" placeholder="Client First Name" />
+              <input type="text" readonly autocomplete="off" class="form-control" name="ClientLastName" value="@Model.ClientLastName" placeholder="Client Last Name" />
+            </div>
+          </div>
+          <div class="row-info">
+            <input readonly autocomplete="off" type="text" class="form-control" name="ClientEmail" value="@Model.ClientEmailAddress" placeholder="Client Email" />
+          </div>
+          <h3 class="mb10 mt15">
+            Accounts Payable
+            <span class="accountsPayableInfo"><ion-icon name="information-circle-outline"></ion-icon></span>
+          </h3>
+          <div class="row-info">
+            <div class="input-text-dual">
+              <input type="text" autocomplete="off" class="form-control" name="AccFirstName" value="" placeholder="Accounts Payable First Name" />
+              <input type="text" autocomplete="off" class="form-control" name="AccLastName" value="" placeholder="Accounts Payable Last Name" />
+            </div>
+          </div>
+          <div class="row-info">
+            <input autocomplete="off" type="text" class="form-control" name="AccEmail" value="" placeholder="Accounts Payable Email" />
+          </div>
+
+          <div class="total-amount mt20">
+            Total Amount: <span class="total-amount-inc-gst amount"></span> <small>@(Model.QuoteGSTApplicable ? "inc" : "ex") GST</small>
+          </div>
+          @Html.Raw(WebHelper.GetAbleTermsAndConditionsCheckBoxHtml("agree"))
+          <button type="button" id="btnSign" class="btn btn-primary">Sign Proposal</button>
+        </div>
+      </div>
+
+    </div>
+
+  }
+
+  <div class="thankyou displaynone">
+    <center>
+      <h3>Proposal Accepted, Thank you!</h3>
+      <p>This proposal was accepted on @WebHelper.DisplayDate(Model.QuoteInfo.ClientAcceptedUtc.UtcToTZOrNull(), WebHelper.DisplayDate(DateTime.UtcNow.UtcToTZ())).</p>
+      @Html.Raw(Model.GetClientLinkToAbleHtml())
+    </center>
+  </div>
+
+</div>
+
+@section PostScriptContent {
+
+  <script type="text/javascript">
+    (function($) {
+
+      var $signForm = $("#signform");
+      var $btnSign = $("#btnSign");
+      var heading = $(".heading");
+      var tabsOuter = $(".main-tabs-outer");
+      var menuList = $("ul.nav-tabs");
+
+      $(document).ready(function () {
+
+        ShowThankYou(@Html.Raw(Model.QuoteInfo.IsAccepted.ToJSTrueFalse()));
+
+        new jBox('Tooltip', {
+          attach: '.accountsPayableInfo', position: { y: 'top', x: 'right' },
+          title: 'Account Payable Info', content: 'The person who administers this invoice.'
+        });
+
+        $(".item-optional").change(function (ev) {
+          var $chk = $(ev.target);
+          var checked = $chk.is(":checked");
+          var $row = $chk.closest("tr");
+          var itemid = $row.data("item");
+          if (!checked) {
+            $row.addClass("unchecked");
+          } else {
+            $row.removeClass("unchecked");
+          }
+          RecalcTotal();
+        });
+
+        RecalcTotal();
+
+        $(".btn-next").click(NextButtonClicked);
+        $("#btnSign").click(SignClicked);
+
+        $(".nav-tabs > li:first-child a").trigger("click");
+
+        if ($(".quoteView .proposal-frame").length == 1) {
+          $(window).on("resize", ResizeIFrame);
+          ResizeIFrame();
+        }
+      });
+
+      function ResizeIFrame() {
+        setTimeout(function () {
+          var iframeTop = $(".quoteView .proposal-frame").position().top;
+          var winHeight = $(window).height();
+          $(".quoteView .proposal-frame").height(winHeight - iframeTop);
+        }, 200);
+      }
+
+      function RecalcTotal() {
+
+        var totalWithoutGST = 0;
+        var gstApplicable = @Html.Raw(Model.QuoteGSTApplicable.ToJSTrueFalse());
+        var $rows = $(".item-row");
+
+        for(var i = 0; i < $rows.length; i++) {
+          var $row = $rows.eq(i);
+          var $chk = $row.find(".item-optional");
+          if ($chk.length == 0 || $chk.is(":checked")) {
+            var $lineTotal = $row.find(".item-linetotal");
+            if ($lineTotal.length == 1) {
+              var amountStr = $lineTotal.data("amount");
+              if (isNumber(amountStr)) {
+                var lineTotal = parseFloat(amountStr) || 0;
+                totalWithoutGST += lineTotal;
+              }
+            }
+          }
+        }
+
+        $(".total-amount-no-gst").text(CurrencyFormatter.format(totalWithoutGST));
+        $(".total-amount-gst").text(!gstApplicable ? "n/a" : CurrencyFormatter.format(totalWithoutGST / 10));
+        $(".total-amount-inc-gst").text(CurrencyFormatter.format(!gstApplicable ? totalWithoutGST : (totalWithoutGST * 1.1)));
+      }
+
+      function NextButtonClicked(ev) {
+        $btn = $(ev.target);
+        $pane = $btn.closest(".tab-pane").next();
+        if ($pane.length != 1) return;
+        var tabName = $pane.prop("id").replace("panel-", "");
+        window.scrollTo(0, 0);
+        setTimeout(function () { $("#tab-" + tabName).trigger("click"); }, 200);
+      }
+
+      function SignClicked(ev) {
+
+        AjaxSubmit({
+          form: $signForm,
+          onSuccess: function (jqXHR, data) {
+            ShowThankYou(true);
+          }
+        });
+      }
+
+      function ShowThankYou(isAccepted) {
+
+        if (!isAccepted) return;
+
+        $(".signform").hide();
+        $(".thankyou").show();
+      }
+
+    })(jQuery);
+  </script>
+
+}

@@ -1,0 +1,194 @@
+@page
+@model Integral.Web.PortalSite.Pages_Albert.IOSParticipants
+@{ Layout = "_Layout_AdminLTE"; }
+
+<section class="content-header">
+  <h1>Participants</h1>
+</section>
+
+<div class="row">
+  <div class="col-md-8">
+
+    <div class="form-group">
+      <select class="form-control selOrgLevel" size="1" data-bms-options="notitles xreset xfiltering selectall" data-bms-allornum="Org Level (_)">
+
+        @if (Model.surveyInfo != null) {
+          if (Model.surveyInfo.SurveyId == 3028) {
+            <option value="171235">CEO, Directors and Managers</option>
+            <optgroup label="Office of the CEO">
+              <option value="171236">Executive and Risk Services</option>
+              <option value="171303">City Projects &amp; Administration</option>
+            </optgroup>
+            <optgroup label="Corporate Services">
+              <option value="171238">Information Technology</option>
+              <option value="171239">Financial Services</option>
+              <option value="171240">Culture and Recreation</option>
+              <option value="171241">Rangers, Parking and Community Safety</option>
+              <option value="171242">Leisure Centres</option>
+            </optgroup>
+            <optgroup label="Governance and Strategy">
+              <option value="171243">Governance</option>
+              <option value="171244">Marketing and Communications</option>
+              <option value="171245">Human Resources</option>
+              <option value="171246">Strategic and Organisational Development</option>
+            </optgroup>
+            <optgroup label="Infrastructure Services">
+              <option value="171247">Infrastructure Management Services (inside)</option>
+              <option value="171304">Infrastructure Management Services (outside)</option>
+              <option value="171249">Operations (inside)</option>
+              <option value="171250">Operations (outside)</option>
+              <option value="171251">Asset Management (inside)</option>
+              <option value="171252">Asset Management (outside)</option>
+              <option value="171248">Directorate Administration</option>
+            </optgroup>
+            <optgroup label="Planning and Development">
+              <option value="171253">Planning Services</option>
+              <option value="171254">Compliance and Regulatory Services</option>
+              <option value="171255">Libraries</option>
+              <option value="171256">Community Development and Youth Services</option>
+            </optgroup>
+          } else if (Model.surveyInfo.SurveyId == 3170) {
+            <option value="184899">CEO, Directors and Managers</option>
+            <optgroup label="Office of the CEO">
+              <option value="184900">Executive and Risk Services</option>
+              <option value="184901">Administration &amp; Support</option>
+            </optgroup>
+            <optgroup label="Corporate Services">
+              <option value="184902">Wayne Technologies</option>
+              <option value="184903">Financial Services</option>
+              <option value="184904">Culture and Recreation</option>
+              <option value="184905">Wayne Aerospace</option>
+              <option value="184906">Wayne Security</option>
+            </optgroup>
+            <optgroup label="Governance and Strategy">
+              <option value="184907">Governance</option>
+              <option value="184908">Marketing and Communications</option>
+              <option value="184909">Human Resources</option>
+              <option value="184910">Strategic and Organisational Development</option>
+            </optgroup>
+            <optgroup label="Infrastructure Services">
+              <option value="184911">Wayne Research Institute</option>
+              <option value="184912">Wayne Foundation</option>
+              <option value="184913">Operations</option>
+              <option value="184914">Special Operations</option>
+            </optgroup>
+            <optgroup label="Asset Management">
+              <option value="184915">Bat Cave</option>
+              <option value="184916">Bat Bunker</option>
+              <option value="184917">Wayne Manor</option>
+              <option value="184918">Wayne Towers</option>
+              <option value="184919">Wayne Foundation Building</option>
+            </optgroup>
+            <optgroup label="Planning and Development">
+              <option value="184920">Libraries</option>
+              <option value="184921">Community Development and Youth Services</option>
+            </optgroup>
+          } else if (Model.surveyInfo.SurveyId == 4282) {
+            <option value="1375751675">Primarily work in Office</option>
+            <option value="1375751676">Primarily work in Field</option>
+          } else {
+            @Html.Raw(Model.GetOrgLevelOptions())
+          }
+        }
+
+      </select>
+    </div>
+  </div>
+</div>
+
+<form id="form1" method="post" action="#">
+  <input type="hidden" name="@PathHelper.FormKeys.AjaxAction" value="update" />
+  <input type="hidden" name="divCodeId" value="update" />
+  <input type="hidden" name="accessList" value="" />
+  <input type="hidden" name="sendList" value="" />
+  <table class="table table-hover width-auto tblPartList">
+    <thead>
+      <tr>
+        <th>Email Address</th>
+        <th>Access<br/>Comments</th>
+        <th>Send Email</th>
+        <th>Test Report Link</th>
+        <th>Email Last Sent</th>
+      </tr>
+    </thead>
+    <tbody id="listBody">
+    </tbody>
+  </table>
+</form>
+
+<div class="content-fixed-footer">
+  <hr class="hr-thin">
+  <button class="btn btn-primary btnUpdate">Update</button>
+</div>
+
+@section PostScriptContent {
+
+  <script type="text/javascript">
+    (function($) {
+
+      var selOrgLevel, btnUpdate, form1;
+
+      $(document).ready(function () {
+
+        selOrgLevel = $(".selOrgLevel");
+        btnUpdate = $(".btnUpdate");
+        form1 = $("#form1");
+
+        selOrgLevel.change(function (e) { GetPartList(); });
+
+        btnUpdate.click(DoUpdate);
+
+        GetPartList();
+
+      }); // ready
+
+      function GetPartList() {
+
+        selOrgLevel.blur(); // prevents mistakes using keyboard if select list remains in focus.
+
+        var divCode = selOrgLevel.val();
+        var url = document.location.href.replace(/\?.*/, "") + "?@Integral.Web.PortalSite.Pages_Albert.IOSParticipants.divCodeQueryParam=" + divCode;
+        $.post(document.location.href, { "@Integral.Web.PortalSite.Pages_Albert.IOSParticipants.divCodeQueryParam": divCode })
+        .done(function (e, f) {
+
+          $("#listBody").html(e);
+
+          common_ApplyUIAddons();
+          UpdateButtonText();
+
+          $(".colSend input").change(function (e) { UpdateButtonText() });
+
+          $(".rowPart").click(function (e) {
+            //var inp = $(this).find(".colAccess input");
+            //var uid = inp.val();
+            //inp[0].checked = !inp[0].checked;
+          });
+
+
+        });
+
+      }
+
+      function UpdateButtonText() {
+        var checkCount = $(".colSend input:checked").length;
+        var buttonText = "Update Access";
+        if (checkCount > 0) buttonText += " and Send " + checkCount + " Email";
+        if (checkCount > 1) buttonText += "s";
+        btnUpdate.text(buttonText);
+      }
+
+      function DoUpdate() {
+
+        form1[0]["divCodeId"].value = selOrgLevel.val();
+
+        AjaxSubmit({
+          form: form1,
+          onSuccess: GetPartList
+        });
+
+      }
+
+    })(jQuery);
+  </script>
+
+}

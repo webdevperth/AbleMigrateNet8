@@ -1,0 +1,88 @@
+@page
+@model Integral.Web.PortalSite.Pages_Albert.PartnerReferrals
+@{ Layout = "_Layout_AdminLTE"; }
+
+<table class="tbl-referrals table table-bordered">
+  <thead>
+    <tr>
+      <th class="minw300 nowrap">Referral</th>
+      <th class="type-date">Invited</th>
+      <th class="minw100 align-center">Accepted</th>
+    </tr>
+  </thead>
+  <tbody>
+    @if (Model.ReferralList.Count == 0) {
+      <tr><td colspan="3">No referrals yet.</td></tr>
+    }
+    @foreach (var referral in Model.ReferralList) {
+      <tr class="">
+        <td class="nowrap">
+          <div class="referral-name">@((referral.InviteeFirstName + " " + referral.InviteeLastName).HTMLEncode())</div>
+          <div class="referral-email">@referral.InviteeEmail.HTMLEncode()</div>
+        </td>
+        <td class="type-date">@WebHelper.DisplayDate(referral.CreatedUtc.UtcToTZ(null))</td>
+        <td class="align-center">@(referral.InviteAcceptedUtc == null ? "" : "Yes")</td>
+      </tr>
+    }
+  </tbody>
+</table>
+
+<div class="table-title">Add Referral</div>
+
+<form id="formAdd" method="post" action="@SystemWeb.RequestRawUrl" onsubmit="return false;">
+
+  <table class="tbl-form table borderless width-auto align-top">
+    <tr class="ajaxSubmit-field">
+      <td class="w125 align-right pt15">First Name:</td>
+      <td class="w400">
+        @Html.Raw(WebHelper.GetTextInput(new WebHelper.TextInputSettings() { InputName = Integral.Web.PortalSite.Pages_Albert.PartnerReferrals.FormFields.FirstName, NoRow = true }))
+        <div class="@WebHelper.CSSClasses.AjaxFieldErrorMsg"></div>
+      </td>
+    </tr>
+    <tr class="ajaxSubmit-field">
+      <td class="align-right pt15">Last Name:</td>
+      <td>
+        @Html.Raw(WebHelper.GetTextInput(new WebHelper.TextInputSettings() { InputName = Integral.Web.PortalSite.Pages_Albert.PartnerReferrals.FormFields.LastName, NoRow = true }))
+        <div class="@WebHelper.CSSClasses.AjaxFieldErrorMsg"></div>
+      </td>
+    </tr>
+    <tr class="ajaxSubmit-field">
+      <td class="align-right pt15">Email:</td>
+      <td>
+        @Html.Raw(WebHelper.GetTextInput(new WebHelper.TextInputSettings() { InputName = Integral.Web.PortalSite.Pages_Albert.PartnerReferrals.FormFields.EmailAddress, NoRow = true }))
+        <div class="@WebHelper.CSSClasses.AjaxFieldErrorMsg"></div>
+      </td>
+    </tr>
+    <tr>
+      <td></td>
+      <td><button class="btn btn-primary floatright" id="btnAdd">Send Referral</button></td>
+    </tr>
+  </table>
+
+</form>
+
+@section PostScriptContent {
+
+  <script type="text/javascript">
+    (function($) {
+
+      var $formAdd = $("#formAdd");
+      var $btnAdd = $("#btnAdd");
+
+      $(document).ready(function() {
+
+        $btnAdd.click(AddReferral);
+
+      }); // ready.
+
+      function AddReferral(evt) {
+        AjaxSubmit({
+          form: $formAdd,
+          action: "@Integral.Web.PortalSite.Pages_Albert.PartnerReferrals.AjaxAction.AddReferral"
+        });
+      }
+
+    })(jQuery);
+  </script>
+
+}

@@ -1,0 +1,172 @@
+@page
+@model Integral.Web.PortalSite.Pages_Albert.Consulting
+@{ Layout = "_Layout_AdminLTE"; }
+
+@if (Model.ConsultingListVisible) {
+
+  if (Model.ConsultingItemList.IsNullOrEmpty()) {
+
+    @Html.Raw(WebHelper.GetEmptyStatePageHtml(
+        title: "Consulting Items",
+        description: $"No consulting items yet. {(Model.CanAddConsulting ? " Add your first one!" : "")}",
+        addActionHtml: Model.CanAddConsulting,
+        actionButtonText: "Add Consulting Item",
+        actionButtonPath: PathHelper.Pages.Consulting_Add(Model.ProgramInfo.ProgramJobId)))
+
+  } else {
+
+    if (Model.CanAddConsulting) {
+      <div class="content-action-bar">
+        <div class="right">
+          <a href="@PathHelper.Pages.Consulting_Add(Model.ProgramInfo.ProgramJobId)" class="btn btn-primary">Add Consulting Item</a>
+        </div>
+      </div>
+    }
+
+    <div class="table-responsive">
+      <table class="tblConsulting table table-bordered table-hover table-rowlink" data-rowlink-url="@PathHelper.Pages.Consulting_Edit(Model.ProgramInfo.ProgramJobId, null)">
+        <thead>
+          <tr>
+            <th class="type-date">Completion</th>
+            <th class="type-description">Title</th>
+            <th class="type-user-nameWithAvatar">Consultant</th>
+            @if (Model.CanViewTotalRevenue) {
+              <th class="type-money">@Model.RevenueTextDisplay</th>
+            }
+            @if (Model.CanViewPartnerRevenue) {
+              <th class="type-money">Partner</th>
+            }
+          </tr>
+        </thead>
+        <tbody>
+          @if (Model.ConsultingItemList != null) {
+            foreach (var item in Model.ConsultingItemList) {
+              <tr tabindex="0" class="rowData" data-rowlink-id="@item.ConsultingItemId">
+                <td class="type-date">@item.CompletionDateUtc.UtcToTZOrNull(ConfigHelper.DefaultTimeZoneInfo).ToString("d MMM yyyy")</td>
+                <td class="type-description">@item.ItemTitle.HTMLEncode()</td>
+                <td class="type-user-nameWithAvatar">
+                  @Html.Raw(WebHelper.GetAvatarForTable_User(PathHelper.Images.UserPhoto(item, PathHelper.Images.UserPhotoSize.Thumbnail, true), item.ConsultantFirstName + " " + item.ConsultantLastName, item.ConsultantUserId))
+                </td>
+                @if (Model.CanViewTotalRevenue) {
+                  <td class="type-money">@item.ItemAmount.ToString("C")</td>
+                }
+                @if (Model.CanViewPartnerRevenue) {
+                  <td class="type-money">@Html.Raw(WebHelper.GetPartnerRevenueValue(item.ItemAmount, Model.ProgramInfo.Partner_DeliveryPercentage, item.ConsultantUserId == Model.userInfo.UserId, Model.CanViewAllDeliveryTeamRevenue))</td>
+                }
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+
+  }
+
+}
+
+@if (Model.ConsultingFormVisible) {
+
+  <div class="container-fluid">
+
+    <form id="formItem" method="post" action="#" onsubmit="return false" class="form-horizontal">
+
+      <input type="hidden" name="@Integral.Web.PortalSite.Pages_Albert.Consulting.FormFields.ProgramJobId" value="@Model.ProgramInfo.ProgramJobId" />
+      <input type="hidden" name="@Integral.Web.PortalSite.Pages_Albert.Consulting.FormFields.ConsultingItemId" value="@(Model.IsNewItem ? "" : Model.ConsultingItemInfo.ConsultingItemId.ToString())" />
+
+      @Html.Raw(WebHelper.GetTextInput("Title:", Integral.Web.PortalSite.Pages_Albert.Consulting.FormFields.ItemTitle, Model.ConsultingItemInfo.ItemTitle, 7, "", Model.IsReadOnly || Model.IsLimitedEdit))
+
+      @Html.Raw(WebHelper.GetTextArea("Description:", Integral.Web.PortalSite.Pages_Albert.Consulting.FormFields.Description, 2, 7, Model.ConsultingItemInfo.Description, "", Model.IsReadOnly))
+
+      @Html.Raw(WebHelper.GetSelectRow("Consulting Type:", Integral.Web.PortalSite.Pages_Albert.Consulting.FormFields.ConsultingTypeId, 3, Model.GetConsultingTypeOptions(), "", Model.IsReadOnly || Model.IsLimitedEdit))
+
+      @if (Model.CanViewTotalRevenue) {
+        @Html.Raw(WebHelper.GetCurrencyInput("Amount:", Integral.Web.PortalSite.Pages_Albert.Consulting.FormFields.RevenueAmount, Model.ConsultingItemInfo.ItemAmount, 2, 2, "", Model.IsReadOnly || Model.IsLimitedEdit))
+      }
+
+      @if (Model.IsReadOnly || Model.IsLimitedEdit) {
+        @Html.Raw(WebHelper.GetTextDisplayRow("Consultant:", 3, Model.GetConsultantName()))
+      } else {
+        @Html.Raw(Model.GetConsultantDropdownHtml())
+      }
+
+      @Html.Raw(WebHelper.GetInputDateRow("Completion:", Integral.Web.PortalSite.Pages_Albert.Consulting.FormFields.CompletionDateLocal, Model.ConsultingItemInfo.CompletionDateUtc.UtcToTZOrNull(), "", Model.IsReadOnly))
+
+      @if (Model.CanSetQuoteItem) {
+        @Html.Raw(WebHelper.GetQuoteItemSelectRow("Quote Item:", 7,
+              Integral.Web.PortalSite.Pages_Albert.Consulting.FormFields.QuoteItemId,
+              Model.IsNewItem, Model.ConsultingItemInfo?.ComponentQuoteInfo,
+              Model.GetQuoteItemOptionsHtml(),
+              Model.IsLimitedEdit || Model.IsReadOnly))
+      }
+
+      @if (Model.CanMoveToProgram && !Model.IsReadOnly) {
+        @Html.Raw(WebHelper.GetSelectRow("Move to Program:", Integral.Web.PortalSite.Pages_Albert.Consulting.FormFields.MoveToProgramJobId, 7, Model.GetMoveToProgramOptions(), "", Model.IsLimitedEdit || Model.IsReadOnly))
+      }
+
+      <div class="btnholder">
+        @if (!Model.IsReadOnly) {
+          <button type="button" class="btn btn-primary btnUpdate floatright" id="btnUpdate">@(Model.IsNewItem ? "Add New" : "Update") Item</button>
+          if (Model.CanDeleteConsulting) {
+            <button type="button" class="btn btn-warning btnDelete floatleft" id="btnDelete">Delete Item</button>
+          }
+        }
+        <button type="button" class="btn btn-secondary btnCancel @(Model.IsReadOnly ? "floatleft" : "floatright mr20")" data-mode="cancel">@(Model.IsReadOnly ? "Back" : "Cancel")</button>
+      </div>
+
+    </form>
+  </div>
+
+}
+
+@section PostScriptContent {
+
+  <script type="text/javascript">
+    (function($) {
+
+      var btnUpdate, formItem, isNewItem;
+
+      $(document).ready(function() {
+
+        // If user cannot navigate from table, remove the link of navigation.
+        @if (!Model.CanNavigateFromConsultingTable) {
+          <text>
+          $('table').removeAttr('data-rowlink-url');
+          </text>
+        }
+
+        btnUpdate = $("#btnUpdate");
+        btnDelete = $("#btnDelete");
+        formItem = $("#formItem");
+
+        $(".btnCancel").click(function (e) { history.go(-1); });
+
+        isNewItem = @(Model.IsNewItem ? "true" : "false");
+
+        btnUpdate.click(UpdateItem);
+        btnDelete.click(DeleteItem);
+
+        if (isNewItem) formItem.find("input:text:not(:disabled):first").trigger("focus");
+
+      }); // ready.
+
+      function DeleteItem() {
+
+        if (!confirm("Delete this Item?")) return;
+
+        AjaxSubmit({
+          form: formItem,
+          action: "@Integral.Web.PortalSite.Pages_Albert.Consulting.AjaxAction.DeleteItem"
+        });
+      }
+
+      function UpdateItem() {
+        AjaxSubmit({
+          form: formItem,
+          action: "@Integral.Web.PortalSite.Pages_Albert.Consulting.AjaxAction.UpdateItem"
+        });
+      }
+
+    })(jQuery);
+  </script>
+
+}

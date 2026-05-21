@@ -88,7 +88,19 @@
     <Compile Include="AppCode\OrgReportContext.cs" />
     <Compile Include="AppCode\Coachee360Context.cs" />
     <Compile Include="AppCode\Reports.OrgReports.cs" />
+    <Compile Include="AppCode\ReportHelper.Coachee.cs" />
     <Compile Include="AppCode\PageBaseClasses\LoggedInPageModel.cs" />
+    <Compile Include="AppCode\PageBaseClasses\CoacheeInfoBase.cs" />
+    <Compile Include="AppCode\PageBaseClasses\CoachInfoBase.cs" />
+    <Compile Include="AppCode\PageBaseClasses\CompanyInfoBase.cs" />
+    <Compile Include="AppCode\PageBaseClasses\OverviewPageBase.cs" />
+    <Compile Include="AppCode\PageBaseClasses\ProjectPageBase.cs" />
+    <Compile Include="AppCode\PageBaseClasses\ProgramPageBase.cs" />
+    <Compile Include="AppCode\PageBaseClasses\QuotePageBase.cs" />
+    <Compile Include="AppCode\PageBaseClasses\ModulePageBase.cs" />
+    <Compile Include="AppCode\PageBaseClasses\SettingsPageBase.cs" />
+    <Compile Include="AppCode\ApplicationInsightsExtensions.cs" />
+    <Compile Include="AppCode\IntercomEventBuilderExtensions.cs" />
   </ItemGroup>
 
 </Project>

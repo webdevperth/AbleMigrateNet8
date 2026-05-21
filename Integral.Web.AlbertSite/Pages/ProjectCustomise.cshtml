@@ -1,0 +1,475 @@
+@page
+@model Integral.Web.PortalSite.Pages_Albert.ProjectCustomise
+@{ Layout = "_Layout_AdminLTE"; }
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
+
+<form class="form-horizontal" id="projectForm">
+
+  <button type="button" id="btnUpdate" class="btn btn-primary mb15 floatright">Save Changes</button>
+
+  <ul class="nav nav-tabs nav-tabs-underlined width-fit-content" id="formTabs">
+    <li role="presentation" class="active" data-tabname="@Integral.Web.PortalSite.Pages_Albert.ProjectCustomise.TabName.General">
+      <a class="nav-link" id="tab-@Integral.Web.PortalSite.Pages_Albert.ProjectCustomise.TabName.General" data-toggle="tab" href="#panel-@Integral.Web.PortalSite.Pages_Albert.ProjectCustomise.TabName.General" role="tab" aria-controls="panel-@Integral.Web.PortalSite.Pages_Albert.ProjectCustomise.TabName.General" aria-selected="true">General</a>
+    </li>
+    <li role="presentation" data-tabname="@Integral.Web.PortalSite.Pages_Albert.ProjectCustomise.TabName.WelcomeEmail">
+      <a class="nav-link" id="tab-@Integral.Web.PortalSite.Pages_Albert.ProjectCustomise.TabName.WelcomeEmail" data-toggle="tab" href="#panel-@Integral.Web.PortalSite.Pages_Albert.ProjectCustomise.TabName.WelcomeEmail" role="tab" aria-controls="panel-@Integral.Web.PortalSite.Pages_Albert.ProjectCustomise.TabName.WelcomeEmail">Welcome Email</a>
+    </li>
+    <li role="presentation" data-tabname="@Integral.Web.PortalSite.Pages_Albert.ProjectCustomise.TabName.MeetCoachEmail">
+      <a class="nav-link" id="tab-@Integral.Web.PortalSite.Pages_Albert.ProjectCustomise.TabName.MeetCoachEmail" data-toggle="tab" href="#panel-@Integral.Web.PortalSite.Pages_Albert.ProjectCustomise.TabName.MeetCoachEmail" role="tab" aria-controls="panel-@Integral.Web.PortalSite.Pages_Albert.ProjectCustomise.TabName.MeetCoachEmail">Meet Coach Email</a>
+    </li>
+    <li role="presentation" data-tabname="@Integral.Web.PortalSite.Pages_Albert.ProjectCustomise.TabName.BookNextSession">
+      <a class="nav-link" id="tab-@Integral.Web.PortalSite.Pages_Albert.ProjectCustomise.TabName.BookNextSession" data-toggle="tab" href="#panel-@Integral.Web.PortalSite.Pages_Albert.ProjectCustomise.TabName.BookNextSession" role="tab" aria-controls="panel-@Integral.Web.PortalSite.Pages_Albert.ProjectCustomise.TabName.BookNextSession">Book Session Email</a>
+    </li>
+    <li role="presentation" data-tabname="@Integral.Web.PortalSite.Pages_Albert.ProjectCustomise.TabName.EmailCadence">
+      <a class="nav-link" id="tab-@Integral.Web.PortalSite.Pages_Albert.ProjectCustomise.TabName.EmailCadence" data-toggle="tab" href="#panel-@Integral.Web.PortalSite.Pages_Albert.ProjectCustomise.TabName.EmailCadence" role="tab" aria-controls="panel-@Integral.Web.PortalSite.Pages_Albert.ProjectCustomise.TabName.EmailCadence">Emails & Cadence</a>
+    </li>
+    <li role="presentation" data-tabname="@Integral.Web.PortalSite.Pages_Albert.ProjectCustomise.TabName.SendTests">
+      <a class="nav-link" id="tab-@Integral.Web.PortalSite.Pages_Albert.ProjectCustomise.TabName.SendTests" data-toggle="tab" href="#panel-@Integral.Web.PortalSite.Pages_Albert.ProjectCustomise.TabName.SendTests" role="tab" aria-controls="panel-@Integral.Web.PortalSite.Pages_Albert.ProjectCustomise.TabName.SendTests">Send Test Emails</a>
+    </li>
+    <li role="presentation" data-tabname="@Integral.Web.PortalSite.Pages_Albert.ProjectCustomise.TabName.Surveys">
+      <a class="nav-link" id="tab-@Integral.Web.PortalSite.Pages_Albert.ProjectCustomise.TabName.Surveys" data-toggle="tab" href="#panel-@Integral.Web.PortalSite.Pages_Albert.ProjectCustomise.TabName.Surveys" role="tab" aria-controls="panel-@Integral.Web.PortalSite.Pages_Albert.ProjectCustomise.TabName.Surveys">Surveys</a>
+    </li>
+  </ul>
+
+  <div class="tab-content">
+    <div class="tab-pane tab-quote tab-@Integral.Web.PortalSite.Pages_Albert.ProjectCustomise.TabName.General fade in active" id="panel-@Integral.Web.PortalSite.Pages_Albert.ProjectCustomise.TabName.General" role="tabpanel" aria-labelledby="tab-@Integral.Web.PortalSite.Pages_Albert.ProjectCustomise.TabName.General"></div>
+    <div class="tab-pane tab-quote tab-@Integral.Web.PortalSite.Pages_Albert.ProjectCustomise.TabName.WelcomeEmail fade in" id="panel-@Integral.Web.PortalSite.Pages_Albert.ProjectCustomise.TabName.WelcomeEmail" role="tabpanel" aria-labelledby="tab-@Integral.Web.PortalSite.Pages_Albert.ProjectCustomise.TabName.WelcomeEmail"></div>
+    <div class="tab-pane tab-quote tab-@Integral.Web.PortalSite.Pages_Albert.ProjectCustomise.TabName.MeetCoachEmail fade in" id="panel-@Integral.Web.PortalSite.Pages_Albert.ProjectCustomise.TabName.MeetCoachEmail" role="tabpanel" aria-labelledby="tab-@Integral.Web.PortalSite.Pages_Albert.ProjectCustomise.TabName.MeetCoachEmail"></div>
+    <div class="tab-pane tab-quote tab-@Integral.Web.PortalSite.Pages_Albert.ProjectCustomise.TabName.BookNextSession fade in" id="panel-@Integral.Web.PortalSite.Pages_Albert.ProjectCustomise.TabName.BookNextSession" role="tabpanel" aria-labelledby="tab-@Integral.Web.PortalSite.Pages_Albert.ProjectCustomise.TabName.BookNextSession"></div>
+    <div class="tab-pane tab-quote tab-@Integral.Web.PortalSite.Pages_Albert.ProjectCustomise.TabName.EmailCadence fade in" id="panel-@Integral.Web.PortalSite.Pages_Albert.ProjectCustomise.TabName.EmailCadence" role="tabpanel" aria-labelledby="tab-@Integral.Web.PortalSite.Pages_Albert.ProjectCustomise.TabName.EmailCadence"></div>
+    <div class="tab-pane tab-quote tab-@Integral.Web.PortalSite.Pages_Albert.ProjectCustomise.TabName.SendTests fade in" id="panel-@Integral.Web.PortalSite.Pages_Albert.ProjectCustomise.TabName.SendTests" role="tabpanel" aria-labelledby="tab-@Integral.Web.PortalSite.Pages_Albert.ProjectCustomise.TabName.SendTests"></div>
+    <div class="tab-pane tab-quote tab-@Integral.Web.PortalSite.Pages_Albert.ProjectCustomise.TabName.Surveys fade in" id="panel-@Integral.Web.PortalSite.Pages_Albert.ProjectCustomise.TabName.Surveys" role="tabpanel" aria-labelledby="tab-@Integral.Web.PortalSite.Pages_Albert.ProjectCustomise.TabName.Surveys"></div>
+  </div>
+
+  <div class="tab-panel" data-appendTo="panel-@Integral.Web.PortalSite.Pages_Albert.ProjectCustomise.TabName.General">
+
+    <h4>General</h4>
+    <br />
+
+    @Html.Raw(WebHelper.GetTextInput("Friendly Title:", Integral.Web.PortalSite.Pages_Albert.ProjectCustomise.FormFields.ProjectFriendlyTitle, Model.ProjectInfo.FriendlyProjectTitle, 7))
+
+    <div class="file-selection">
+
+      @Html.Raw(WebHelper.GetSelectRow("Project Logo:", Integral.Web.PortalSite.Pages_Albert.ProjectCustomise.FormFields.BrandingOrgId, 5, Model.GetBrandingOrgOptions()))
+
+      @Html.Raw(new WebHelper.Form.FormRow() {
+          LabelPosition = WebHelper.Form.LabelPosition.LeftLegacy,
+          ContentHtml = Model.CompanyLogoControl.ToHtml(),
+        }.ToHtml())
+
+    </div>
+
+    <div id="cropperModal" class="modal fade" data-backdrop="static" tabindex="-1" role="dialog">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header"><h4 class="modal-title mt10">Adjust Image</h4></div>
+          <div class="modal-body">
+            <div class="img-container">
+              <div class="floatright w200 pl10 pr10 sidenote">
+                Change the framing of the image if needed.<br/>
+                <br/>
+                Use the controls below to rotate and zoom.<br/>
+                When zoomed in, use the mouse to move the image in the frame.
+              </div>
+              <img class="cropperImage floatleft" src="@Model.GetLogoUrl()" alt="Project Logo">
+            </div>
+          </div>
+          <div class="modal-footer">
+            <div class="actions floatleft">
+              <div class="actions-titles floatleft">
+                <div class="buttonset">
+                  <div class="title">Rotate</div>
+                  <div class="title title-sec">Zoom</div>
+                </div>
+              </div>
+              <div class="buttonset">
+                <button type="button" class="btn btn-secondary btnRotateLeft" title="Rotate Left"><img src="@PathHelper.UrlPath.Images@("btn-cropper-rotate-left.svg")" /></button>
+                <button type="button" class="btn btn-secondary btnRotateRight" title="Rotate Right"><img src="@PathHelper.UrlPath.Images@("btn-cropper-rotate-right.svg")" /></button>
+              </div>
+              <div class="buttonset">
+                <button type="button" class="btn btn-secondary btnZoomOut" title="Zoom Out"><i class="fas fa-search-minus"></i></button>
+                <button type="button" class="btn btn-secondary btnZoomIn" title="Zoom In"><i class="fas fa-search-plus"></i></button>
+              </div>
+            </div>
+            <div class="buttonsAction floatright">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+              <button type="button" id="btnCropDone" class="btn btn-primary">Done</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <hr />
+
+    @Html.Raw(WebHelper.CustomCheckBoxRow("Allow Participants to self select Coach:", Integral.Web.PortalSite.Pages_Albert.ProjectCustomise.FormFields.CanSelfSelectCoach, "1", Model.ProjectInfo.CanSelfSelectCoach, false, ""))
+
+  </div>
+
+  <div class="tab-panel" data-appendTo="panel-@Integral.Web.PortalSite.Pages_Albert.ProjectCustomise.TabName.WelcomeEmail">
+
+    <h4>Welcome Email Custom Text</h4>
+
+    <div class="row">
+      <div class="col-md-8">
+        <textarea class="" id="txt@(Integral.Web.PortalSite.Pages_Albert.ProjectCustomise.FormFields.WelcomeEmailHTML)" name="@Integral.Web.PortalSite.Pages_Albert.ProjectCustomise.FormFields.WelcomeEmailHTML">@Model.ProjectInfo.WelcomeEmailCustomHTML.HTMLEncode()</textarea>
+      </div>
+    </div>
+
+    <div class="mt20">
+      @Html.Raw(WebHelper.CustomCheckBox(Integral.Web.PortalSite.Pages_Albert.ProjectCustomise.FormFields.WelcomeEmail_ProgramSummaryDisabled, "1", Model.ProjectInfo.WelcomeEmail_ProgramSummaryDisabled, "Do not include program summary."))
+    </div>
+  </div>
+
+  <div class="tab-panel" data-appendTo="panel-@Integral.Web.PortalSite.Pages_Albert.ProjectCustomise.TabName.MeetCoachEmail">
+    <h4>Meet-Coach Email Custom Text</h4>
+    <div class="row">
+      <div class="col-md-8">
+        <textarea class="" id="txt@(Integral.Web.PortalSite.Pages_Albert.ProjectCustomise.FormFields.MeetCoachEmailHTML)" name="@Integral.Web.PortalSite.Pages_Albert.ProjectCustomise.FormFields.MeetCoachEmailHTML">@Model.ProjectInfo.MeetCoachEmailCustomHTML.HTMLEncode()</textarea>
+      </div>
+    </div>
+  </div>
+
+  <div class="tab-panel" data-appendTo="panel-@Integral.Web.PortalSite.Pages_Albert.ProjectCustomise.TabName.BookNextSession">
+
+    <div class="mb20">
+      @Html.Raw(WebHelper.CustomCheckBox(Integral.Web.PortalSite.Pages_Albert.ProjectCustomise.FormFields.AllowLoggedOutCoachBooking, "1", Model.ProjectInfo.AllowLoggedOutCoachBooking, "Do not require login for coach booking."))
+    </div>
+
+    <h4>Book-Next-Session Email Custom Text</h4>
+    <div class="row">
+      <div class="col-md-8">
+        <textarea class="" id="txt@(Integral.Web.PortalSite.Pages_Albert.ProjectCustomise.FormFields.BookNextSessionEmailHTML)" name="@Integral.Web.PortalSite.Pages_Albert.ProjectCustomise.FormFields.BookNextSessionEmailHTML">@Model.ProjectInfo.BookSessionEmailCustomHTML.HTMLEncode()</textarea>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="tab-panel" data-appendTo="panel-@Integral.Web.PortalSite.Pages_Albert.ProjectCustomise.TabName.EmailCadence">
+
+    <h4 class="mb15">Email Cadence Options</h4>
+
+    <div class="flex-column ml15 gap20">
+
+      <div class="flex gap50">
+
+        <div>
+          <h5>Survey Invites and Reminders:</h5>
+          <div class="flex-column gap10">
+            @foreach (var rc in Model.GetSurveyReminderCadenceList()) {
+              @Html.Raw(Model.CadenceOptionHtml(Integral.Web.PortalSite.Pages_Albert.ProjectCustomise.FormFields.SurveyReminderCadenceId, Model.ProjectInfo.SurveyReminderCadence.Id, rc.Id, rc.DisplayText))
+            }
+          </div>
+        </div>
+        <div>
+          <h5>Survey Invites and Reminders (Raters):</h5>
+          <div class="flex-column gap10">
+            @foreach (var rc in Model.GetSurveyReminderCadenceList()) {
+              @Html.Raw(Model.CadenceOptionHtml(Integral.Web.PortalSite.Pages_Albert.ProjectCustomise.FormFields.SurveyReminderCadenceId_Raters, Model.ProjectInfo.SurveyReminderCadence_Raters.Id, rc.Id, rc.DisplayText))
+            }
+          </div>
+        </div>
+
+      </div>
+
+      <div class="flex0">
+        <h5>Session Booking Reminder Cadence:</h5>
+        <p># Days after last session. Leave blank for default.</p>
+        <p class="mt10"><input type="text" name="@Integral.Web.PortalSite.Pages_Albert.ProjectCustomise.FormFields.BookingReminderCadenceDays" class="form-control"
+          placeholder="@ConfigHelper.BookingReminderCadenceDays.ToStringList().Replace(",", ", ")" value="@Model.ProjectInfo.BookingReminderCadenceDays.EmptyIfNull().Replace(",", ", ")" /></p>
+      </div>
+
+    </div>
+
+    @if (Model.CanDisablePaxRegistrationReminders) {
+      <h4 class="mt25">Participant Registration Reminders:</h4>
+      <div class="ml15">
+        @Html.Raw(WebHelper.CustomCheckBox(Integral.Web.PortalSite.Pages_Albert.ProjectCustomise.FormFields.DisablePaxRegReminders, "1", Model.ProjectInfo.DisablePaxRegReminders, "Disable Participant Registration Reminders"))
+      </div>
+    }
+
+    <h4 class="mt25">Other Notifications:</h4>
+    <div class="ml15">
+      @Html.Raw(WebHelper.CustomCheckBox(Integral.Web.PortalSite.Pages_Albert.ProjectCustomise.FormFields.NotifySelfWhen180RaterCompleted, "1", Model.ProjectInfo.NotifySelfWhen180RaterCompleted, "Notify Self When 180 Rater Completed"))
+    </div>
+
+    <h4 class="mt25 mb15">Override Sender Name and Address:</h4>
+    <div class="ml15">
+      @Html.Raw(WebHelper.GetTextInput("Sender Name:", Integral.Web.PortalSite.Pages_Albert.ProjectCustomise.FormFields.OverrideSenderEmailName, "", Model.ProjectInfo.OverrideSenderEmailName, false, WebHelper.InputMaxLength.EmailName))
+      @Html.Raw(WebHelper.GetTextInput("Sender Email Address:", Integral.Web.PortalSite.Pages_Albert.ProjectCustomise.FormFields.OverrideSenderEmailAddress, "", Model.ProjectInfo.OverrideSenderEmailAddress, false, WebHelper.InputMaxLength.EmailAddress))
+    </div>
+
+  </div>
+
+  <div class="tab-panel" data-appendTo="panel-@Integral.Web.PortalSite.Pages_Albert.ProjectCustomise.TabName.SendTests">
+    <h4>Send Test Emails</h4>
+    <div class="row">
+      <div class="col-md-8">
+
+        Send emails to check the content before saving your changes.<br/>
+        You will receive one of each type of email, addressed as if you are the participant selected below:<br/>
+        <br/>
+        @Html.Raw(WebHelper.GetSelect(new WebHelper.SelectInfo() { InputName = Integral.Web.PortalSite.Pages_Albert.ProjectCustomise.FormFields.TestCoacheeId, TopOptionsHtml = Model.CoacheesInProjectOptionHTML, Class = "w300" }))
+
+        <button type="button" id="btnSendTests" class="btn btn-primary mt20">Send Test Emails</button>
+
+      </div>
+    </div>
+  </div>
+
+  <div class="tab-panel" data-appendTo="panel-@Integral.Web.PortalSite.Pages_Albert.ProjectCustomise.TabName.Surveys">
+    <h4>Surveys Timings / Triggers</h4>
+    <div id="surveyselection" class="mt20">
+
+      @Html.Raw(WebHelper.GetSelectRow("Program Commencement / Intake:", Integral.Web.PortalSite.Pages_Albert.ProjectCustomise.FormFields.IntakeSurveyTemplateId, 5, Model.GetSurveyTemplateOptions(Model.ProjectInfo.IntakeSurveyTemplateId),
+        ($"<span class=\"flex flex-align-center gap10\"><span class=\"ml10\">Disable Sending: </span>{WebHelper.CustomCheckBox(Integral.Web.PortalSite.Pages_Albert.ProjectCustomise.FormFields.IntakeSurveyDisable, "1", Model.ProjectInfo.IntakeSurveyDisabled, "")}</span>") +
+        ($"<span class=\"flex flex-align-center gap10\"><span class=\"ml10\">Send to All Participants: </span>{WebHelper.CustomCheckBox(Integral.Web.PortalSite.Pages_Albert.ProjectCustomise.FormFields.SendIntakeSurveyToAllParticipants, "1", Model.ProjectInfo.SendIntakeSurveyToAllParticipants, "")}</span>")))
+
+      @Html.Raw(WebHelper.GetSelectRow("Pulse:", Integral.Web.PortalSite.Pages_Albert.ProjectCustomise.FormFields.PulseSurveyTemplateId, 5, Model.GetSurveyTemplateOptions(Model.ProjectInfo.PulseSurveyTemplateId),
+        ("<span class=\"ml10\">Disable Sending: </span>" + WebHelper.CustomCheckBox(Integral.Web.PortalSite.Pages_Albert.ProjectCustomise.FormFields.PulseSurveyDisable, "1", Model.ProjectInfo.PulseSurveyDisabled, ""))))
+
+      @Html.Raw(WebHelper.GetSelectRow("Coaching Session:", Integral.Web.PortalSite.Pages_Albert.ProjectCustomise.FormFields.CoachingSessionEvalSurveyTemplateId, 5, Model.GetSurveyTemplateOptions(Model.ProjectInfo.CoachingSessionEvalSurveyTemplateId),
+        ("<span class=\"ml10\">Disable Sending: </span>" + WebHelper.CustomCheckBox(Integral.Web.PortalSite.Pages_Albert.ProjectCustomise.FormFields.CoachingSessionEvalSurveyDisabled, "1", Model.ProjectInfo.CoachingSessionEvalSurveyDisabled, ""))))
+
+      @Html.Raw(WebHelper.GetSelectRow("Coaching Program:", Integral.Web.PortalSite.Pages_Albert.ProjectCustomise.FormFields.CoachingProgramEvalSurveyTemplateId, 5, Model.GetSurveyTemplateOptions(Model.ProjectInfo.CoachingProgramEvalSurveyTemplateId),
+        ("<span class=\"ml10\">Disable Sending: </span>" + WebHelper.CustomCheckBox(Integral.Web.PortalSite.Pages_Albert.ProjectCustomise.FormFields.CoachingProgramEvalSurveyDisabled, "1", Model.ProjectInfo.CoachingProgramEvalSurveyDisabled, ""))))
+
+      @Html.Raw(WebHelper.GetSelectRow("Workshop Session:", Integral.Web.PortalSite.Pages_Albert.ProjectCustomise.FormFields.WorkshopSessionEvalSurveyTemplateId, 5, Model.GetSurveyTemplateOptions(Model.ProjectInfo.WorkshopSessionEvalSurveyTemplateId),
+        ("<span class=\"ml10\">Disable Sending: </span>" + WebHelper.CustomCheckBox(Integral.Web.PortalSite.Pages_Albert.ProjectCustomise.FormFields.WorkshopSessionEvalSurveyDisabled, "1", Model.ProjectInfo.WorkshopSessionEvalSurveyDisabled, ""))))
+
+      @Html.Raw(WebHelper.GetSelectRow("Program:", Integral.Web.PortalSite.Pages_Albert.ProjectCustomise.FormFields.GenericProgramEvalSurveyTemplateId, 5, Model.GetSurveyTemplateOptions(Model.ProjectInfo.GenericProgramEvalSurveyTemplateId),
+        ("<span class=\"ml10\">Disable Sending: </span>" + WebHelper.CustomCheckBox(Integral.Web.PortalSite.Pages_Albert.ProjectCustomise.FormFields.GenericProgramEvalSurveyDisabled, "1", Model.ProjectInfo.GenericProgramEvalSurveyDisabled, ""))))
+
+      @Html.Raw(WebHelper.GetSelectRow("Final Workshop and Program:", Integral.Web.PortalSite.Pages_Albert.ProjectCustomise.FormFields.WorkshopAndProgramEvalSurveyTemplateId, 5, Model.GetSurveyTemplateOptions(Model.ProjectInfo.WorkshopAndProgramEvalSurveyTemplateId),
+        ("<span class=\"ml10\">Disable Sending: </span>" + WebHelper.CustomCheckBox(Integral.Web.PortalSite.Pages_Albert.ProjectCustomise.FormFields.WorkshopAndProgramEvalSurveyDisabled, "1", Model.ProjectInfo.WorkshopAndProgramEvalSurveyDisabled, ""))))
+
+      @Html.Raw(WebHelper.GetSelectRow("Development Plan:", Integral.Web.PortalSite.Pages_Albert.ProjectCustomise.FormFields.DevelopmentPlanTemplateId, 5, Model.GetSurveyTemplateOptions(Model.ProjectInfo.DevelopmentPlanTemplateId, ConfigHelper.SurveyTypeCodes.DevPlan)))
+
+    </div>
+  </div>
+
+</form>
+
+@section PostScriptContent {
+
+  <script type="text/javascript">
+    (function($) {
+
+      var $projectForm = $("#projectForm");
+      var $formTabs = $("#formTabs");
+      var $btnUpdate = $("#btnUpdate");
+      var $btnSendTests = $("#btnSendTests");
+      var $selBrandingOrgId = $('select[name="@Integral.Web.PortalSite.Pages_Albert.ProjectCustomise.FormFields.BrandingOrgId"]');
+      var $logoUploadInput = $("#@Model.CompanyLogoControl.InputContainerID");
+      var $companyLogoImg = $("#@Model.CompanyLogoControl.ImgID");
+      var sendToAllParticipants = "@Integral.Web.PortalSite.Pages_Albert.ProjectCustomise.FormFields.SendIntakeSurveyToAllParticipants";
+      var Cropper, cropper, $cropperModal, $cropperSourceImage, $cropperModalImage;
+
+      $(document).ready(function () {
+
+        //Branding dropdown
+        $selBrandingOrgId.change(BrandingOrgChange);
+        BrandingOrgChange();
+
+        $btnSendTests.click(function () { Submit(true); });
+        $btnUpdate.click(function () { Submit(false); });
+        DisableSurveySelectOnCheckboxVal();
+
+        Cropper = window.Cropper;
+        $cropperSourceImage = $companyLogoImg;
+        $cropperModalImage = $("#cropperModal .cropperImage");
+        $cropperModal = $("#cropperModal");
+        $cropperModal.addClass("IsLogo");
+
+        observer = new MutationObserver((changes) => {
+          changes.forEach(change => {
+            if (change.attributeName.includes('src')) {
+              if ($companyLogoImg[0].src.indexOf("data:image/") === 0) {
+                $selBrandingOrgId.val("").trigger("change");
+              }
+            }
+          });
+        });
+        observer.observe($companyLogoImg[0], { attributes: true });
+
+        $companyLogoImg.on("change", () => {
+          console.log(`changed`);
+        });
+
+        $('#@Model.CompanyLogoControl.InputID').on('change', function () {
+
+          if (this.files && this.files[0]) {
+            if (this.files[0].type.match(/^image\//)) {
+              var reader = new FileReader();
+              reader.onload = function (evt) {
+                $cropperModalImage.on("load", function () {
+
+                  if (typeof cropper != "undefined" && cropper != null) {
+                    if (cropper.destroy) cropper.destroy();
+                    cropper = null;
+                  }
+
+                  cropper = new Cropper($cropperModalImage[0], {
+                    viewMode: 1,
+                    autoCrop: true,
+                    autoCropArea: 1,
+                    toggleDragModeOnDblclick: false,
+                    restore: false,
+                    movable: true,
+                    rotatable: true,
+                    scalable: true,
+                    zoomOnWheel: false,
+                    minContainerWidth: 400,
+                    maxContainerWidth: 400,
+                    minContainerHeight: 250,
+                    maxContainerHeight: 250,
+                    minCanvasWidth: 400,
+                    minCanvasHeight: 250,
+                    ready: function () {
+                      $cropperModal.modal();
+                    }
+                  });
+                  $cropperModal.data("cropper", cropper);
+                });
+                $cropperModalImage.attr("src", evt.target.result);
+              };
+              reader.readAsDataURL(this.files[0]);
+            }
+            else {
+              alert("Invalid file type! Please select an image file.");
+            }
+          }
+          else {
+            alert('No file(s) selected.');
+          }
+        });
+
+        $("#cropperModal .btnRotateLeft").click(function (e) { cropper.rotate(-90); });
+        $("#cropperModal .btnRotateRight").click(function (e) { cropper.rotate(90); });
+        $("#cropperModal .btnZoomOut").click(function (e) { cropper.zoom(-0.1); });
+        $("#cropperModal .btnZoomIn").click(function (e) { cropper.zoom(0.1); });
+
+        $("#btnCropDone").click(function (e) {
+          if (typeof cropper == "undefined" || cropper == null) return;
+          var croppedCanvas = cropper.getCroppedCanvas();
+          $cropperSourceImage.attr("src", croppedCanvas.toDataURL());
+          croppedCanvas.toBlob(function (blob) {
+            $cropperSourceImage.data("blob", blob);
+            $cropperModal.modal("hide")
+          }, "image/png", 0.9);
+        });
+
+        $cropperModal.on('hidden.bs.modal', function () {
+          if (typeof cropper != "undefined" && cropper != null) {
+            if (cropper.destroy) cropper.destroy();
+            cropper = null;
+          }
+        });
+
+        TinyMCEInit("#txt@(Integral.Web.PortalSite.Pages_Albert.ProjectCustomise.FormFields.WelcomeEmailHTML)", {
+          mergeTags: [
+            { name: "Friendly Project Title", value: "@AlbertEmails.GetMergeTag(AlbertEmails.MandrillMergeTags.FriendlyProjectTitle)" },
+            { name: "Coachee First Name", value: "@AlbertEmails.GetMergeTag(AlbertEmails.MandrillMergeTags.CoacheeFirstName)" },
+            { name: "Coach First Name", value: "@AlbertEmails.GetMergeTag(AlbertEmails.MandrillMergeTags.CoachFirstName)" },
+            { name: "Coach Full Name", value: "@AlbertEmails.GetMergeTag(AlbertEmails.MandrillMergeTags.CoachFullName)" },
+            { name: "Program Name", value: "@AlbertEmails.GetMergeTag(AlbertEmails.MandrillMergeTags.ProgramName)" },
+            { name: "Sessions Allocated", value: "@AlbertEmails.GetMergeTag(AlbertEmails.MandrillMergeTags.SessionsAllocated)" },
+            { name: "Total Workshops", value: "@AlbertEmails.GetMergeTag(AlbertEmails.MandrillMergeTags.TotalWorkshops)" },
+          ]
+        });
+
+        TinyMCEInit("#txt@(Integral.Web.PortalSite.Pages_Albert.ProjectCustomise.FormFields.MeetCoachEmailHTML)", {
+          mergeTags: [
+            { name: "Friendly Project Title", value: "@AlbertEmails.GetMergeTag(AlbertEmails.MandrillMergeTags.FriendlyProjectTitle)" },
+            { name: "Coachee First Name", value: "@AlbertEmails.GetMergeTag(AlbertEmails.MandrillMergeTags.CoacheeFirstName)" },
+            { name: "Coach First Name", value: "@AlbertEmails.GetMergeTag(AlbertEmails.MandrillMergeTags.CoachFirstName)" },
+            { name: "Coach Full Name", value: "@AlbertEmails.GetMergeTag(AlbertEmails.MandrillMergeTags.CoachFullName)" },
+            { name: "Program Name", value: "@AlbertEmails.GetMergeTag(AlbertEmails.MandrillMergeTags.ProgramName)" },
+            { name: "Sessions Allocated", value: "@AlbertEmails.GetMergeTag(AlbertEmails.MandrillMergeTags.SessionsAllocated)" },
+          ]
+        });
+
+        TinyMCEInit("#txt@(Integral.Web.PortalSite.Pages_Albert.ProjectCustomise.FormFields.BookNextSessionEmailHTML)", {
+          mergeTags: [
+            { name: "Friendly Project Title", value: "@AlbertEmails.GetMergeTag(AlbertEmails.MandrillMergeTags.FriendlyProjectTitle)" },
+            { name: "Coachee First Name", value: "@AlbertEmails.GetMergeTag(AlbertEmails.MandrillMergeTags.CoacheeFirstName)" },
+            { name: "Coach Full Name", value: "@AlbertEmails.GetMergeTag(AlbertEmails.MandrillMergeTags.CoachFullName)" },
+            { name: "Sessions Allocated", value: "@AlbertEmails.GetMergeTag(AlbertEmails.MandrillMergeTags.SessionsAllocated)" },
+          ]
+        });
+
+      }); // ready.
+
+      function DisableSurveySelectOnCheckboxVal() {
+
+        $('#surveyselection input[type="checkbox"]').on('change', function () {
+
+          if ($(this).attr('name') === sendToAllParticipants) {
+            return; // If checkbox is SendToAllParticipants, do nothing
+          }
+
+          // Get the corresponding select element
+          var select = $(this).closest('.form-group').find('select');
+          // Enable or disable the select based on the checkbox value
+          if ($(this).prop('checked')) {
+            select.prop('disabled', true);
+          } else {
+            select.prop('disabled', false);
+          }
+        });
+
+        // Set checkbox and select states based on saved value (On page load mainly)
+        $('#surveyselection input[type="checkbox"]').each(function () {
+          if ($(this).attr('name') === sendToAllParticipants) {
+            return; // If checkbox is SendToAllParticipants, do nothing
+          }
+
+          if ($(this).prop('checked')) {
+            var select = $(this).closest('.form-group').find('select');
+            select.prop('disabled', true);
+          }
+        });
+      }
+
+      function BrandingOrgChange() {
+
+        let brandingOrgId = $selBrandingOrgId.val();
+
+        if (isStringNullOrEmpty(brandingOrgId) && $companyLogoImg[0].src.indexOf("data:image/") === 0) {
+          // Image previously updated, this is just a dropdown reset.
+          return;
+        }
+
+        // If there's a company selected from the list hide image selection UI
+        if (!isStringNullOrEmpty(brandingOrgId.length)) {
+          $logoUploadInput.hide();
+        } else {
+          $logoUploadInput.show();
+        }
+
+        // Update displayed image from selection.
+        let src = $selBrandingOrgId.find(':selected').attr('data-url');
+        $companyLogoImg.attr("src", src);
+      }
+
+      function Submit(isTest) {
+
+        var $btn = isTest ? $btnSendTests : $btnUpdate;
+
+        AjaxSubmit({
+          form: $projectForm,
+          action: (isTest ? "@Integral.Web.PortalSite.Pages_Albert.ProjectCustomise.AjaxAction.SendTests" : "@Integral.Web.PortalSite.Pages_Albert.ProjectCustomise.AjaxAction.Update"),
+          onSuccess: function (jqXHR, data) { },
+          onFail: function (jqXHR, data) { },
+          onError: function(jqXHR, textStatus, errorThrown) { },
+          onAlways: function(data_or_jqXHR, textStatus, jqXHR_or_errorThrown) { }
+        });
+
+      }
+
+    })(jQuery);
+  </script>
+
+}

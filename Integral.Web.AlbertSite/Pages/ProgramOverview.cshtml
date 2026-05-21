@@ -1,0 +1,314 @@
+@page
+@model Integral.Web.PortalSite.Pages_Albert.ProgramOverview
+@{ Layout = "_Layout_AdminLTE"; }
+
+@if (Model.CoacheeList.IsNullOrEmpty() && Model.WorkshopList.IsNullOrEmpty() && Model.ConsultingItemList.IsNullOrEmpty() && Model.CostItemList.IsNullOrEmpty()) {
+
+  @Html.Raw(WebHelper.GetNoRecordsBadge())
+
+}
+
+<div class="table-title">Quality</div>
+<div class="flex flex-stretch gap20">
+
+  @Html.Raw(WebHelper.GetOverviewScoreBox(
+        titleText:        "Overall Evaluation",
+        titleTooltipText: "All Evaluations in this Program",
+        customClass:      null,
+        linkUrl:          Model.EvalScores.OverallCount == 0 ? null : PathHelper.Reports.EvalViewer(Model.ProgramInfo, ConfigHelper.EvalType.All),
+        scores:       new WebHelper.OverviewBoxScore(Model.EvalScores.Overall.ToString("0.0"), "/ 10")))
+
+  @Html.Raw(Model.EvalScores.EndProgram == 0 ? "" :
+      WebHelper.GetOverviewScoreBox(
+        titleText:        "Program",
+        titleTooltipText: "End-of-Program Evaluations",
+        customClass:      null,
+        linkUrl:          Model.EvalScores.EndProgramCount == 0 ? null : PathHelper.Reports.EvalViewer(Model.ProgramInfo, ConfigHelper.EvalType.PostProgram),
+        scores:       new WebHelper.OverviewBoxScore(Model.EvalScores.EndProgram.ToString("0.0"), "/ 10")))
+
+  @Html.Raw(Model.EvalScores.Workshops == 0 ? "" :
+      WebHelper.GetOverviewScoreBox(
+        titleText:        "Workshops",
+        titleTooltipText: "<center><p>Evaluation Results for Workshop Sessions.</p><p>For individual workshop scores see below.</p></center>",
+        customClass:      null,
+        linkUrl:          Model.EvalScores.WorkshopsCount == 0 ? null : PathHelper.Reports.EvalViewer(Model.ProgramInfo, ConfigHelper.EvalType.Workshop),
+        scores:       new WebHelper.OverviewBoxScore(Model.EvalScores.Workshops.ToString("0.0"), "/ 10")))
+
+  @Html.Raw(Model.EvalScores.Coaching == 0 ? "" :
+      WebHelper.GetOverviewScoreBox(
+        titleText:        "Coaching",
+        titleTooltipText: "Evaluation Results for Coaching Sessions and Program",
+        customClass:      null,
+        linkUrl:          Model.EvalScores.CoachingCount == 0 ? null : PathHelper.Reports.EvalViewer(Model.ProgramInfo, ConfigHelper.EvalType.Coaching),
+        scores:       new WebHelper.OverviewBoxScore(Model.EvalScores.Coaching.ToString("0.0"), "/ 10")))
+
+  @Html.Raw(Model.GetPrePostSurveyBox())
+
+  @Html.Raw(Model.GetProjectLeadDisplay())
+
+</div>
+<br/>
+@if (!Model.CoacheeList.IsNullOrEmpty()) {
+  <div class="table-title type-coachees">Participants</div>
+  <div class="table-responsive">
+    <table class="tblCoachees table table-bordered table-hover table-rowlink" @Html.Raw(Model.CanViewParticipants ? $"data-rowlink-url=\"{Model.GetParticipantRowLinkUrl()}\"" : "")>
+      <thead>
+        <tr>
+          <th class="">Name</th>
+          <th class="type-status">Info</th>
+          <th class="type-progress">Sessions</th>
+          <th class="type-delivery">Type</th>
+          <th class="type-user-nameWithAvatar">Partner</th>
+          @if (Model.CanViewTotalRevenue) {
+            <th class="type-money align-center">@Model.RevenueTextDisplay</th>
+          }
+          @if (Model.CanViewAllDeliveryTeamRevenue) {
+            <th class="type-money align-center">Partner</th>
+            <th class="type-money align-center @Model.colHideSales">Sales</th>
+            <th class="type-money align-center @Model.colHidePLC">PLC</th>
+          }
+          @if (Model.CanViewPartnerRevenue) {
+            <th class="type-money align-center">Revenue</th>
+          }
+        </tr>
+      </thead>
+      <tbody>
+        @foreach (var coachee in Model.CoacheeList) {
+          <tr tabindex="0" class="rowData" @Html.Raw(Model.GetRowAttribute(coachee))>
+            <td class="">
+              @Html.Raw(WebHelper.GetAvatarForTable_Participant(PathHelper.Images.UserPhoto(coachee.FirstName, coachee.LastName, PathHelper.Images.UserPhotoSize.Thumbnail, true), coachee.GetFullName(), coachee.EmailAddress, coachee.CoacheeId))
+            </td>
+            <td class="type-status">@Html.Raw(WebHelper.ParticipantActivities.GetBadgeParticipantUserActivityInfo(coachee.UserActivity, coachee.UserSubscription))</td>
+            <td class="type-progress">@Html.Raw(WebHelper.GetProgressBarHtml(coachee.UserActivity.SessionsCompleted, coachee.UserActivity.SessionsAllocated))</td>
+            <td class="type-delivery">@Html.Raw(WebHelper.GetDeliveryBadge(Model.GetDeliveryType(coachee)))</td>
+            <td class="type-user-nameWithAvatar">
+              @Html.Raw(WebHelper.GetAvatarForTable_User(PathHelper.Images.UserPhoto(coachee, PathHelper.Images.UserPhotoSize.Thumbnail, true),
+                      coachee.UserActivity.CoachFullName, coachee.CoachUserId))
+            </td>
+            @if (Model.CanViewTotalRevenue) {
+              <td class="type-money">@coachee.CoachingRevenue.GetValueOrDefault(0).ToString("C")</td>
+            }
+            @if (Model.CanViewAllDeliveryTeamRevenue) {
+              <td class="type-money" >@((coachee.CoachingRevenue * Model.ProgramInfo.Partner_DeliveryPercentage).GetValueOrDefault(0).ToString("C"))</td>
+              <td class="type-money @Model.colHideSales">@((coachee.CoachingRevenue * Model.ProgramInfo.Partner_SalesDeliveryPercentage).GetValueOrDefault(0).ToString("C"))</td>
+              <td class="type-money @Model.colHidePLC">@((coachee.CoachingRevenue * Model.ProgramInfo.Partner_PLCPercentage).GetValueOrDefault(0).ToString("C"))</td>
+            }
+            @if (Model.CanViewPartnerRevenue) {
+              <td class="type-money" >@Html.Raw(WebHelper.GetPartnerRevenueValue(coachee.CoachingRevenue, Model.ProgramInfo.Partner_DeliveryPercentage, coachee.CoachUserId == Model.userInfo.UserId, Model.CanViewAllDeliveryTeamRevenue))</td>
+            }
+          </tr>
+        }
+      </tbody>
+      @if (Model.CanViewTotalRevenue || Model.CanViewAllDeliveryTeamRevenue) {
+        <tfoot>
+          <tr tabindex="-1">
+            <td colspan="4" class="total-title">Coaching Total:</td>
+            @if (Model.CanViewTotalRevenue) {
+              <td class="type-money pr20 tfoot-total">@Model.CoacheeTotalRevenue.ToString("C")</td>
+            }
+            @if (Model.CanViewAllDeliveryTeamRevenue) {
+              <td class="type-money tfoot-total">@((Model.CoacheeTotalRevenue * Model.ProgramInfo.Partner_DeliveryPercentage).GetValueOrDefault(0).ToString("C"))</td>
+              <td class="type-money tfoot-total @Model.colHideSales">@((Model.CoacheeTotalRevenue * Model.ProgramInfo.Partner_SalesDeliveryPercentage).GetValueOrDefault(0).ToString("C"))</td>
+              <td class="type-money tfoot-total @Model.colHidePLC">@((Model.CoacheeTotalRevenue * Model.ProgramInfo.Partner_PLCPercentage).GetValueOrDefault(0).ToString("C"))</td>
+            }
+          </tr>
+        </tfoot>
+      }
+    </table>
+  </div>
+}
+
+@if (!Model.WorkshopList.IsNullOrEmpty()) {
+  <div class="table-title type-workshops">Workshops</div>
+  <div class="table-responsive">
+    <table class="tblWorkshops table table-bordered table-hover table-rowlink limitateNavigation" data-rowlink-url="@PathHelper.Pages.Workshops_Edit(Model.ProgramInfo.ProgramJobId, null)">
+      <thead>
+        <tr>
+          <th class="">Description</th>
+          <th class="type-datetime-2lines">Date & Time</th>
+          <th class="type-evalscore">Eval Score</th>
+          <th class="type-status">Status</th>
+          <th class="type-delivery">Type</th>
+          <th class="type-user-nameWithAvatar">Partner</th>
+          @if (Model.CanViewTotalRevenue) {
+            <th class="type-money">@Model.RevenueTextDisplay</th>
+          }
+          @if (Model.CanViewAllDeliveryTeamRevenue) {
+            <th class="type-money">Partner</th>
+            <th class="type-money @Model.colHideSales">Sales</th>
+            <th class="type-money @Model.colHidePLC">PLC</th>
+          }
+          @if (Model.CanViewPartnerRevenue) {
+            <th class="type-money">Partner</th>
+          }
+        </tr>
+      </thead>
+      <tbody>
+        @foreach(var workshopEvent in Model.WorkshopList) {
+          <tr tabindex="0" class="rowData" data-rowlink-id="@workshopEvent.WorkshopEventId">
+            <td>@workshopEvent.WorkshopTitle.HTMLEncode()</td>
+            <td class="type-datetime-2lines">@Html.Raw(Model.GetWorkshopStartDateTimeHtml(workshopEvent))</td>
+            <td class="type-evalscore">@Html.Raw(Model.GetWorkshopEvalScore(workshopEvent))</td>
+            <td class="type-status">@Html.Raw(WebHelper.GetStatusBadge(workshopEvent.WorkshopStatusName.HTMLEncode()))</td>
+            <td class="type-delivery">@Html.Raw(WebHelper.GetDeliveryBadge(!workshopEvent.IsVirtual))</td>
+            <td class="type-user-nameWithAvatar">
+              @Html.Raw(WebHelper.GetAvatarForTable_User(PathHelper.Images.UserPhoto(workshopEvent, PathHelper.Images.UserPhotoSize.Thumbnail, true),
+                      workshopEvent.KeyFacilitatorFirstName + " " + workshopEvent.KeyFacilitatorLastName, workshopEvent.KeyFacilitatorUserId))
+            </td>
+            @if(Model.CanViewTotalRevenue) {
+              <td class="type-money">@workshopEvent.WorkshopRevenue.GetValueOrDefault(0).ToString("C")</td>
+            }
+            @if (Model.CanViewAllDeliveryTeamRevenue) {
+              <td class="type-money">@((workshopEvent.WorkshopRevenue * Model.ProgramInfo.Partner_DeliveryPercentage).GetValueOrDefault(0).ToString("C"))</td>
+              <td class="type-money @Model.colHideSales">@((workshopEvent.WorkshopRevenue * Model.ProgramInfo.Partner_SalesDeliveryPercentage).GetValueOrDefault(0).ToString("C"))</td>
+              <td class="type-money @Model.colHidePLC  ">@((workshopEvent.WorkshopRevenue * Model.ProgramInfo.Partner_PLCPercentage).GetValueOrDefault(0).ToString("C"))</td>
+            }
+            @if (Model.CanViewPartnerRevenue) {
+              <td class="type-money">@Html.Raw(WebHelper.GetPartnerRevenueValue(workshopEvent.WorkshopRevenue, Model.ProgramInfo.Partner_DeliveryPercentage, workshopEvent.KeyFacilitatorUserId == Model.userInfo.UserId, Model.CanViewAllDeliveryTeamRevenue))</td>
+            }
+          </tr>
+        }
+      </tbody>
+      @if(Model.CanViewTotalRevenue || Model.CanViewAllDeliveryTeamRevenue) {
+        <tfoot>
+          <tr tabindex="-1">
+            <td colspan="6" class="total-title">Workshops Total:</td>
+            @if(Model.CanViewTotalRevenue) {
+              <td class="type-money tfoot-total">@Model.WorkshopTotalRevenue.ToString("C")</td>
+            }
+            @if (Model.CanViewAllDeliveryTeamRevenue) {
+              <td class="type-money tfoot-total">@((Model.WorkshopTotalRevenue * Model.ProgramInfo.Partner_DeliveryPercentage).GetValueOrDefault(0).ToString("C"))</td>
+              <td class="type-money tfoot-total @Model.colHideSales">@((Model.WorkshopTotalRevenue * Model.ProgramInfo.Partner_SalesDeliveryPercentage).GetValueOrDefault(0).ToString("C"))</td>
+              <td class="type-money tfoot-total @Model.colHidePLC">@((Model.WorkshopTotalRevenue * Model.ProgramInfo.Partner_PLCPercentage).GetValueOrDefault(0).ToString("C"))</td>
+            }
+          </tr>
+        </tfoot>
+      }
+    </table>
+  </div>
+}
+
+@if (!Model.ConsultingItemList.IsNullOrEmpty()) {
+  <div class="table-title type-consulting">Consulting Items</div>
+  <div class="table-responsive">
+    <table class="tblConsulting table table-bordered table-hover table-rowlink limitateNavigation" data-rowlink-url="@PathHelper.Pages.Consulting_Edit(Model.ProgramInfo.ProgramJobId, null)">
+      <thead>
+        <tr>
+          <th class="">Description</th>
+          <th class="type-date">Completion</th>
+          <th class="type-user-nameWithAvatar">Partner</th>
+          @if(Model.CanViewTotalRevenue) {
+            <th class="type-money">@Model.RevenueTextDisplay</th>
+          }
+          @if (Model.CanViewAllDeliveryTeamRevenue) {
+            <th class="type-money">Partner</th>
+            <th class="type-money @Model.colHideSales">Sales</th>
+            <th class="type-money @Model.colHidePLC">PLC</th>
+          }
+          @if (Model.CanViewPartnerRevenue) {
+            <th class="type-money">Partner</th>
+          }
+        </tr>
+      </thead>
+      <tbody>
+        @foreach (var consultingItem in Model.ConsultingItemList) {
+          <tr tabindex="0" class="rowData" data-rowlink-id="@consultingItem.ConsultingItemId">
+            <td class="">@consultingItem.ItemTitle.HTMLEncode()</td>
+            <td class="type-date">@consultingItem.CompletionDateUtc.UtcToTZOrNull(ConfigHelper.DefaultTimeZoneInfo).ToString("d MMM yyyy")</td>
+            <td class="type-user-nameWithAvatar">
+              @Html.Raw(WebHelper.GetAvatarForTable_User(PathHelper.Images.UserPhoto(consultingItem, PathHelper.Images.UserPhotoSize.Thumbnail, true),
+                      consultingItem.ConsultantFirstName + " " + consultingItem.ConsultantLastName, consultingItem.ConsultantUserId))
+            </td>
+            @if (Model.CanViewTotalRevenue) {
+              <td class="type-money">@consultingItem.ItemAmount.ToString("C")</td>
+            }
+            @if (Model.CanViewAllDeliveryTeamRevenue) {
+              <td class="type-money">@((consultingItem.ItemAmount * Model.ProgramInfo.Partner_DeliveryPercentage).GetValueOrDefault(0).ToString("C"))</td>
+              <td class="type-money @Model.colHideSales">@((consultingItem.ItemAmount * Model.ProgramInfo.Partner_SalesDeliveryPercentage).GetValueOrDefault(0).ToString("C"))</td>
+              <td class="type-money @Model.colHidePLC">@((consultingItem.ItemAmount * Model.ProgramInfo.Partner_PLCPercentage).GetValueOrDefault(0).ToString("C"))</td>
+            }
+            @if (Model.CanViewPartnerRevenue) {
+              <td class="type-money">@Html.Raw(WebHelper.GetPartnerRevenueValue(consultingItem.ItemAmount, Model.ProgramInfo.Partner_DeliveryPercentage, consultingItem.ConsultantUserId == Model.userInfo.UserId, Model.CanViewAllDeliveryTeamRevenue))</td>
+            }
+          </tr>
+        }
+      </tbody>
+      @if(Model.CanViewTotalRevenue || Model.CanViewAllDeliveryTeamRevenue) {
+        <tfoot>
+          <tr tabindex="-1">
+            <td colspan="3" class="total-title">Consulting Total:</td>
+            @if(Model.CanViewTotalRevenue) {
+              <td class="type-money tfoot-total">@Model.ConsultingTotalRevenue.ToString("C")</td>
+            }
+            @if (Model.CanViewAllDeliveryTeamRevenue) {
+              <td class="type-money tfoot-total">@((Model.ConsultingTotalRevenue * Model.ProgramInfo.Partner_DeliveryPercentage).GetValueOrDefault(0).ToString("C"))</td>
+              <td class="type-money tfoot-total @Model.colHideSales">@((Model.ConsultingTotalRevenue * Model.ProgramInfo.Partner_SalesDeliveryPercentage).GetValueOrDefault(0).ToString("C"))</td>
+              <td class="type-money tfoot-total @Model.colHidePLC">@((Model.ConsultingTotalRevenue * Model.ProgramInfo.Partner_PLCPercentage).GetValueOrDefault(0).ToString("C"))</td>
+            }
+          </tr>
+        </tfoot>
+      }
+    </table>
+  </div>
+}
+
+@if (!Model.CostItemList.IsNullOrEmpty()) {
+  <div class="table-title type-costitems">Cost Items</div>
+  <div class="table-responsive">
+    <table class="tblCostItems table table-bordered table-hover table-rowlink limitateNavigation" data-rowlink-url="@PathHelper.Pages.ProgramCostItems_Edit(Model.ProgramInfo.ProgramJobId, null)">
+      <thead>
+        <tr>
+          <th class="type-description" colspan="3">Description</th>
+          <th class="type-date">Date</th>
+          @if(Model.CanViewTotalRevenue) {
+            <th class="type-money">@Model.RevenueTextDisplay</th>
+          }
+        </tr>
+      </thead>
+      <tbody>
+        @foreach (var costItem in Model.CostItemList) {
+          <tr tabindex="0" class="rowData" data-rowlink-id="@costItem.ProgramCostItemId">
+            <td class="type-description" colspan="3">@costItem.Description.HTMLEncode()</td>
+            <td class="type-date">@costItem.CostIncurredUtc.UtcToTZOrNull(ConfigHelper.DefaultTimeZoneInfo).ToString("d MMM yyyy")</td>
+            @if (Model.CanViewTotalRevenue) {
+              <td class="type-money">@((costItem.UnitPrice * costItem.Quantity).ToString("C"))</td>
+            }
+          </tr>
+        }
+      </tbody>
+      @if(Model.CanViewTotalRevenue) {
+        <tfoot>
+          <tr tabindex="-1">
+            <td colspan="4" class="total-title">Cost Items Total:</td>
+            <td class="type-money tfoot-total">@Model.CostItemTotalRevenue.ToString("C")</td>
+          </tr>
+        </tfoot>
+      }
+    </table>
+  </div>
+}
+
+@section PostScriptContent {
+
+  <script type="text/javascript">
+    (function($) {
+
+      $(document).ready(function() {
+
+        // If user cannot navigate from tables, remove the links of navigation.
+        @if (!Model.CanNavigateFromTables) {
+         <text>$('.limitateNavigation').removeAttr('data-rowlink-url');</text>
+        }
+
+        $("#@Integral.Web.PortalSite.Pages_Albert.ProgramOverview.PrePostLinkButtonID").click(function (ev) {
+          ev.preventDefault();
+          ev.stopPropagation();
+          location.href = "@PathHelper.Pages.ProgramSendSurvey(Model.ProgramInfo.ProgramJobId, ConfigHelper.TemplateSurveyIds.NewPostProgramSurvey)";
+        });
+
+      }); // ready.
+
+    })(jQuery);
+  </script>
+
+}

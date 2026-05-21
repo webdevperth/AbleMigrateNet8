@@ -1,0 +1,1131 @@
+@page
+@model Integral.Web.PortalSite.Pages_Albert.ContentDetails
+@{ Layout = "_Layout_AdminLTE"; }
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
+
+<style>
+
+  .preview-cover-image { height: 150px; width: 280px; border-radius: 5px; }
+  .content-file-image { border-radius: 9px; }
+  .content-attachment-container { display: flex; flex-direction: column; padding: 10px; border: 1px solid #ccc; border-radius: 5px; width: 300px; margin: 10px; margin-left: 0px; }
+  .content-attachment { display: flex; align-items: center; }
+  .content-file-icon { width: 70px; height: 70px; margin-right: 10px; }
+  .content-file-info,
+  .banner-download-container { display: flex; flex-direction: column; }
+  .content-file-name { font-size: 13px; margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; width: 200px; }
+  .content-download-link { font-size: 12px; font-weight: bold; cursor: pointer; }
+  .banner-download-container a { position: relative; width: 150px; }
+  .summaryContainer { position: relative; display: inline-block; width: 100% }
+  .summaryContainer input { padding-right: 50px !important; }
+  .summaryContainer input:focus { z-index: inherit !important; }
+  .char-counter { position: absolute; right: 2%; bottom: 5px; color: gray; font-size: 12px; }
+
+</style>
+
+<section class="w100p">
+
+  @if (Model.IsParticipantView) {
+
+    <div class="content-details-card flex-wrap">
+      <div class="content-card-info">
+        @Html.Raw(Model.GetContentTypeBadge())
+        <h1>@Model.ContentInfo.ContentTitle</h1>
+        <p>@Model.ContentInfo.ContentSummary</p>
+
+        @* Content tags *@
+        @if (!Model.ContentTagsInfo.IsNullOrEmpty()) {
+          <div class="inline-flex gap10 mb5 mt5">
+            <span>Capabilities:</span>
+            @foreach (var tag in Model.ContentTagsInfo) {
+              <span class="badge mb5">@tag.TagName</span>
+            }
+          </div>
+        }
+
+        <div class="content-card-mid-section">
+          <div class="content-card-creator">
+            <img src="@PathHelper.Images.UserPhoto(Model.ContentInfo.AuthorFirstName, Model.ContentInfo.AuthorLastName, PathHelper.Images.UserPhotoSize.Thumbnail, true)" />
+            <span class="ml5"> Created by @Model.ContentInfo.GetAuthorFullName()</span>
+          </div>
+          @if (Model.ContentInfo.ContentType == DbHelper.Content.ContentTypeEnum.Document && !Model.ContentFilePath.IsNullOrEmpty()) {
+            <div class="banner-download-container">
+              <a class="btn btn-sm btn-primary btn-download" href="@Model.ContentFilePath" download="">Download</a>
+            </div>
+          }
+        </div>
+      </div>
+      <div class="content-card-coverimage">
+        @if (Model.ContentInfo.ContentType == DbHelper.Content.ContentTypeEnum.Video && !Model.ContentInfo.ContentUrl.IsNullOrEmpty()) {
+
+          @Html.Raw(WebHelper.GetYouTubeEmbedHtml(Model.ContentInfo.ContentUrl))
+
+        } else if (Model.ContentInfo.ContentType == DbHelper.Content.ContentTypeEnum.Image && !Model.ContentFilePath.IsNullOrEmpty()) {
+
+          <div class="image-hover-container fullImageView">
+            <img src="@PathHelper.Images.ContentImageFile(Model.ContentInfo.ContentGuid, PathHelper.Images.ContentCoverImageSize.Original)" alt="@Model.ContentInfo.ContentTitle" class="content-file-image">
+            <div class="overlay">
+              <p>Click to view</p>
+              @Html.Raw(WebHelper.GetIconHtml(WebHelper.ActionButtonTypeEnum.view, "ml5"))
+            </div>
+          </div>
+
+        } else {
+
+          @Html.Raw(WebHelper.Content.GetCoverImageHtml(Model.ContentInfo))
+
+        }
+      </div>
+    </div>
+    <div class="mt40">
+      @Html.Raw(WebHelper.GetTextDisplayRow("", 12, Model.ContentInfo.ContentHtml))
+
+      @if (!Model.ContentInfo.ContentUrl.IsNullOrEmpty() && Model.ContentInfo.ContentType != DbHelper.Content.ContentTypeEnum.Video) {
+        <div class="mt20">
+          <a class="btn btn-primary mt20" target="_blank" href="@Model.ContentInfo.ContentUrl">Go to link</a>
+        </div>
+      }
+
+    </div>
+
+    @if (Model.ContentInfo.ContentType == DbHelper.Content.ContentTypeEnum.Image) {
+
+      <div id="fullImageViewModal" class="displaynone content-image-fullView">
+        <div class="image-container">
+          <img src="@PathHelper.Images.ContentImageFile(Model.ContentInfo.ContentGuid, PathHelper.Images.ContentCoverImageSize.Original)" alt="@Model.ContentInfo.ContentTitle" class="content-file-image">
+        </div>
+      </div>
+
+    }
+
+    @if (Model.ContentInfo.ContentType == DbHelper.Content.ContentTypeEnum.Quiz) {
+
+      <form id="SubmitQuizForm" class="QuizContainer">
+        <hr />
+        <div class="quiz-container">
+
+          @if (Model.IsQuizResponded) {
+
+            @Html.Raw(Model.GetParticipantQuizResultsHtml())
+
+          } else {
+
+            <div class="progress-bar">
+                <div class="progress"></div>
+            </div>
+
+            <div id="quiz">
+              @Html.Raw(Model.GetParticipantQuizHtml())
+            </div>
+
+            <div class="navigation">
+              <button class="btn btn-secondary" id="quizPrevBtn" style="display: none;">Previous</button>
+              <button class="btn btn-primary floatright" id="quizNextBtn">Next</button>
+            </div>
+
+          }
+
+        </div>
+
+      </form>
+
+    } else if (Model.ContentInfo.ContentType == DbHelper.Content.ContentTypeEnum.LearningActions) {
+
+      @if (Model.UserContentInfo == null || !Model.UserContentInfo.IsCompleted) {
+
+        <form id="LearningActionForm" class="LearningActionContainer mt30">
+          @Html.Raw(WebHelper.GetTextArea("Action notes:", Integral.Web.PortalSite.Pages_Albert.ContentDetails.FormFields.LearningActionText, 2, 10, "", ""))
+          <button class="btn btn-primary floatright" id="btnSubmitLearningAction">I've completed this action</button>
+        </form>
+
+      } else {
+
+        <div class="mt25">
+          @if (!Model.UserContentInfo.LearningActionText.IsNullOrEmpty()) {
+            <p><b>Your notes:</b></p>
+            @Html.Raw(WebHelper.GetTextDisplayRow("", 12, Model.UserContentInfo.LearningActionText))
+          }
+
+          @Html.Raw(WebHelper.GetStatusBadge("Action Completed", "complete"))
+        </div>
+      }
+    }
+
+    @Html.Raw(Model.GetNextLearningButtonHtml())
+
+  } else {
+
+    <form id="contentForm" class="form-horizontal">
+
+      <input type="hidden" name="@PathHelper.FormKeys.AjaxAction" value="@Integral.Web.PortalSite.Pages_Albert.ContentDetails.AjaxAction.UpdateContent" />
+
+      @Html.Raw(Model.ContentTypeHtml())
+      @Html.Raw(Model.GetAuthorHtml())
+      @Html.Raw(WebHelper.GetTextInput("Title:", Integral.Web.PortalSite.Pages_Albert.ContentDetails.FormFields.ContentTitle, Model.ContentInfo.ContentTitle, "", 1, 11, "", !Model.CanEditContent))
+      @Html.Raw(WebHelper.GetRichTextArea($"Description: {Model.GetRequiredFieldIconHtml()}", Integral.Web.PortalSite.Pages_Albert.ContentDetails.FormFields.ContentHtml, 1, 11, Model.ContentInfo.ContentHtml, "", !Model.CanEditContent))
+
+      <div class="summaryContainer">
+        @Html.Raw(WebHelper.GetTextInput("Summary:", Integral.Web.PortalSite.Pages_Albert.ContentDetails.FormFields.ContentSummary, Model.ContentInfo.ContentSummary, "", 1, 11, "", !Model.CanEditContent, false, WebHelper.InputMaxLength.ContentSummary))
+        <p id="summaryCharCount" class="char-counter"></p>
+      </div>
+
+      <div class="form-group ajaxSubmit-field row">
+        <label class="control-label col-md-1 col-sm-12 col-xs-12">Link<span class="link-required"> (opt)</span>:</label>
+        <div class="col-md-11 col-sm-12 col-xs-12">
+          <input type="text" class="form-control keyscroll-done" name="@Integral.Web.PortalSite.Pages_Albert.ContentDetails.FormFields.ContentUrl" value="@Model.ContentInfo.ContentUrl" placeholder="" autocomplete="off" @Html.Raw(Model.CanEditContent ? "" : @"readonly=""readonly""")>
+        </div>
+      </div>
+
+      @if (!Model.IsNewContent && Model.ContentInfo != null && !Model.ContentInfo.ContentUrl.IsNullOrEmptyOrWhitespace() && Model.ContentInfo.ContentType == DbHelper.Content.ContentTypeEnum.Video) {
+        @Html.Raw(WebHelper.GetYouTubeEmbedHtml(Model.ContentInfo.ContentUrl, "Video:", 1, "ml20"))
+      }
+
+      <div class="form-group ajaxSubmit-field row">
+        <label class="control-label col-md-1 col-sm-12 col-xs-12">Tags: @Html.Raw(Model.GetRequiredFieldIconHtml())</label>
+        <div class="col-md-5 col-sm-11 col-xs-12">
+          <select multiple="" class="form-control" style="width:100%;" name="@Integral.Web.PortalSite.Pages_Albert.ContentDetails.FormFields.ContentTagId" @Html.Raw(!Model.CanEditContent ? "disabled=\"\"" : "") >
+            @foreach (var tag in Model.TagInfoForContent) {
+              @Html.Raw($"<option value=\"{tag.TagId}\"{(!Model.ContentTagsInfo.IsNullOrEmpty() && Model.ContentTagsInfo.Exists(x => x.TagId == tag.TagId) ? " selected " : string.Empty)}>{tag.TagName}</option>")
+            }
+          </select>
+        </div>
+      </div>
+
+      <div class="publicSelection">
+        @Html.Raw(WebHelper.CustomCheckBoxRow("", 1, Integral.Web.PortalSite.Pages_Albert.ContentDetails.FormFields.ShowToParticipants, "1", Model.ContentInfo.ShowToParticipants, !Model.CanSetPublicContentForParticipants, "Global Participants.", Model.GetPublicTooltipInfo(Integral.Web.PortalSite.Pages_Albert.ContentDetails.FormFields.ShowToParticipants)))
+        @Html.Raw(WebHelper.CustomCheckBoxRow("", 1, Integral.Web.PortalSite.Pages_Albert.ContentDetails.FormFields.ShowToPartners, "1", Model.ContentInfo.ShowToPartners, !Model.CanEditContent, "Global Partners.", Model.GetPublicTooltipInfo(Integral.Web.PortalSite.Pages_Albert.ContentDetails.FormFields.ShowToPartners)))
+      </div>
+      @Html.Raw(WebHelper.CustomCheckBoxRow("", 1, Integral.Web.PortalSite.Pages_Albert.ContentDetails.FormFields.IsPublished, "1", Model.ContentInfo.IsPublished, !Model.CanEditIsPublished, "Publish.", Model.GetPublicTooltipInfo(Integral.Web.PortalSite.Pages_Albert.ContentDetails.FormFields.IsPublished)))
+
+      <div class="row form-group ajaxSubmit-field">
+        <label class="control-label col-md-1 col-sm-12 col-xs-12">Cover Image: @Html.Raw(Model.GetRequiredFieldIconHtml())</label>
+        <div class="col-md-9 col-sm-12 col-xs-12">
+          <div class="file-selection">
+            <div class="content-attachment-container">
+              <div class="content-attachment">
+                <img id="imgCoverImage" class="preview-cover-image" src="@PathHelper.Images.ContentCoverImage(Model.ContentInfo.ContentGuid, PathHelper.Images.ContentCoverImageSize.Card)" alt="Cover Image">
+              </div>
+            </div>
+            @if (Model.CanEditContent) {
+              <div class="container">
+                <div class="row">
+                  <div class="col">
+                    <input type="file" title="Select an Image" id="btnSelectCoverImage" accept="image/*" />
+                  </div>
+                </div>
+
+                <!-- Error message will be inserted here if conditions are met -->
+                <div class="@WebHelper.CSSClasses.AjaxFieldErrorMsg error-imgCover" style="display: none;">
+                    <p>Cover Image is required.</p>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+
+      <div class="row form-group ajaxSubmit-field fileContent">
+        <label class="control-label col-md-1 col-sm-12 col-xs-12">File:</label>
+        <div class="col-md-9 col-sm-12 col-xs-12">
+          <div class="file-selection">
+            @if (!Model.IsNewContent && !Model.ContentFilePath.IsNullOrEmpty()) {
+              <a href="@Model.ContentFilePath" class="content-attachment-container" download="">
+                <div class="content-attachment">
+                  <img src="@Model.ContentPreviewImgPath" alt="Content File" class="content-file-icon">
+                  <div class="content-file-info">
+                    <span class="content-download-link">Download</span>
+                  </div>
+                </div>
+              </a>
+            }
+
+            @if (Model.CanEditContent) {
+              <div class="container">
+                <div class="row">
+                  <div class="col">
+                    <input type="file" title="Select Content" id="contentFileInput" accept="image/*" />
+                  </div>
+                </div>
+
+                <!-- Error message will be inserted here if conditions are met -->
+                <div class="@WebHelper.CSSClasses.AjaxFieldErrorMsg error-contentFile" style="display: none;">
+                    <p>Content is required.</p>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+
+      @if (Model.IsProgramView) {
+        <hr />
+        @Html.Raw(WebHelper.GetInputDateRow("Scheduled Send Date:", Integral.Web.PortalSite.Pages_Albert.ContentDetails.FormFields.ScheduledSendDateUtc, Model.ProgramContentInfo?.ScheduledSendDateUtc, 4, 4, "", !Model.CanEditContent))
+        @Html.Raw(WebHelper.CustomCheckBoxRow("List Content:", Integral.Web.PortalSite.Pages_Albert.ContentDetails.FormFields.IsContentListed, "1", Model.ProgramContentInfo == null ? false : Model.ProgramContentInfo.IsContentListed, !Model.CanEditContent, "",
+          WebHelper.GetIconTooltip(WebHelper.ActionButtonTypeEnum.info, "This will show on participants program overview.", "", "ml5"), "pt15", 4))
+        @Html.Raw(WebHelper.GetWorkshopDropdownHtml(Model.WorkshopListInfo, Integral.Web.PortalSite.Pages_Albert.ContentDetails.FormFields.WorkshopEventId, 4, 6, !Model.CanEditContent))
+      }
+
+      @if (Model.IsNewContent || Model.CurrentContentType == DbHelper.Content.ContentTypeEnum.Quiz) {
+        <div class="mt20 QuizCreationDiv">
+          <hr/>
+          <div class="content-action-bar p0 mb10">
+            <h3>@(Model.IsNewContent ? "Create " : "")Quiz</h3>
+            @if (Model.CanEditQuiz) {
+              <button type="button" class="btn btn-primary floatright btnAddQuestion">Add Question</button>
+            }
+          </div>
+          <div class="mt20 questionContainer">
+            @if (Model.CurrentContentType == DbHelper.Content.ContentTypeEnum.Quiz) {
+              @Html.Raw(Model.GetQuizQuestionHtml())
+            }
+          </div>
+        </div>
+      }
+
+      @if (Model.CanEditContent) {
+        <div class="btnholder">
+          @if (Model.CanDeleteContentItem) {
+            <button type="button" class="btn btn-warning btnDeleteContent">Delete</button>
+          }
+          <button type="button" class="btn btn-primary floatright btnSaveContent">Save Content</button>
+        </div>
+      }
+    </form>
+
+    <div id="cropperModal" class="modal fade" data-backdrop="static" tabindex="-1" role="dialog">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h4 class="modal-title mt10">Adjust Image</h4>
+          </div>
+          <div class="modal-body">
+            <div class="img-container">
+              <div class="floatright w200 pl10 pr10 sidenote">
+                Change the framing of the image if needed.<br/>
+                <br/>
+                Use the controls below to rotate and zoom.<br/>
+                When zoomed in, use the mouse to move the image in the frame.<br/>
+              </div>
+              <img class="cropperImage floatleft" src="about:blank" alt="Crop Image">
+            </div>
+          </div>
+          <div class="modal-footer">
+            <div class="actions-titles floatleft">
+              <div class="buttonset">
+                <div class="title">Rotate</div>
+                <div class="title title-sec">Zoom</div>
+              </div>
+            </div>
+            <div class="actions floatleft">
+              <div class="buttonset">
+                <button type="button" class="btn btn-secondary btnRotateLeft" title="Rotate Left"><img src="@(PathHelper.UrlPath.Images)btn-cropper-rotate-left.svg" /></button>
+                <button type="button" class="btn btn-secondary btnRotateRight" title="Rotate Right"><img src="@(PathHelper.UrlPath.Images)btn-cropper-rotate-right.svg" /></button>
+              </div>
+              <div class="buttonset">
+                <button type="button" class="btn btn-secondary btnZoomOut" title="Zoom Out"><i class="fas fa-search-minus"></i></button>
+                <button type="button" class="btn btn-secondary btnZoomIn" title="Zoom In"><i class="fas fa-search-plus"></i></button>
+              </div>
+            </div>
+            <div class="buttonsAction floatright">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+              <button type="button" id="btnCropDone" class="btn btn-primary">Done</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  }
+
+</section><!-- /.content -->
+
+@section PostScriptContent {
+
+  <script type="text/javascript">
+    (function ($) {
+
+      var btnSaveContent = $(".btnSaveContent");
+      var $imgCoverImage, contentGuid, contentFileInput, summaryInput;
+      var Cropper, cropper, $cropperModal, $cropperModalImage;
+      var isNewContent, currentContentType, isUpdatingFiles, isParticipantView, isProgramView, CanEditQuiz;
+      var contentType_Image, contentType_Document, contentType_Url, contentType_Video, contentType_Quiz;
+      var questionsInQuiz, currentQuizQuestion, $publicSelectionDiv, $requiredFieldDiv, allFieldsAreRequired;
+
+      $(document).ready(function () {
+
+        isNewContent = @Html.Raw(Model.IsNewContent.ToJSTrueFalse());
+        currentContentType = "@Model.CurrentContentType.ToString()";
+        contentType_Image = "@DbHelper.Content.ContentTypeEnum.Image.ToString()";
+        contentType_Document = "@DbHelper.Content.ContentTypeEnum.Document.ToString()";
+        contentType_Url = "@DbHelper.Content.ContentTypeEnum.Url.ToString()";
+        contentType_Video = "@DbHelper.Content.ContentTypeEnum.Video.ToString()";
+        contentType_Quiz = "@DbHelper.Content.ContentTypeEnum.Quiz.ToString()";
+        isParticipantView = @Html.Raw(Model.IsParticipantView.ToJSTrueFalse());
+        isProgramView = @Html.Raw(Model.IsProgramView.ToJSTrueFalse());
+
+        if (isParticipantView) {
+
+          currentQuizQuestion = 0;
+          questionsInQuiz = @(Model.IsNewContent || Model.ContentQuizInfo == null ? 0 : Model.ContentQuizInfo.Count);
+          DisplayQuizQuestion();
+
+          if (questionsInQuiz == 0) {
+            $('#quizNextBtn').hide();
+            $('#quizPrevBtn').hide();
+          }
+
+          $(document).on('click', '#quiz .question-container .option', function () {
+            // Remove 'active' class from all options within the currently active container
+            $(this).closest('.question-container').find('.option').removeClass('selected');
+
+            // Add 'active' class to the clicked option
+            $(this).addClass('selected');
+
+            QuizNextBtn();
+          });
+
+          $('#quizNextBtn').click(function () {
+            QuizNextBtn();
+          });
+
+          $('#quizPrevBtn').click(function () {
+            if (currentQuizQuestion > 0) {
+              currentQuizQuestion--;
+              DisplayQuizQuestion();
+            }
+          });
+
+          $('#btnSubmitLearningAction').click(SubmitLearningAction);
+          $('.btn-download').click(UpdateItemCompleted);
+          $('.fullImageView').click(UpdateItemCompleted);
+
+        } else {
+
+          $imgCoverImage = $("#imgCoverImage");
+          Cropper = window.Cropper;
+          contentFileInput = $("#contentFileInput");
+          $cropperModal = $("#cropperModal");
+          $cropperModalImage = $("#cropperModal .cropperImage");
+          contentGuid = isNewContent ? null : '@Model.ContentInfo?.ContentGuid';
+          summaryInput = $('input[name="@Integral.Web.PortalSite.Pages_Albert.ContentDetails.FormFields.ContentSummary"]');
+          CanEditQuiz = @Html.Raw(Model.CanEditQuiz.ToJSTrueFalse());
+          $publicSelectionDiv = $(".publicSelection");
+          $requiredFieldDiv = $(".@WebHelper.CSSClasses.IconTooltip_RequiredField");
+
+          btnSaveContent.click(SaveContent);
+          $('.btnDeleteContent').click(DeleteContentModal);
+
+          $('#btnSelectCoverImage').on('change', function () { CropCoverImage(this); });
+
+          $("#cropperModal .btnRotateLeft").click(function (e) { cropper.rotate(-90); });
+          $("#cropperModal .btnRotateRight").click(function (e) { cropper.rotate(90); });
+          $("#cropperModal .btnZoomOut").click(function (e) { cropper.zoom(-0.1); });
+          $("#cropperModal .btnZoomIn").click(function (e) { cropper.zoom(0.1); });
+
+          $("#btnCropDone").click(function (e) {
+            if (typeof cropper != 'object') return;
+            var croppedCanvas = cropper.getCroppedCanvas();
+            var $imgTarget = $cropperModal.data("img-target");
+            $imgTarget.attr("src", croppedCanvas.toDataURL());
+            croppedCanvas.toBlob(function (blob) {
+              $imgTarget.data("blob", blob);
+              $cropperModal.modal("hide")
+            }, $cropperModal.data("img-mimetype"), 0.9);
+          });
+
+          $cropperModal.on('hidden.bs.modal', function () {
+            if (typeof cropper != "undefined" && cropper != null) {
+              if (cropper.destroy) cropper.destroy();
+              cropper = null;
+            }
+          });
+
+          if (isNewContent) {
+            // When the Content is being created UI should be updated based on the selected Content Type
+            $('input[name="@Integral.Web.PortalSite.Pages_Albert.ContentDetails.FormFields.ContentTypeId"]').on('change', function () {
+              UpdateCurrentContentType();
+            });
+          }
+
+          UpdateCurrentContentType();
+
+          GetSummaryCharCount();
+          $('input[name="@Integral.Web.PortalSite.Pages_Albert.ContentDetails.FormFields.ContentSummary"]').keyup(function () {
+            GetSummaryCharCount();
+          });
+
+          UpdateQuizForms();
+          $('.btnAddQuestion').click(AddQuizQuestion);
+
+          $(".questionContainer").on("click", function (e) {
+            if (!CanEditQuiz || currentContentType != contentType_Quiz) return;
+            var $e = $(e.target);
+            if ($e.hasClass("btnRemoveQuestion")) {
+              RemoveQuizQuestion(e);
+            } else if ($e.hasClass("@WebHelper.Content.CSS.RemoveOptionButtonInTable")) {
+              RemoveQuizOption(e);
+            } else if ($e.hasClass("btnAddOption")) {
+              var $question = $(e.target).closest('.question');
+              AddQuizOption($question);
+            }
+          });
+
+          function UpdateRequiredLabelDisplay() {
+            allFieldsAreRequired = $publicSelectionDiv.find('input[type="checkbox"]').is(':checked');
+            $requiredFieldDiv.toggleClass('displaynone', !allFieldsAreRequired);
+          }
+          UpdateRequiredLabelDisplay();
+          $publicSelectionDiv.on('change', 'input[type="checkbox"]', UpdateRequiredLabelDisplay);
+        }
+      });
+
+      function QuizNextBtn() {
+        if (currentQuizQuestion < questionsInQuiz - 1) {
+          currentQuizQuestion++;
+          DisplayQuizQuestion();
+        } else {
+          SubmitQuizResponses();
+        }
+      }
+
+      function DisplayQuizQuestion() {
+        if (questionsInQuiz == 0) return;
+
+        // Remove 'active' class and fade out all .question-container elements
+        $('#quiz .question-container').removeClass('active').fadeOut(200, function () {
+          $(this).addClass('displaynone');
+        });
+
+        setTimeout(() => {
+          // Find the specific question and fade it in
+          $('#quiz .question-container[data-@Integral.Web.PortalSite.Pages_Albert.ContentDetails.FormFields.QuestionIndex="' + currentQuizQuestion + '"]')
+            .removeClass('displaynone')
+            .fadeIn(200)
+            .addClass('active');
+        }, 200);
+
+        // Update progress bar
+        const progress = ((currentQuizQuestion + 1) / questionsInQuiz) * 100;
+        $('.progress').css('width', `${progress}%`);
+
+        // Update navigation buttons
+        $('#quizPrevBtn').toggle(currentQuizQuestion > 0);
+        $('#quizNextBtn').text(currentQuizQuestion === questionsInQuiz - 1 ? 'Finish' : 'Next');
+      }
+
+      function UpdateQuizForms() {
+
+        if (isNewContent && currentContentType == contentType_Quiz) {
+          AddQuizQuestion();
+        } else if (isNewContent && currentContentType != contentType_Quiz) {
+          $('.questionContainer').empty();
+        }
+      }
+
+      function AddQuizQuestion() {
+        var questionHtml = `
+          <div class="question mb20">
+            <div class="mb10">
+              <label>Question:</label>
+              <button type="button" class="btn btn-danger btn-xsm btnRemoveQuestion float-right">Remove Question</button>
+            </div>
+            <input type="text" class="form-control mb10" name="@Integral.Web.PortalSite.Pages_Albert.ContentDetails.FormFields.QuizQuestion" required>
+            <div class="options">
+              <hr/>
+              <label class="mb10">Options:</label>
+            </div>
+            <button type="button" class="btn btn-secondary btn-sm mt10 btnAddOption">Add Option</button>
+          </div>
+        `;
+
+        var newQuestion = $(questionHtml);
+        $('.questionContainer').append(newQuestion);
+        UpdateQuestionNumbers();
+        AddQuizOption(newQuestion);
+      }
+
+      function AddQuizOption($question) {
+        var questionIndex = $question.index() + 1;
+        var optionHtml = `
+          <div class="option flex-inline w100p mb15">
+            <input type="radio" title="Correct Option" name="@(Integral.Web.PortalSite.Pages_Albert.ContentDetails.FormFields.QuizCorrectOption)_${questionIndex}" required>
+            <input type="text" class="form-control ml10 mr10" name="@(Integral.Web.PortalSite.Pages_Albert.ContentDetails.FormFields.QuizOption)_${questionIndex}" required>
+            @Html.Raw(WebHelper.Content.GetDeleteButtonForTable(WebHelper.Content.CSS.RemoveOptionButtonInTable))
+          </div>
+        `;
+        $question.find('.options').append(optionHtml);
+      }
+
+      function RemoveQuizQuestion(e) {
+        $(e.target).closest('.question').remove();
+        UpdateQuestionNumbers();
+      }
+
+      function RemoveQuizOption(e) {
+        var $option = $(e.target).closest('.option');
+        var $options = $option.closest('.options');
+        if ($options.children().length > 1) {
+          $option.remove();
+        } else {
+          alert('Each question must have at least one option');
+        }
+      }
+
+      function UpdateQuestionNumbers() {
+        $('.question').each((index, element) => {
+          var questionNum = index + 1;
+          $(element).find('input[type="radio"]').attr('name', `@(Integral.Web.PortalSite.Pages_Albert.ContentDetails.FormFields.QuizCorrectOption)_${questionNum}`);
+          $(element).find('.option input[type="text"]').attr('name', `@(Integral.Web.PortalSite.Pages_Albert.ContentDetails.FormFields.QuizOption)_${questionNum}`);
+        });
+      }
+
+      function UpdateCurrentContentType() {
+
+        if (isNewContent) {
+          currentContentType = $('input[name="@Integral.Web.PortalSite.Pages_Albert.ContentDetails.FormFields.ContentTypeId"]:checked').val();
+        }
+
+        if (currentContentType == contentType_Image || currentContentType == contentType_Document) {
+          $('.fileContent').show();
+        } else {
+          $('.fileContent').hide();
+        }
+
+        if (currentContentType == contentType_Quiz) {
+          $('.QuizCreationDiv').show();
+        } else {
+          $('.QuizCreationDiv').hide();
+        }
+
+        if (currentContentType == contentType_Url || currentContentType == contentType_Video) {
+          $('.link-required').hide();
+        } else {
+          $('.link-required').show();
+        }
+
+        UpdateQuizForms();
+        SetupFileInput();
+      }
+
+      function ShowImageModal() {
+
+        if (!isParticipantView) return;
+
+        var dlg = common_InfoDialog("#fullImageViewModal", {
+          name: "ImageView",
+          title: "Content Image",
+          width: '80%',
+          buttons: [
+            { text: "Done", class: "btn-secondary mr20 left", isDefault: false, isPrimary: false, close: true },
+            {
+              text: "Download", class: "mr20 left", isDefault: true, isPrimary: true, close: false, click: function (e) {
+
+                var contentFilePath = "@Model.ContentFilePath";
+                var $tempDownloadLink = $('<a>').attr('href', contentFilePath).attr('download', '');
+                $('body').append($tempDownloadLink);
+                $tempDownloadLink[0].click();
+                $tempDownloadLink.remove();
+              }
+            }
+          ],
+          shown: function () {
+          },
+          hide: function () {
+          }
+        });
+      }
+
+      function GetSummaryCharCount() {
+        var maxLength = "@((int)WebHelper.InputMaxLength.ContentSummary)";
+
+        var textLength = summaryInput.val().length;
+        if (textLength > maxLength) {
+          summaryInput.val(summaryInput.val().substring(0, maxLength));
+        }
+        $('#summaryCharCount').text('Characters left: ' + (maxLength - textLength));
+      }
+
+      function SetupFileInput() {
+
+        if (currentContentType != contentType_Image && currentContentType != contentType_Document) return;
+
+        // Set allowed file types based on ContentType
+        if (currentContentType === contentType_Image) {
+          contentFileInput.attr('accept', 'image/*'); // Accept image types only
+        } else if (currentContentType === contentType_Document) {
+          contentFileInput.attr('accept', '.pdf,.doc,.docx,.txt,.pptx'); // Accept document types
+        }
+      }
+
+      function CropCoverImage(fileInput) {
+
+        $cropperModal.toggleClass("IsLogo", true);
+        $cropperModal.data("img-target", $imgCoverImage);
+        $cropperModal.data("img-mimetype", "image/png");
+
+        try {
+          if (fileInput.files && fileInput.files[0]) {
+            if (fileInput.files[0].type.match(/^image\//)) {
+              var reader = new FileReader();
+
+              reader.onload = function (evt) {
+                var image = new Image();
+                image.src = evt.target.result;
+
+                // If the image is too big, it needs to be resized, otherwise it will not be displayed after being cropped or stored.
+                // When the image is loaded, check the dimensions
+                image.onload = function () {
+                  var maxImageWidth = 1000; // Cover image doesn't need to be full size of the original
+                  var imageWidth = image.width;
+                  var imageHeight = image.height;
+
+                  // If width exceeds maxImageWidth, resize the image while maintaining aspect ratio
+                  if (imageWidth > maxImageWidth) {
+                    var scaleFactor = maxImageWidth / imageWidth;
+                    imageWidth = maxImageWidth;
+                    imageHeight = imageHeight * scaleFactor;
+                  }
+
+                  // Create a canvas to resize the image
+                  var canvas = document.createElement("canvas");
+                  canvas.width = imageWidth;
+                  canvas.height = imageHeight;
+                  var ctx = canvas.getContext("2d");
+
+                  // Draw the resized image onto the canvas
+                  ctx.drawImage(image, 0, 0, imageWidth, imageHeight);
+
+                  // Convert the canvas to a Base64 string
+                  var resizedImageDataURL = canvas.toDataURL("image/png");
+
+                  // Assign the resized image data to the cropper
+                  $cropperModalImage.on("load", function () {
+                    if (typeof cropper != "undefined" && cropper != null) {
+                      if (cropper.destroy) cropper.destroy();
+                      cropper = null;
+                    }
+
+                    cropper = new Cropper($cropperModalImage[0], {
+                      viewMode: 2,
+                      autoCrop: true,
+                      autoCropArea: 1,
+                      toggleDragModeOnDblclick: false,
+                      restore: false,
+                      movable: true,
+                      rotatable: true,
+                      scalable: true,
+                      zoomOnWheel: false,
+                      minContainerWidth: 400,
+                      maxContainerWidth: 400,
+                      minContainerHeight: 250,
+                      maxContainerHeight: 250,
+                      minCanvasWidth: 400,
+                      minCanvasHeight: 250,
+                      aspectRatio: 280 / 150,
+
+                      ready: function () {
+                        $cropperModal.modal();
+                      }
+                    });
+
+                    $cropperModal.data("cropper", cropper);
+                  });
+
+                  // Set the resized image as the source for the cropper
+                  $cropperModalImage.attr("src", resizedImageDataURL);
+                };
+              };
+
+              reader.readAsDataURL(fileInput.files[0]);
+
+            } else {
+              alert("Invalid file type! Please select an image file.");
+            }
+          } else {
+            alert('No file(s) selected.');
+          }
+
+        } catch (e) {
+          console.error('An error occurred:', e);
+        }
+      }
+
+      function DeleteContentModal() {
+        BootstrapDialog.show({
+          type: BootstrapDialog.TYPE_WARNING,
+          title: 'Confirmation',
+          message: "Are you sure you want to delete this microlearning?",
+          buttons: [
+            {
+              label: 'No', cssClass: 'btn-secondary',
+              action: function (dialog) { dialog.close(); }
+            },
+            {
+              label: 'Yes', cssClass: 'btn-primary',
+              action: function (dialog) {
+                dialog.close(); DeleteContent();
+              }
+            }
+          ]
+        });
+      }
+
+      function DeleteContent()  {
+
+        var btnDeleteContent = $('.btnDeleteContent');
+
+        AjaxSubmit({
+          url: "@PathHelper.CurrentUrl",
+          action: "@Integral.Web.PortalSite.Pages_Albert.ContentDetails.AjaxAction.DeleteContent",
+          onSuccess: function (jqXHR, data) {},
+          onFail: function (jqXHR, data) {
+          },
+          onError: function (jqXHR, textStatus, errorThrown) {
+            common_InfoDialog("Deleted failed, please try again later.");
+          },
+          onAlways: function (data_or_jqXHR, textStatus, jqXHR_or_errorThrown) { }
+        });
+      }
+
+      function SubmitLearningAction() {
+
+        var btnSubmitLearningAction = $('.btnSubmitLearningAction');
+
+        AjaxSubmit({
+          form: $('#LearningActionForm'),
+          url: "@PathHelper.CurrentUrl",
+          action: "@Integral.Web.PortalSite.Pages_Albert.ContentDetails.AjaxAction.SubmitLearningAction"
+        });
+      }
+
+      function UpdateItemCompleted() {
+
+        AjaxSubmit({
+          url: "@PathHelper.CurrentUrl",
+          action: "@Integral.Web.PortalSite.Pages_Albert.ContentDetails.AjaxAction.UpdateItemCompleted",
+          onSuccess: function (jqXHR, data) {},
+          onFail: function (jqXHR, data) {},
+          onError: function (jqXHR, textStatus, errorThrown) {},
+          onAlways: function (data_or_jqXHR, textStatus, jqXHR_or_errorThrown) {
+            if (currentContentType == contentType_Image) {
+              ShowImageModal();
+            }
+          }
+        });
+      }
+
+      function SaveContent(evt) {
+
+        var contentForm = $("#contentForm");
+
+        if (!ValidateContentForSaving()) return; // Some attachment is missing
+
+        var submitData = {};
+        if (currentContentType == contentType_Quiz && CanEditQuiz) {
+          if (!ValidateQuizCreation()) return;
+          submitData["@Integral.Web.PortalSite.Pages_Albert.ContentDetails.FormFields.QuizData"] = GetQuizDataForUpdate();
+        }
+
+        AjaxSubmit({
+          form: contentForm,
+          url: "@PathHelper.CurrentUrl",
+          action: "@Integral.Web.PortalSite.Pages_Albert.ContentDetails.AjaxAction.UpdateContent",
+          data: submitData,
+          onSuccess: function (jqXHR, data) {
+
+            contentGuid = data["@Integral.Web.PortalSite.Pages_Albert.ContentDetails.AjaxReturnData.ContentGuid"];
+
+            // Upload files one after the other.
+            SaveContentFile(true, false, () => {
+              SaveContentFile(false, true, () => {
+                document.location.reload();
+              });
+            });
+          }
+        });
+      }
+
+      function SubmitQuizResponses() {
+
+        @if (!Model.CanSubmitQuizResponses) {
+          <text>
+          common_ErrorToast('Not allowed to submit responses.');
+          return;
+          </text>
+        }
+
+        var quizData = [];
+        var $questionContainer = $('.question-container');
+
+        // Check if there's at least one question
+        if ($questionContainer.length === 0) {
+          common_ErrorToast('No questions found in the quiz');
+          return;
+        }
+
+        var validAnswers = false;
+
+        $questionContainer.each(function (index) {
+          var $questionId = $(this).find('.question').attr('data-@Integral.Web.PortalSite.Pages_Albert.ContentDetails.FormFields.QuizQuestion');
+          var questionNum = index + 1;
+
+          // Retrieve the value of the selected option
+          var $selectedOption = $(this).find('.options .option.selected').attr('data-@Integral.Web.PortalSite.Pages_Albert.ContentDetails.FormFields.QuizOption');
+
+          if ($selectedOption === 0 || $selectedOption == null || $selectedOption == 'undefined') {
+            // No option selected
+            currentQuizQuestion = index;
+            DisplayQuizQuestion();
+            common_ErrorToast('Please select an option for question ' + questionNum + '.');
+            return false;
+
+          } else {
+
+            // Add to array
+            quizData.push({
+              questionId: $questionId,
+              optionId: $selectedOption
+            })
+
+            validAnswers = true;
+
+            return true;
+          }
+        });
+
+        if (quizData == null || quizData.length == 0 || !validAnswers) {
+          return;
+        }
+
+        var submitQuizForm = $("#SubmitQuizForm");
+        var btnSubmitQuiz = $("#quizNextBtn");
+
+        AjaxSubmit({
+          form: submitQuizForm,
+          url: "@PathHelper.CurrentUrl",
+          action: "@Integral.Web.PortalSite.Pages_Albert.ContentDetails.AjaxAction.SubmitQuizResponses",
+          data: {
+            "@Integral.Web.PortalSite.Pages_Albert.ContentDetails.FormFields.QuizData": JSON.stringify(quizData)
+          },
+          onSuccess: function (jqXHR, data) {
+            var quizResultsHtml = data["@Integral.Web.PortalSite.Pages_Albert.ContentDetails.AjaxReturnData.QuizResults"];
+            if (quizResultsHtml != "" && quizResultsHtml != null) {
+              $('.quiz-container').fadeOut(300, function () { // Fade out the current content
+                $(this).empty(); // Clear the content
+                $(this).html(quizResultsHtml); // Add new content
+                common_UpdateUI($(this));
+                $(this).fadeIn(300); // Fade in the new content
+              });
+            }
+          },
+          onFail: function (jqXHR, data) {
+          },
+          onError: function (jqXHR, textStatus, errorThrown) {
+            common_InfoDialog("Submit failed, please try again later.");
+          },
+          onAlways: function (data_or_jqXHR, textStatus, jqXHR_or_errorThrown) {
+            // Always runs after the Ajax call finishes
+          }
+        });
+      }
+
+      function ValidateQuizCreation() {
+        var $questions = $('.question');
+
+        // Check if there's at least one question
+        if ($questions.length === 0) {
+            common_ErrorToast('Please add at least one question to the quiz');
+            return false;
+        }
+
+        $questions.each(function(index) {
+          var $question = $(this);
+          var $options = $question.find('.option');
+          var questionNum = index + 1;
+
+          // Check if question text is empty
+          var questionText = $question.find('input[name="@Integral.Web.PortalSite.Pages_Albert.ContentDetails.FormFields.QuizQuestion"]').val().trim();
+          if (!questionText) {
+            common_ErrorToast(`Question ${questionNum} cannot be empty`);
+            return false;
+          }
+          // Check if question has at least two options
+          if ($options.length < 2) {
+            common_ErrorToast(`Question ${questionNum} must have at least two options`);
+            return false; // break the loop
+          }
+
+          // Check if any options are empty
+          var hasEmptyOption = false;
+          $options.find('input[type="text"]').each(function() {
+            if (!$(this).val().trim()) {
+                hasEmptyOption = true;
+                return false; // break the loop
+            }
+          });
+
+          if (hasEmptyOption) {
+            common_ErrorToast(`All options for question ${questionNum} must be filled out`);
+            return false;
+          }
+
+          // Check if a correct option is selected
+          var $selectedOption = $question.find(`input[name="@(Integral.Web.PortalSite.Pages_Albert.ContentDetails.FormFields.QuizCorrectOption)_${questionNum}"]:checked`);
+          if ($selectedOption.length === 0) {
+            common_ErrorToast(`Please select a correct option for question ${questionNum}`);
+            return false; // break the loop
+          }
+        });
+
+        return true;
+      }
+
+      function GetQuizDataForUpdate() {
+        var quizData = [];
+        $('.question').each(function(questionIndex) {
+          var $question = $(this);
+          var questionNum = questionIndex + 1;
+
+          // Get question text
+          var questionText = $question.find('input[name="@Integral.Web.PortalSite.Pages_Albert.ContentDetails.FormFields.QuizQuestion"]').val();
+
+          // Get options and find the selected 'correct' option
+          var options = [];
+          var correctOptionIndex = -1;
+
+          $question.find('.option').each(function (optionIndex) {
+            var $option = $(this);
+            var optionText = $option.find('input[type="text"]').val();
+            options.push(optionText);
+
+            // Check if this is the correct option
+            if ($option.find(`input[name="@(Integral.Web.PortalSite.Pages_Albert.ContentDetails.FormFields.QuizCorrectOption)_${questionNum}"]`).is(':checked')) {
+              correctOptionIndex = optionIndex;
+            }
+          });
+
+          quizData.push({
+            question: questionText,
+            options: options,
+            correctOptionIndex: correctOptionIndex
+          });
+        });
+
+        return JSON.stringify(quizData);
+      }
+
+      function ValidateContentForSaving() {
+
+        // Check that cover Image and attachment aren't missing
+        var coverImagePath = '@PathHelper.Images.ContentCoverImage(Model.ContentInfo.ContentGuid, PathHelper.Images.ContentCoverImageSize.Card)';
+        var contentPath = '@Model.ContentFilePath';
+        var missingImagePath = '@PathHelper.Images.ContentImage_Missing()';
+
+        if (isNewContent
+          || (!isNewContent && coverImagePath == missingImagePath)
+          || (!isNewContent && contentPath == "" && (currentContentType == contentType_Image || currentContentType == contentType_Document))) {
+
+          var isAttachmentMissing = false;
+
+          if (currentContentType == contentType_Image || currentContentType == contentType_Document) {
+            var fileInput = $('#contentFileInput')[0].files[0];
+            if (!fileInput && contentPath == "") {
+              isAttachmentMissing = true;
+              $('.error-contentFile').css('display', 'block'); // Show the error message
+            } else {
+              $('.error-contentFile').css('display', 'none'); // Hide the error message
+              isUpdatingFiles = true;
+            }
+          }
+
+          if ($imgCoverImage.data("blob") == null && allFieldsAreRequired) {
+            isAttachmentMissing = true;
+            $('.error-imgCover').css('display', 'block'); // Show the error message
+          } else {
+            $('.error-imgCover').css('display', 'none'); // Hide the error message
+            isUpdatingFiles = true;
+          }
+
+          if (isAttachmentMissing) return false;
+        }
+
+        return true; // Passed validation
+      }
+
+      function SaveContentFile(isCoverImage, isLastUpload, fnCallback) {
+
+        var formData = new FormData();
+        formData.append("@PathHelper.AbleUrlKeys.ContentGuid", contentGuid);
+
+        if (isCoverImage) {
+
+          if ($imgCoverImage.data("blob") == null || contentGuid == null) {
+            TryCallback();
+            return;
+          }
+
+          formData.append("@PathHelper.FormKeys.AjaxAction", "@Integral.Web.PortalSite.Pages_Albert.ContentDetails.AjaxAction.UploadCoverImage");
+          formData.append("image", $imgCoverImage.data("blob"));
+
+        } else {
+
+          if (currentContentType != contentType_Image && currentContentType != contentType_Document) {
+            isUpdatingFiles = false;
+            TryCallback();
+            return;
+          }
+
+          var fileInput = $('#contentFileInput')[0].files[0];
+          if (!fileInput) {
+            TryCallback();
+            return;
+          }
+
+          formData.append('file', fileInput);
+          formData.append("@PathHelper.FormKeys.AjaxAction", "@Integral.Web.PortalSite.Pages_Albert.ContentDetails.AjaxAction.UploadFile");
+        }
+
+        formData.append("@Integral.Web.PortalSite.Pages_Albert.ContentDetails.FormFields.ContentGuid", contentGuid);
+
+        $.busyLoadFull("show");
+
+        jQuery.ajax({
+          method: "post",
+          url: "@PathHelper.CurrentUrl",
+          data: formData,
+          processData: false,
+          contentType: false
+
+        }).done(function (response) {
+
+        }).always(() => {
+
+          $.busyLoadFull("hide");
+          TryCallback();
+        });
+
+        function TryCallback() {
+          if (typeof fnCallback == "function") {
+            fnCallback();
+          } else {
+            document.location.reload();
+          }
+        }
+      }
+
+      function DoPageRedirection() {
+        if (isNewContent) {
+          if (isProgramView) {
+            window.location.href = '@PathHelper.Pages.ProgramContent(Model.ProgramInfo?.ProgramJobId)';
+          } else {
+            window.location.href = '@PathHelper.Pages.Content()';
+          }
+        }
+      }
+
+    })(jQuery);
+
+  </script>
+
+}

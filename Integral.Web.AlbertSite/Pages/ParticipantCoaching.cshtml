@@ -1,0 +1,190 @@
+@page
+@model Integral.Web.PortalSite.Pages_Albert.ParticipantCoaching
+@{ Layout = "_Layout_AdminLTE"; }
+
+@if (Model.PageMode == Integral.Web.PortalSite.Pages_Albert.ParticipantCoaching.PageModeEnum.BookSession) {
+
+  <div class="container ml0 coaching-container">
+    <div class="coaching-info">
+
+      @if (Model.CanViewCoachInfo) {
+        <div class="coach-profile-info">
+          <div class="profile-image">
+            @Html.Raw(WebHelper.GetProfileImageWithSlideout(PathHelper.Images.UserPhoto(Model.CoachInfo, PathHelper.Images.UserPhotoSize.Thumbnail, true), Model.CoachInfo.UserId))
+          </div>
+
+          <div class="profile-info">
+            @if (Model.ProjectInfo != null) {
+              <h4 class="project-name">@Model.ProjectInfo?.FriendlyProjectTitle.ValueIfNullOrEmpty(Model.ProjectInfo.ProjectName).HTMLEncode()</h4>
+            }
+
+            <div class="coach-name">@Model.CoachInfo.GetFullName().HTMLEncode()</div>
+            @if (Model.CanBookSession) {
+              <div class="session-info"></div>
+            }
+          </div>
+        </div>
+      }
+
+      @Html.Raw(Model.GetBookingMessageHtml())
+
+      @if (Model.CanBookSession && !Model.CanViewCoachInfo) {
+        <div class="session-info"></div>
+      }
+    </div>
+
+    <div class="main-content">
+
+      @if (Model.CanViewEventSessions) {
+        <div class="sessions-container">
+          <h3 class="sessions-title">Your Sessions</h3>
+          <div class="session-list">
+            @Html.Raw(Model.GetBookedSessionsHtml(Model.CoacheeInfo))
+          </div>
+        </div>
+      }
+
+      @if (Model.CoacheeInfo != null && Model.CoacheeInfo.HasCoaching && Model.CanBookSession && !Model.UserIsNotInAProgram && !Model.HasBookedAllSessions) {
+        @*-- See: https://help.calendly.com/hc/en-us/articles/223147027-Embed-options-overview?tab=advanced --*@
+        <div class="iframe-container">
+          <div class="calendly-inline-widget" id="calendly-inline-widget" data-auto-load="false"></div>
+        </div>
+      }
+
+    </div>
+  </div>
+
+} else if (Model.PageMode == Integral.Web.PortalSite.Pages_Albert.ParticipantCoaching.PageModeEnum.SelfCoachSelection) {
+
+  if (Model.CoachesList.IsNullOrEmpty()) {
+
+    @Html.Raw(WebHelper.GetNoRecordsBadge("No coaches available at this time."))
+
+  } else {
+
+    <h3 class="text-muted">Select your Coach</h3>
+    <div class="flex-wrap gap25">
+      @Html.Raw(Model.GetTeamCardsHtml())
+    </div>
+
+  }
+
+}
+
+<script type="text/javascript" src="https://assets.calendly.com/assets/external/widget.js"></script>
+
+<script type="text/javascript">
+  (function($) {
+
+    $(document).ready(function() {
+
+      @if (Model.PageMode == Integral.Web.PortalSite.Pages_Albert.ParticipantCoaching.PageModeEnum.BookSession) {
+
+        <text>
+        $("body").addClass("page-booksession");
+        </text>
+
+        if (Model.TriggerCoachSlideout) {
+          <text>
+          setTimeout(function () {
+            $(".nav-main .partner-contact-slideout-trigger").trigger("click"); // Trigger click on Partners avatar to open slideout.
+          }, 1000);
+          </text>
+        }
+
+      } else if (Model.PageMode == Integral.Web.PortalSite.Pages_Albert.ParticipantCoaching.PageModeEnum.SelfCoachSelection) {
+
+      }
+
+    }); // ready.
+
+  })(jQuery);
+</script>
+
+@if (Model.CanBookSession) {
+
+  <script>
+    (function ($) {
+
+      var $sessionInfo = $(".session-info");
+      var calendlyWidgetExists = $("#calendly-inline-widget").length == 1;
+
+      // Initial session info.
+      var firstFreeSessionNumber = @Model.FirstFreeSessionNumber;
+      var sessionsAllocated = @Model.CoacheeInfo.UserActivity?.SessionsAllocated;
+      var sessionDurations = JSON.parse("[@Model.CoacheeInfo.GetCoachingType().GetDurations(Model.CoacheeInfo.UserActivity.SessionsAllocated).ToStringList()]");
+      var sessionEventNames = "@Model.CoacheeInfo.GetCoachingType().GetEventNames(Model.CoacheeInfo.UserActivity.SessionsAllocated).Join(",")".split(",");
+      var coachCalendlyUrlName = "@Model.CoachInfo.CalendlyUrlName";
+
+      $(document).ready(function () {
+
+        // Listen to messages from Calendly iframe.
+        window.addEventListener("message", (evt) => { CheckCalendlyEvent(evt); }, false);
+
+        ShowSessionInfo();
+
+      });
+
+      function ShowSessionInfo() {
+
+        if (calendlyWidgetExists) $("#calendly-inline-widget").empty();
+
+        window.scrollTo(0, 0);
+
+        if (@Html.Raw(Model.HasBookedAllSessions.ToJSTrueFalse())) {
+          $sessionInfo.text("All Sessions Booked.");
+          $(".all-booked-message").removeClass("hidden");
+          return;
+        }
+
+        $sessionInfo.text("Now booking session " + firstFreeSessionNumber + " of " + sessionsAllocated + " (" + sessionDurations[firstFreeSessionNumber - 1] + " mins)");
+
+        if (calendlyWidgetExists) {
+
+          Calendly.initInlineWidget({
+            url: '@Integral.Integrations.Calendly.BookingUrlDomain/' + coachCalendlyUrlName + '/' + sessionEventNames[firstFreeSessionNumber - 1]
+              + '?hide_gdpr_banner=1&primary_color=634cff&hide_event_type_details=1&hide_landing_page_details=1'
+              + '&name=@Model.CoacheeInfo.GetFullName().JSEncode()&email=@Model.CoacheeInfo.EmailAddress.JSEncode()',
+            parentElement: document.getElementById('calendly-inline-widget'),
+            prefill: {
+              name: "@Model.CoacheeInfo.GetFullName().HTMLEncode()",
+              email: "@Model.CoacheeInfo.EmailAddress.HTMLEncode()"
+            }
+          });
+        }
+      }
+
+      function CheckCalendlyEvent(evt) {
+
+        if (!IsCalendlyEvent(evt)) return;
+
+        // If Calendly booking is complete, move to next session if there is one.
+        if (evt.data.event == '@Integral.Integrations.Calendly.GetEmbedWindowMessageString(Integral.Integrations.Calendly.EmbedWindowMessageEnum.event_scheduled)') {
+          firstFreeSessionNumber++;
+          ShowBookedMessage();
+          ShowSessionInfo();
+          return;
+        }
+      }
+
+      function IsCalendlyEvent(evt) {
+        return evt.origin === "@Integral.Integrations.Calendly.BookingUrlDomain.ToLower()" && evt.data.event && evt.data.event.indexOf("calendly.") === 0;
+      }
+
+      // Note only use BootstrapDialog for a mobile-friendly dialog.
+      function ShowBookedMessage() {
+        BootstrapDialog.alert({
+          title: 'Booking Successful',
+          message: (sessionsAllocated >= firstFreeSessionNumber ? 'You may also continue to book your next session.' : 'All your sessions have now been booked.'),
+          type: BootstrapDialog.TYPE_SUCCESS,
+          closable: true,
+          onshown: function (dialogRef) {
+            dialogRef.getModalFooter().find('.btn-default').focus();
+          },
+        });
+      }
+
+    })(jQuery);
+  </script>
+
+}

@@ -1,0 +1,1265 @@
+@page
+@model Integral.Web.PortalSite.Pages_Albert.CoachEdit
+@{ Layout = "_Layout_AdminLTE"; }
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
+
+@Html.Raw(Model.GetPageTabs())
+
+<div class="tab-panel" data-appendTo="panel-@PathHelper.CoachTabEnum.profile">
+  @Html.Raw(new WebHelper.Form.SectionTitle() {
+      TitleText = "Profile",
+      HelpText = "Your personal profile and settings.",
+      HelpLinkUrl = "https://help.helloable.co/en/articles/12504233-complete-your-profile",
+    }.ToHtml())
+
+  <form class="form-horizontal" id="clientForm">
+
+    <input type="hidden" name="@PathHelper.FormKeys.AjaxAction" value="@Integral.Web.PortalSite.Pages_Albert.CoachEdit.AjaxAction.UpdateProfile" />
+    <input type="hidden" name="CoachUserId" value="@(Model.IsNewCoach ? "new" : Model.CoachInfo.UserId.ToString())" />
+
+    @Html.Raw(new WebHelper.Form.FormRow() {
+        LabelText = "Profile Image:",
+        LabelHelpText = "Image must be PNG or JPEG and under 10MB",
+        ContentHtml = Model.ProfileImageControl.ToHtml()
+      }.ToHtml())
+
+    @Html.Raw(new WebHelper.Form.FormRow() {
+        LabelText = "Your Name: ",
+        ContentHtml = new WebHelper.Form.TextInputDual() {
+          IsReadOnly = !Model.CanEditProfile,
+          Input1Name = Integral.Web.PortalSite.Pages_Albert.CoachEdit.FormFields.FirstName,
+          Input1Value = Model.CoachInfo.FirstName,
+          Input2Name = Integral.Web.PortalSite.Pages_Albert.CoachEdit.FormFields.LastName,
+          Input2Value = Model.CoachInfo.LastName
+        }.ToHtml()
+      }.ToHtml())
+
+    @Html.Raw(new WebHelper.Form.FormRow() {
+        LabelText = "Email Address:",
+        LabelHelpText = "Visible to your clients, team and other partners.",
+        ContentHtml = new WebHelper.Form.TextInput() {
+          IsReadOnly = !Model.CanEditProfile,
+          InputName = Integral.Web.PortalSite.Pages_Albert.CoachEdit.FormFields.EmailAddress,
+          Value = Model.CoachInfo.EmailAddress.HTMLEncode(),
+          Attributes = Model.ProfileReadOnlyAttr,
+          Type = "email"
+        }.ToHtml()
+      }.ToHtml())
+
+    @Html.Raw(new WebHelper.Form.FormRow() {
+        LabelText = "Mobile Number:",
+        LabelHelpText = "Visible to your clients and team.",
+        ContentHtml = new WebHelper.Form.TextInput() {
+          IsReadOnly = !Model.CanEditProfile,
+          InputName = Integral.Web.PortalSite.Pages_Albert.CoachEdit.FormFields.MobileNumber,
+          Value = Model.CoachInfo.MobileNumber.HTMLEncode(),
+          Attributes = Model.ProfileReadOnlyAttr
+        }.ToHtml()
+      }.ToHtml())
+
+    @Html.Raw(new WebHelper.Form.FormRow() {
+        LabelText = "Location:",
+        LabelHelpText = "Visible to your clients, team and other partners.",
+        ContentHtml = new WebHelper.Form.TextInputDual() {
+          IsReadOnly = !Model.CanEditProfile,
+          Input1Name = Integral.Web.PortalSite.Pages_Albert.CoachEdit.FormFields.City,
+          Input1Value = Model.CoachInfo.City,
+          Input1Placeholder = "City",
+          Input2Name = Integral.Web.PortalSite.Pages_Albert.CoachEdit.FormFields.Country,
+          Input2Value = Model.CoachInfo.Country,
+          Input2Placeholder = "Country"
+        }.ToHtml()
+      }.ToHtml())
+
+    @Html.Raw(new WebHelper.Form.FormRow() {
+        LabelText = "Role Title:",
+        ContentHtml = new WebHelper.Form.TextInput() {
+          InputName = Integral.Web.PortalSite.Pages_Albert.CoachEdit.FormFields.RoleTitle,
+          Value = Model.CoachInfo.RoleTitle.HTMLEncode(),
+          IsReadOnly = !Model.CanEditProfile
+        }.ToHtml()
+      }.ToHtml())
+
+    @Html.Raw(new WebHelper.Form.FormRow() {
+        LabelText = "Org Role:",
+        ContentHtml = new WebHelper.Form.Select() {
+          IsReadOnly = !Model.CanEditProfile,
+          InputName = Integral.Web.PortalSite.Pages_Albert.CoachEdit.FormFields.OrgRoleId,
+          TopOptionsHtml = Model.GetOrgRolesOptions()
+        }.ToHtml()
+      }.ToHtml())
+
+    @Html.Raw(new WebHelper.Form.FormRow() {
+        LabelText = "Time Zone:",
+        LabelHelpText = "Emails are delivered based on your Timezone",
+        ContentHtml = new WebHelper.Form.Select() {
+          InputName = Integral.Web.PortalSite.Pages_Albert.CoachEdit.FormFields.TimeZoneIdIana,
+          TopOptionsHtml = Model.GetTimeZoneOptions(),
+          IsReadOnly = !Model.CanEditProfile
+        }.ToHtml()
+      }.ToHtml())
+
+    @if (Model.CanViewProfileUrls) {
+
+      @Html.Raw(new WebHelper.Form.FormRow() {
+          LabelText = "Calendly Url:",
+          LabelHelpText = "Your Calendly url to connect to your calendars.",
+          LabelHelpUrl = "https://help.helloable.co/en/articles/11967865-setup-your-calendar",
+          ContentHtml = new WebHelper.Form.TextInput() {
+            IsReadOnly = !Model.CanEditProfile,
+            InputName = Integral.Web.PortalSite.Pages_Albert.CoachEdit.FormFields.CalendlyUrlName,
+            Value = Model.CoachInfo.CalendlyUrlName.HTMLEncode(),
+            Attributes = Model.ProfileReadOnlyAttr,
+            LeftSideLabelText = "https://calendly.com/",
+            RightSideLabelText = "/coaching-XXmin",
+          }.ToHtml()
+        }.ToHtml())
+
+      @Html.Raw(new WebHelper.Form.FormRow() {
+          LabelText = "Your Profile:",
+          LabelHelpText = "This link will appear as a link for others.",
+          ContentHtml = new WebHelper.Form.TextInput() {
+            IsReadOnly = !Model.CanEditProfile,
+            LeftSideLabelText = "https://",
+            InputName = Integral.Web.PortalSite.Pages_Albert.CoachEdit.FormFields.WebProfileUrl,
+            Value = Model.CoachInfo.WebProfileUrl.RegexReplace("https?://", "", System.Text.RegularExpressions.RegexOptions.IgnoreCase).HTMLEncode(),
+            Attributes = Model.ProfileReadOnlyAttr
+          }.ToHtml()
+        }.ToHtml())
+
+    }
+
+    @Html.Raw(new WebHelper.Form.SectionTitle() {
+        TitleText = "Profile Status",
+    }.ToHtml())
+
+    @Html.Raw(new WebHelper.Form.FormRow() {
+        LabelText = "Partner Status:",
+        LabelPosition = WebHelper.Form.LabelPosition.LeftWide,
+        ContentAlign = WebHelper.Form.ContentAlign.Right,
+        LabelHelpText = @"Your profile is automatically active and published in the Partner network for other practitioners and organisations to see,
+                          unless you are a member of a team and then you may need to complete onboarding activities before your profile is active.",
+        ContentHtml = "<p class='font-weight-bold'>" + (Model.CoachInfo.IsPartnerActive ? "Active" : "Inactive") + "</p>",
+      }.ToHtml())
+
+    @if (Model.CanViewAndEditHideProfileToggle) {
+      @Html.Raw(new WebHelper.Form.FormRow() {
+          LabelText = "Hide Profile:",
+          LabelPosition = WebHelper.Form.LabelPosition.LeftWide,
+          ContentAlign = WebHelper.Form.ContentAlign.Right,
+          LabelHelpText = "This will hide your profile from the partner list. Your profile is still visible in other areas and you can be added to programs or quotes.",
+          ContentHtml = new WebHelper.Form.CheckBox() {
+            InputName = Integral.Web.PortalSite.Pages_Albert.CoachEdit.FormFields.HideProfile,
+            Checked = Model.CoachInfo.IsProfileHidden,
+            IsReadOnly = !Model.CanViewAndEditHideProfileToggle,
+          }.ToHtml()
+        }.ToHtml())
+    }
+
+    @if (Model.CanUpdateCoachRoleFlags) {
+
+      @Html.Raw(new WebHelper.Form.SectionTitle() {
+          TitleText = "User Roles",
+          HelpText = "Select the account types you would like to access. Only people with permission to invite members can see this.",
+          HelpLinkUrl = "https://help.helloable.co/en/articles/12087331-able-account-types",
+        }.ToHtml())
+
+      @Html.Raw(new WebHelper.Form.FormRow() {
+          LabelText = "Practitioner",
+          LabelHelpText = "An account type for L&D providers eg. coaches & facilitators. This is your default account.",
+          LabelPosition = WebHelper.Form.LabelPosition.LeftWide,
+          ContentAlign = WebHelper.Form.ContentAlign.Right,
+          ContentHtml = new WebHelper.Form.CheckBox() {
+            IsReadOnly = !Model.CanEditProfile,
+            InputName = Integral.Web.PortalSite.Pages_Albert.CoachEdit.FormFields.UserRole_IsPractitioner,
+            Checked = Model.CoachInfo.IsAbleCoach,
+          }.ToHtml()
+        }.ToHtml())
+
+      @Html.Raw(new WebHelper.Form.FormRow() {
+          RowTopMargin = WebHelper.Form.RowTopMargin.None,
+          LabelText = "Client",
+          LabelHelpText = "An account type for client organisations.",
+          LabelPosition = WebHelper.Form.LabelPosition.LeftWide,
+          ContentAlign = WebHelper.Form.ContentAlign.Right,
+          ContentHtml = new WebHelper.Form.CheckBox() {
+            IsReadOnly = !Model.CanEditProfile,
+            InputName = Integral.Web.PortalSite.Pages_Albert.CoachEdit.FormFields.UserRole_IsClient,
+            Checked = Model.CoachInfo.IsAbleClient,
+          }.ToHtml()
+        }.ToHtml())
+
+      @Html.Raw(new WebHelper.Form.FormRow() {
+          RowTopMargin = WebHelper.Form.RowTopMargin.None,
+          LabelText = "Leader",
+          LabelHelpText = "An account type for learners and program participants. Some types require a paid Plan.",
+          LabelPosition = WebHelper.Form.LabelPosition.LeftWide,
+          ContentAlign = WebHelper.Form.ContentAlign.Right,
+          ContentHtml = new WebHelper.Form.CheckBox() {
+            IsReadOnly = !Model.CanEditProfile,
+            InputName = Integral.Web.PortalSite.Pages_Albert.CoachEdit.FormFields.UserRole_IsParticipant,
+            Checked = Model.CoachInfo.IsParticipant,
+          }.ToHtml()
+        }.ToHtml())
+
+    }
+
+    @if (Model.CanEditProfile) {
+      <div class="row mt30">
+        <div class="col-lg-8 col-md-12">
+          @if (Model.CanDeleteUser && !Model.CoachInfo.IsSoftDeleted) {
+            <button type="button" class="btn btn-warning btnDelete floatleft" id="btnBlockLogin">Block Login</button>
+          } else if (Model.CoachInfo.IsSoftDeleted) {
+            @Html.Raw(WebHelper.GetStatusBadge("Login Blocked"))
+          }
+          <button type="button" id="btnUpdateProfile" class="btn btn-primary floatright" data-waitmsg="Updating...">@(Model.IsNewCoach ? "Add Coach" : "Update Details")</button>
+        </div>
+      </div>
+    }
+
+  </form>
+</div>
+
+@if (Model.CanViewParticipantsTabs) {
+
+  <div class="tab-panel" data-appendTo="panel-@PathHelper.CoachTabEnum.engageSetting">
+
+    <form class="form-horizontal" id="engageSettingsForm">
+
+      <input type="hidden" name="@PathHelper.FormKeys.AjaxAction" value="@Integral.Web.PortalSite.Pages_Albert.CoachEdit.AjaxAction.UpdateEngageSettings" />
+
+      <div class="row mb10"><div class="col-md-6"><h4>Engage Settings</h4></div></div>
+
+      @Html.Raw(WebHelper.GetYesNoButtons("Enable Nudges:", Integral.Web.PortalSite.Pages_Albert.CoachEdit.FormFields.EnableNudges, !Model.CoachInfo.LatestCoacheeInfo.DisableNudges, !Model.CanEditParticipantsSettings))
+      @Html.Raw(Model.GetEnablePulseOptions("Enable Pulse:"))
+
+      @if (Model.CanEditParticipantsSettings) {
+        <div class="row mt30">
+          <div class="col-md-12">
+            <button type="button" id="btnUpdateSettings" class="btn btn-primary floatright" data-waitmsg="Updating...">Update</button>
+          </div>
+        </div>
+      }
+    </form>
+  </div>
+
+} else if (Model.CanViewNonProfileTabs) {
+
+  <div class="tab-panel" data-appendTo="panel-@PathHelper.CoachTabEnum.bio">
+
+    <form class="form-horizontal container" id="bioForm">
+
+      <input type="hidden" name="@PathHelper.FormKeys.AjaxAction" value="@Integral.Web.PortalSite.Pages_Albert.CoachEdit.AjaxAction.UpdateBio" />
+
+      @Html.Raw(new WebHelper.Form.SectionTitle() { TitleText = "Partner Bio" }.ToHtml())
+
+      @Html.Raw(new WebHelper.Form.FormRow() {
+          LabelText = "Short Bio:",
+          LabelHelpText = "A short snippet so people know who you are.",
+          LabelPosition = WebHelper.Form.LabelPosition.Above,
+          Classes = "mb40 mt40",
+          ContentHtml = new WebHelper.Form.TextArea() {
+            IsReadOnly = !Model.CanEditProfile,
+            InputName = Integral.Web.PortalSite.Pages_Albert.CoachEdit.FormFields.BioShort,
+            Value = Model.CoachInfo.BioShort
+          }.ToHtml()
+        }.ToHtml())
+
+      @Html.Raw(new WebHelper.Form.FormRow() {
+          LabelText = "Bio for Cards:",
+          LabelPosition = WebHelper.Form.LabelPosition.Above,
+          Classes = "mb40 mt40",
+          ContentHtml = new WebHelper.Form.TextArea() {
+            IsReadOnly = !Model.CanEditProfile,
+            InputName = Integral.Web.PortalSite.Pages_Albert.CoachEdit.FormFields.CoachCardBio,
+            Value = Model.CoachInfo.PartnerBio_CoachCardBio
+          }.ToHtml()
+        }.ToHtml())
+
+      @if (Model.CanViewIntegralBio) {
+
+        @Html.Raw(new WebHelper.Form.SectionTitle() {
+            TitleText = "Integral Bio",
+            BottomMargin = false
+          }.ToHtml())
+
+        <div class="row mb30">
+          <div class="col-md-8">
+            <p>
+              As a partner at Integral we need to know you, and be able to post information on our website and send
+              (as needed) information to our clients. We'd like to know <b>you</b> and the business side of <b>you</b>.
+            </p>
+            <p>
+              <b>In your personal voice ("I"), please comment on the following items - one or two paragraphs at most.</b>
+              (Please remember we are putting you forward as a coach/facilitator, so it must be relevant
+              to the work we are trying to win for you.)
+            </p>
+          </div>
+        </div>
+
+        @Html.Raw(new WebHelper.Form.FormRow() {
+            LabelText = "Background:",
+            LabelPosition = WebHelper.Form.LabelPosition.Above,
+            Classes = "mb30 mt30",
+            ContentHtml = new WebHelper.Form.TextArea() {
+              IsReadOnly = !Model.CanEditProfile,
+              InputName = Integral.Web.PortalSite.Pages_Albert.CoachEdit.FormFields.PartnerBio_Personal_Background,
+              Value = Model.CoachInfo.PartnerBio_Personal_Background
+            }.ToHtml()
+          }.ToHtml())
+
+        @Html.Raw(new WebHelper.Form.FormRow() {
+            LabelText = "My Why:",
+            LabelPosition = WebHelper.Form.LabelPosition.Above,
+            Classes = "mb30",
+            ContentHtml = new WebHelper.Form.TextArea() {
+              IsReadOnly = !Model.CanEditProfile,
+              InputName = Integral.Web.PortalSite.Pages_Albert.CoachEdit.FormFields.PartnerBio_Personal_MyWhy,
+              Value = Model.CoachInfo.PartnerBio_Personal_MyWhy
+            }.ToHtml()
+          }.ToHtml())
+
+        @Html.Raw(new WebHelper.Form.FormRow() {
+            LabelText = "How I work:",
+            LabelPosition = WebHelper.Form.LabelPosition.Above,
+            Classes = "mb30",
+            ContentHtml = new WebHelper.Form.TextArea() {
+              IsReadOnly = !Model.CanEditProfile,
+              InputName = Integral.Web.PortalSite.Pages_Albert.CoachEdit.FormFields.PartnerBio_Personal_WhatIDo,
+              Value = Model.CoachInfo.PartnerBio_Personal_WhatIDo
+            }.ToHtml()
+          }.ToHtml())
+
+        @Html.Raw(new WebHelper.Form.FormRow() {
+            LabelText = "What I love:",
+            LabelPosition = WebHelper.Form.LabelPosition.Above,
+            Classes = "mb30",
+            ContentHtml = new WebHelper.Form.TextArea() {
+              IsReadOnly = !Model.CanEditProfile,
+              InputName = Integral.Web.PortalSite.Pages_Albert.CoachEdit.FormFields.PartnerBio_Personal_WhatILove,
+              Value = Model.CoachInfo.PartnerBio_Personal_WhatILove
+            }.ToHtml()
+          }.ToHtml())
+
+        <hr />
+
+        <div class="row mb30">
+          <div class="col-md-8">
+            <p>
+              <b>In the third person (using "he", "she", or "they"), respond below with no more than two paragraphs each:</b>
+            </p>
+          </div>
+        </div>
+
+        @Html.Raw(new WebHelper.Form.FormRow() {
+            LabelText = "High Level Introduction",
+            LabelHelpText = "Sentence on your contributions as a coach / facilitator, most notable accreditation and greatest client achievement:",
+            LabelPosition = WebHelper.Form.LabelPosition.Above,
+            Classes = "mb30",
+            ContentHtml = new WebHelper.Form.TextArea() {
+              IsReadOnly = !Model.CanEditProfile,
+              InputName = Integral.Web.PortalSite.Pages_Albert.CoachEdit.FormFields.PartnerBio_Professional_Introduction,
+              Value = Model.CoachInfo.PartnerBio_Professional_Introduction
+            }.ToHtml()
+          }.ToHtml())
+
+        @Html.Raw(new WebHelper.Form.FormRow() {
+            LabelText = "Leadership Experience:",
+            LabelHelpText = "Your experience as a leader or could could contain some similar qualities as those pretend above in personal voice",
+            LabelPosition = WebHelper.Form.LabelPosition.Above,
+            Classes = "mb30",
+            ContentHtml = new WebHelper.Form.TextArea() {
+              IsReadOnly = !Model.CanEditProfile,
+              InputName = Integral.Web.PortalSite.Pages_Albert.CoachEdit.FormFields.PartnerBio_Professional_Background,
+              Value = Model.CoachInfo.PartnerBio_Professional_Background
+            }.ToHtml()
+          }.ToHtml())
+
+        @Html.Raw(new WebHelper.Form.FormRow() {
+            LabelText = "Strengths in Coaching and Facilitating:",
+            LabelPosition = WebHelper.Form.LabelPosition.Above,
+            Classes = "mb30",
+            ContentHtml = new WebHelper.Form.TextArea() {
+              IsReadOnly = !Model.CanEditProfile,
+              InputName = Integral.Web.PortalSite.Pages_Albert.CoachEdit.FormFields.PartnerBio_Professional_Strengths,
+              Value = Model.CoachInfo.PartnerBio_Professional_Strengths
+            }.ToHtml()
+          }.ToHtml())
+
+        @Html.Raw(new WebHelper.Form.FormRow() {
+            LabelText = "Recent Work:",
+            LabelPosition = WebHelper.Form.LabelPosition.Above,
+            Classes = "mb30",
+            ContentHtml = new WebHelper.Form.TextArea() {
+              IsReadOnly = !Model.CanEditProfile,
+              InputName = Integral.Web.PortalSite.Pages_Albert.CoachEdit.FormFields.PartnerBio_Professional_RecentWork,
+              Value = Model.CoachInfo.PartnerBio_Professional_RecentWork
+            }.ToHtml()
+          }.ToHtml())
+
+        @Html.Raw(new WebHelper.Form.FormRow() {
+            LabelText = "Professional Impact:",
+            LabelPosition = WebHelper.Form.LabelPosition.Above,
+            Classes = "mb30",
+            ContentHtml = new WebHelper.Form.TextArea() {
+              IsReadOnly = !Model.CanEditProfile,
+              InputName = Integral.Web.PortalSite.Pages_Albert.CoachEdit.FormFields.PartnerBio_Professional_Impact,
+              Value = Model.CoachInfo.PartnerBio_Professional_Impact
+            }.ToHtml()
+          }.ToHtml())
+
+        @Html.Raw(new WebHelper.Form.FormRow() {
+            LabelText = "Accreditations and Credentials:",
+            LabelHelpText = "(List in bullet points)",
+            LabelPosition = WebHelper.Form.LabelPosition.Above,
+            Classes = "mb30",
+            ContentHtml = new WebHelper.Form.TextArea() {
+              IsReadOnly = !Model.CanEditProfile,
+              InputName = Integral.Web.PortalSite.Pages_Albert.CoachEdit.FormFields.PartnerBio_Professional_Credentials,
+              Value = Model.CoachInfo.PartnerBio_Professional_Credentials
+            }.ToHtml()
+          }.ToHtml())
+
+      }
+
+      @if (Model.CanEditProfile) {
+        <div class="row mt30">
+          <div class="col-lg-8 col-md-12">
+            <button type="button" id="btnUpdateBio" class="btn btn-primary floatright" data-waitmsg="Updating...">Update Bio</button>
+          </div>
+        </div>
+      }
+
+    </form>
+  </div>
+
+  <div class="tab-panel" data-appendTo="panel-@PathHelper.CoachTabEnum.partnertags">
+
+    <div class="row mb10"><div class="col-md-6"><h4>Partner Tags</h4></div></div>
+
+    <form class="form-horizontal" id="partnerTagsForm">
+
+      @foreach (var categoryTag in Model.CategoryTagsList) {
+        <div class="form-group ajaxSubmit-field row">
+          <label class="control-label col-md-2 col-sm-12 col-xs-12">
+          @categoryTag.CategoryName
+          </label>
+          <div class="col-md-5 col-sm-12 col-xs-12">
+            <select multiple="" class="form-control" style="width:100%;" name="@Integral.Web.PortalSite.Pages_Albert.CoachEdit.FormFields.PartnerTagCategoryIdPrefix" @(Model.CanChangeTags ? "" : "disabled=\"\"") >
+              @foreach (var tag in categoryTag.TagInfoList) {
+                var canUpdateTag = tag.PartnerCanEdit || (!tag.PartnerCanEdit && SessionHelper.IsUserRoleAdmin);
+                @Html.Raw($"<option {(canUpdateTag ? "" : "disabled")} value=\"{tag.TagId}\"{(tag.IsSelected ? " selected" : string.Empty)}>{tag.TagName.HTMLEncode()}</option>")
+              }
+            </select>
+          </div>
+        </div>
+      }
+
+      @if (Model.CanChangeTags) {
+        <div class="row form-group mt30">
+          <div class="col-md-8">
+            <button type="button" id="btnUpdatePartnerTags" class="btn btn-primary floatright" data-waitmsg="Updating..."> Update Tags</button>
+          </div>
+        </div>
+      }
+
+    </form>
+  </div>
+
+  <div class="tab-panel" data-appendTo="panel-@PathHelper.CoachTabEnum.company">
+
+    <div class="row mb10"><div class="col-md-6"><h4>Company</h4></div></div>
+
+    <form class="form-horizontal" id="companyForm">
+
+      @Html.Raw(WebHelper.GetTextInput("Company Name:", Integral.Web.PortalSite.Pages_Albert.CoachEdit.FormFields.CompanyName, Model.TenantOrgInfo.OrgName, 5, Model.GoToOwnerLinkHtml, !Model.CanEditCompany))
+      @Html.Raw(WebHelper.GetTextInput("Company Friendly Name:", Integral.Web.PortalSite.Pages_Albert.CoachEdit.FormFields.CompanyFriendlyName, Model.TenantOrgInfo.OrgFriendlyName, 5, "", !Model.CanEditCompany))
+      @Html.Raw(WebHelper.GetTextInput("Bus. Identification Number:", Integral.Web.PortalSite.Pages_Albert.CoachEdit.FormFields.BusinessIdNumber, Model.TenantOrgInfo.BusinessIDNumber, 3, "", !Model.CanEditCompany))
+      @Html.Raw(WebHelper.GetTextInput("Contact Phone Number:", Integral.Web.PortalSite.Pages_Albert.CoachEdit.FormFields.ContactPhoneNumber, Model.TenantOrgInfo.OrgPhone, 3, "", !Model.CanEditCompany))
+      @Html.Raw(WebHelper.GetTextInput("General Email:", Integral.Web.PortalSite.Pages_Albert.CoachEdit.FormFields.GeneralEmail, Model.TenantOrgInfo.OrgEmail, 5, "", !Model.CanEditCompany))
+      @Html.Raw(WebHelper.GetTextInput("Website URL:", Integral.Web.PortalSite.Pages_Albert.CoachEdit.FormFields.WebSiteURL, Model.TenantOrgInfo.WebSiteURL, 5, "", !Model.CanEditCompany))
+      @Html.Raw(WebHelper.GetFormSubheader("Custom Sender Email"))
+      @Html.Raw(WebHelper.GetTextInput("Sender Email Name:", Integral.Web.PortalSite.Pages_Albert.CoachEdit.FormFields.GenericSenderEmailName, Model.TenantOrgInfo.GenericSenderEmailName, 5, "", !Model.CanEditCompany))
+      @Html.Raw(WebHelper.GetTextInput("Sender Email Address:", Integral.Web.PortalSite.Pages_Albert.CoachEdit.FormFields.GenericSenderEmailAddress, Model.TenantOrgInfo.GenericSenderEmailAddress, 5, "", !Model.CanEditCompany))
+
+      @Html.Raw(new WebHelper.Form.FormRow() {
+          LabelPosition = WebHelper.Form.LabelPosition.LeftLegacy,
+          RowTopMargin = WebHelper.Form.RowTopMargin.Larger2,
+          LabelText = "Company Logo:",
+          LabelHelpText = "Image must be PNG or JPEG and under 10MB",
+          ContentHtml = Model.CompanyLogoControl.ToHtml()
+        }.ToHtml())
+
+      <div class="row form-group mt30">
+        <label class="control-label col-md-2 col-sm-12 col-xs-12"></label>
+        <div class="col-md-5 col-sm-12 col-xs-12">
+          <div class="floatright">
+            @if (Model.CanEditCompany) {
+              @Html.Raw(WebHelper.GetButton("Update Details", "btnUpdateCompany"))
+            }
+          </div>
+        </div>
+        <div class="col-md-5 col-sm-12 col-xs-12"></div>
+      </div>
+    </form>
+  </div>
+
+  <div class="tab-panel" data-appendTo="panel-@PathHelper.CoachTabEnum.partners">
+
+    <div class="flex flex-fill mb20">
+      <div><h4>Company Partners</h4></div>
+      @if (Model.CanInvitePartners) {
+        <div class="align-right"><button class="btn btn-primary" id="btnInvitePartner">Invite Partner</button></div>
+      }
+    </div>
+
+    @if (Model.CanInvitePartners) {
+
+      <div id="divInvitePartner" class="hidden">
+
+        <form id="formInvitePartner" method="post" action="#" onsubmit="return false;">
+
+          <input type="hidden" name="@PathHelper.FormKeys.AjaxAction" value="@Integral.Web.PortalSite.Pages_Albert.CoachEdit.AjaxAction.SendInvite" />
+
+          <div class="table-responsive">
+            <table class="tbl-form table borderless width-auto align-top">
+              <tr class="ajaxSubmit-field">
+                <td class="w125 align-right pt15">First Name:</td>
+                <td class="w400">@Html.Raw(WebHelper.GetTextInput(new WebHelper.TextInputSettings() { InputName = Integral.Web.PortalSite.Pages_Albert.CoachEdit.FormFields.FirstName, NoRow = true }))
+                  <div class="@WebHelper.CSSClasses.AjaxFieldErrorMsg"></div>
+                </td>
+              </tr>
+              <tr class="ajaxSubmit-field">
+                <td class="align-right pt15">Last Name:</td>
+                <td>@Html.Raw(WebHelper.GetTextInput(new WebHelper.TextInputSettings() { InputName = Integral.Web.PortalSite.Pages_Albert.CoachEdit.FormFields.LastName, NoRow = true }))
+                  <div class="@WebHelper.CSSClasses.AjaxFieldErrorMsg"></div>
+                </td>
+              </tr>
+              <tr class="ajaxSubmit-field">
+                <td class="align-right pt15">Email:</td>
+                <td>@Html.Raw(WebHelper.GetTextInput(new WebHelper.TextInputSettings() { InputName = Integral.Web.PortalSite.Pages_Albert.CoachEdit.FormFields.EmailAddress, NoRow = true }))
+                  <div class="@WebHelper.CSSClasses.AjaxFieldErrorMsg"></div>
+                </td>
+              </tr>
+              <tr>
+                <td></td>
+                <td>
+                  <div class="flex flex-fill">
+                    <div><button class="btn btn-secondary" id="btnCancelInvite" tabindex="-1">Cancel</button></div>
+                    <div class="align-right"><button class="btn btn-primary" id="btnSendInvite">Send Invitation</button></div>
+                  </div>
+                </td>
+              </tr>
+            </table>
+          </div>
+
+        </form>
+      </div>
+
+    }
+
+    <div class="table-responsive">
+      <table class="tblCoaches table table-bordered table-hover table-rowlink limit-width" data-rowlink-url="@Model.GetDefaultRowUrl()">
+        <thead>
+          <tr>
+            <th class="">Partner Name</th>
+            <th class="w300">Email Address</th>
+            <th class="w150">Phone</th>
+            <th class="w175">Invite</th>
+            <th class="w175">Inviter</th>
+            @if (Model.CanViewHiddenPartners) {
+              <th class="w50"></th>
+            }
+            @if (Model.CanViewInactivePartners) {
+              <th class="w50"></th>
+            }
+          </tr>
+        </thead>
+        <tbody>
+          @if (Model.CanViewPendingInvites) {
+            <tr>
+              <td colspan="@Model.TableColSpan">
+                <h4>My Pending Invites</h4>
+              </td>
+            </tr>
+            if (Model.PendingInvitesByUser.IsNullOrEmpty()) {
+              <tr>
+                <td colspan="@Model.TableColSpan">None</td>
+              </tr>
+            } else {
+              foreach (var invitedCoach in Model.PendingInvitesByUser) {
+                <tr>
+                  <td>@invitedCoach.GetFullName().HTMLEncode()</td>
+                  <td>@invitedCoach.EmailAddress.HTMLEncode()</td>
+                  <td>@invitedCoach.MobileNumber.HTMLEncode()</td>
+                  <td>@Model.GetInviteColumn(invitedCoach)</td>
+                  <td></td>
+                  @if (Model.CanViewHiddenPartners) { <td></td> }
+                  @if (Model.CanViewInactivePartners) { <td></td> }
+                </tr>
+              }
+            }
+          }
+          <tr>
+            <td colspan="@Model.TableColSpan">
+              <h4>Others' Pending Invites</h4>
+            </td>
+          </tr>
+          @if (Model.PendingInvitesByOthersInOrg.IsNullOrEmpty()) {
+            <tr>
+              <td colspan="@Model.TableColSpan">None</td>
+            </tr>
+          } else {
+            foreach (var invitedCoach in Model.PendingInvitesByOthersInOrg) {
+              <tr>
+                <td>@invitedCoach.GetFullName().HTMLEncode()</td>
+                <td>@invitedCoach.EmailAddress.HTMLEncode()</td>
+                <td>@invitedCoach.MobileNumber.HTMLEncode()</td>
+                <td>@Model.GetInviteColumn(invitedCoach)</td>
+                <td>@invitedCoach.GetInvitedByFullName().HTMLEncode()</td>
+                @if (Model.CanViewHiddenPartners) { <td></td> }
+                @if (Model.CanViewInactivePartners) { <td></td> }
+              </tr>
+            }
+          }
+          <tr>
+            <td colspan="@Model.TableColSpan">
+              <h4>My Partners</h4>
+            </td>
+          </tr>
+          @foreach (var partner in Model.CoachesInOrg) {
+            if (partner.IsRegistered && partner.OrgId == Model.CoachInfo.OrgId) {
+              <tr tabindex="0" class="rowData" data-rowlink-id="@partner.UserId" data-rowlink-url="@Model.GetRowUrlForUser(partner)">
+                <td>@partner.GetFullName().HTMLEncode()</td>
+                <td>@partner.EmailAddress.HTMLEncode()</td>
+                <td>@partner.MobileNumber.HTMLEncode()</td>
+                <td>@Model.GetInviteColumn(partner)</td>
+                <td></td>
+                @if (Model.CanViewHiddenPartners) {
+                  <td class="w50">@Html.Raw(WebHelper.GetPartnerHiddenIcon(partner.IsProfileHidden, Model.CanViewHiddenPartners))</td>
+                }
+                @if (Model.CanViewInactivePartners) {
+                  <td>@Html.Raw(WebHelper.GetPartnerStatusIcon(partner.IsPartnerActive))</td>
+                }
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  @if (Model.CanViewContract) {
+
+    <div class="tab-panel" data-appendTo="panel-@PathHelper.CoachTabEnum.contract" style="max-width: 800px">
+
+      <div class="row mb10">
+        <div class="col-md-6">
+          <h4>Partner Account Agreement</h4>
+        </div>
+      </div>
+
+      <p>
+        This agreement is between Integral Development Associates Pty Ltd, ABN 41 008 738 672 ("Integral", the "Company", "we", or "us"),
+        and "you", the person or entity using our Platform (the "Partner").
+        Our Agreement with you incorporates these related documents: the Partner Form (this form); our Terms &amp; Conditions,
+        our Terms of Use, our Privacy Policy, and the Definitions (collectively our agreement with you).
+      </p>
+      <p>
+        For more information see: <a href="https://www.integral.global/partner-legals" target="_blank">https://www.integral.global/partner-legals</a>.
+      </p>
+
+      @if (Model.ContractInfo != null) {
+        <p class="mt20">
+          This agreement was accepted on @WebHelper.DisplayDate(TimeHelper.UtcToTimeZoneId(Model.ContractInfo.SubmittedUtc, ConfigHelper.DefaultTimeZoneIdIana).ToDateTimeOrNull())
+          (@ConfigHelper.DefaultTimeZoneAbbrev)
+        </p>
+      }
+
+      <hr />
+
+      <form class="form-horizontal" id="formContract" onsubmit="return false;">
+
+        @Html.Raw(WebHelper.GetSelectRow("Partner Agreement Type:", Integral.Web.PortalSite.Pages_Albert.CoachEdit.ContractFormFields.ContractType, 8, Model.GetContractTypeOptionsHtml(), "", Model.IsContractFormReadOnly))
+
+        <hr />
+        @Html.Raw(WebHelper.GetInputDateRow("Date of Birth:", Integral.Web.PortalSite.Pages_Albert.CoachEdit.ContractFormFields.IDDateOfBirth, Model.ContractInfo?.IDDateOfBirth, "", Model.IsContractFormReadOnly))
+        @Html.Raw(WebHelper.GetTextInput("Postal Address:", Integral.Web.PortalSite.Pages_Albert.CoachEdit.ContractFormFields.PostalAddress1, "", Model.ContractInfo?.PostalAddress1, Model.IsContractFormReadOnly, WebHelper.InputMaxLength.NoLimit))
+        @Html.Raw(WebHelper.GetTextInput("Post/Zip Code:", Integral.Web.PortalSite.Pages_Albert.CoachEdit.ContractFormFields.PostalPostCode, "", Model.ContractInfo?.PostalPostCode, Model.IsContractFormReadOnly, WebHelper.InputMaxLength.NoLimit))
+        @Html.Raw(WebHelper.GetTextInput("Country:", Integral.Web.PortalSite.Pages_Albert.CoachEdit.ContractFormFields.PostalCountry, "", Model.ContractInfo?.PostalCountry, Model.IsContractFormReadOnly, WebHelper.InputMaxLength.NoLimit))
+
+        <hr />
+        @Html.Raw(WebHelper.GetTextInput("Passport or Drivers License ID:", Integral.Web.PortalSite.Pages_Albert.CoachEdit.ContractFormFields.IDLicenseOrPassport, "", Model.ContractInfo?.IDLicenseOrPassport, Model.IsContractFormReadOnly, WebHelper.InputMaxLength.NoLimit))
+        @Html.Raw(WebHelper.GetTextInput("Country of Issue:", Integral.Web.PortalSite.Pages_Albert.CoachEdit.ContractFormFields.IDCountryOfIssue, "", Model.ContractInfo?.IDCountryOfIssue, Model.IsContractFormReadOnly, WebHelper.InputMaxLength.NoLimit))
+
+        <hr />
+        @Html.Raw(WebHelper.GetTextInput("Name on Bank Account / Account Name:", Integral.Web.PortalSite.Pages_Albert.CoachEdit.ContractFormFields.BankAccountName, "", Model.ContractInfo?.BankAccountName, Model.IsContractFormReadOnly))
+        @Html.Raw(WebHelper.GetTextInputDual("Bank Account Details:", Integral.Web.PortalSite.Pages_Albert.CoachEdit.ContractFormFields.BankAccountBSB, Model.ContractInfo?.BankAccountBSB, "BSB Number", Integral.Web.PortalSite.Pages_Albert.CoachEdit.ContractFormFields.BankAccountNumber, Model.ContractInfo?.BankAccountNumber, "Account Number", Model.IsContractFormReadOnly))
+
+        <hr />
+        @Html.Raw(WebHelper.GetTextInput("Next of Kin Name:", Integral.Web.PortalSite.Pages_Albert.CoachEdit.ContractFormFields.NextKinFullName, "", Model.ContractInfo?.NextOfKinFullName, Model.IsContractFormReadOnly))
+        @Html.Raw(WebHelper.GetTextInput("Next of Kin Phone Number:", Integral.Web.PortalSite.Pages_Albert.CoachEdit.ContractFormFields.NextKinMobileNumber, "", Model.ContractInfo?.NextOfKinMobileNumber, Model.IsContractFormReadOnly, WebHelper.InputMaxLength.MobilePhoneNumber))
+
+        <hr />
+
+        <div id="ContractType_@DbHelper.UserContract.ContractType.Casual">
+
+          <h4>Casual Employment Agreement</h4>
+
+          <p>Our Agreement with you incorporates these related documents: the "Partner Contract Form" (this form);
+            our Casual Terms &amp; Conditions, our Terms of Use, our Privacy Policy, the Definitions &amp; Interpretation,
+            and the Casual Agreement (collectively the "Casual Employment Agreement").</p>
+          <p>The related documents can be found here:</p>
+          <ul>
+            <li><a href="https://www.integral.global/partner-legals" target="_blank">https://www.integral.global/partner-legals</a></li>
+            <li><a href="https://www.integral.global/partner-casual-agreement" target="_blank">https://www.integral.global/partner-casual-agreement</a></li>
+          </ul>
+
+          <p class="mt10">@Html.Raw(WebHelper.CustomCheckBox(Integral.Web.PortalSite.Pages_Albert.CoachEdit.ContractFormFields.Agree_IntegralPaySuper, "1", Model.ContractInfo?.Agree_IntegralPaySuper, Model.IsContractFormReadOnly,
+              "I understand & agree Integral will pay Superannuation, income tax, and GST on my behalf, where relevant."))</p>
+          <p class="mt10">@Html.Raw(WebHelper.CustomCheckBox(Integral.Web.PortalSite.Pages_Albert.CoachEdit.ContractFormFields.Agree_CasualTerms, "1", Model.ContractInfo?.Agree_CasualTerms, Model.IsContractFormReadOnly,
+              "I have read & agree with the Casual Employment Agreement."))</p>
+
+        </div>
+
+        <div id="ContractType_@DbHelper.UserContract.ContractType.Contractor">
+
+          <h4>Partner Services Agreement</h4>
+
+          <p>Our Agreement with you incorporates these related documents: the "Partner Contract Form" (this form);
+            our Partner Terms &amp; Conditions, our Terms of Use, our Privacy Policy, the Definitions &amp; Interpretation,
+            and the Partner Services Agreement (collectively the "Partner Services Contract").</p>
+          <p>The related documents can be found here:</p>
+          <ul>
+            <li><a href="https://www.integral.global/partner-legals" target="_blank">https://www.integral.global/partner-legals</a></li>
+            <li><a href="https://www.integral.global/partner-services-agreement" target="_blank">https://www.integral.global/partner-services-agreement</a></li>
+          </ul>
+          <p>If you do not fulfil the below criteria, please select the "Casual Partner" contract.</p>
+
+          @Html.Raw(WebHelper.GetTextInput("ABN:", Integral.Web.PortalSite.Pages_Albert.CoachEdit.ContractFormFields.ContractorABN, "", Model.ContractInfo?.ABNNumber, Model.IsContractFormReadOnly))
+          @Html.Raw(WebHelper.GetTextInput("Business Entity Name:", Integral.Web.PortalSite.Pages_Albert.CoachEdit.ContractFormFields.ContractorBusinessName, "", Model.ContractInfo?.BusinessEntityName, Model.IsContractFormReadOnly))
+
+          <p class="mt10">@Html.Raw(WebHelper.CustomCheckBox(Integral.Web.PortalSite.Pages_Albert.CoachEdit.ContractFormFields.Agree_RegisteredABN, "1", Model.ContractInfo?.Agree_RegisteredABN, Model.IsContractFormReadOnly,
+              "I have a registered ABN, and have over $75,000 in revenue, and pay GST."))</p>
+          <p class="mt10">@Html.Raw(WebHelper.CustomCheckBox(Integral.Web.PortalSite.Pages_Albert.CoachEdit.ContractFormFields.Agree_PayOwnSuper, "1", Model.ContractInfo?.Agree_PayOwnSuper, Model.IsContractFormReadOnly,
+              "I will pay my own Superannuation, any income related taxes, and GST."))</p>
+          <p class="mt10">@Html.Raw(WebHelper.CustomCheckBox(Integral.Web.PortalSite.Pages_Albert.CoachEdit.ContractFormFields.Agree_OwnLiabilityInsurance, "1", Model.ContractInfo?.Agree_OwnLiabilityInsurance, Model.IsContractFormReadOnly,
+              "I have my own Public Liability insurance."))</p>
+          <p class="mt10">@Html.Raw(WebHelper.CustomCheckBox(Integral.Web.PortalSite.Pages_Albert.CoachEdit.ContractFormFields.Agree_ContractorTerms, "1", Model.ContractInfo?.Agree_ContractorTerms, Model.IsContractFormReadOnly, "",
+              @"I have read & agree with the Partner Contractor Agreement.<br/><a href=""https://www.integral.global/partner-services-agreement"" target=""_blank"">https://www.integral.global/partner-services-agreement</a>"))</p>
+
+        </div>
+
+        <hr />
+        @if (!Model.IsContractFormReadOnly) {
+          <center class="mt20 mb40">@Html.Raw(WebHelper.GetButton("Accept Agreement", "btnSubmitContract", false))</center>
+        } else if (Model.CanCreateContract) {
+          <center class="mt20 mb40">@Html.Raw(WebHelper.GetButton("New Agreement", "btnNewAgreement", false))</center>
+        }
+
+      </form>
+
+      <script>
+
+        // Closure for contract form.
+        (function ($) {
+
+          var selContractType, btnSubmitContract, formContract, btnNewAgreement;
+
+          $(document).ready(function () {
+
+            selContractType = $('select[name="@Integral.Web.PortalSite.Pages_Albert.CoachEdit.ContractFormFields.ContractType"]');
+            btnSubmitContract = $("#btnSubmitContract");
+            btnNewAgreement = $("#btnNewAgreement");
+            formContract = $("#formContract");
+
+            selContractType.change(ShowContractType);
+            ShowContractType();
+
+            btnSubmitContract.click(SubmitContract);
+            btnNewAgreement.click(NewAgreement);
+
+          });
+
+          function SubmitContract() {
+
+            $.busyLoadFull("show");
+
+            AjaxSubmit({
+              form: formContract,
+              action: "@Integral.Web.PortalSite.Pages_Albert.CoachEdit.AjaxAction.SubmitContract",
+              onSuccess: function (jqXHR, data) { },
+              onFail: function (jqXHR, data) { },
+              onError: function (jqXHR, textStatus, errorThrown) {
+                if (app_isDev) common_InfoDialog(jqXHR.responseText);
+                else common_InfoDialog("Oops, a problem occurred! Please try again later.");
+              },
+              onAlways: function (data_or_jqXHR, textStatus, jqXHR_or_errorThrown) {
+                $.busyLoadFull("hide");
+              }
+            });
+          }
+
+          function NewAgreement() {
+
+            $.busyLoadFull("show");
+            location.href
+              = "@PathHelper.Pages.CoachEdit(Model.CoachInfo.UserId, PathHelper.CoachTabEnum.contract)"
+              + "&@PathHelper.AbleUrlKeys.UserContract=@PathHelper.AbleUrlValues.IdNew";
+          }
+
+          function ShowContractType() {
+
+            var ctVal = selContractType.val();
+            $('div[id^="ContractType_"]').hide();
+            $('div[id="ContractType_' + ctVal + '"]').show();
+
+          }
+
+        })(jQuery);
+      </script>
+
+    </div>
+
+  }
+
+
+}
+
+<div id="cropperModal" class="modal fade" data-backdrop="static" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title mt10">Adjust Image</h4>
+      </div>
+      <div class="modal-body">
+        <div class="img-container">
+          <div class="floatright w200 pl10 pr10 sidenote">
+            Change the framing of the image if needed.<br/>
+            <br/>
+            Use the controls below to rotate and zoom.<br/>
+            When zoomed in, use the mouse to move the image in the frame.<br/>
+          </div>
+          <img class="cropperImage floatleft" src="about:blank" alt="Crop Image">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <div class="actions-titles floatleft">
+          <div class="buttonset">
+            <div class="title">Rotate</div>
+            <div class="title title-sec">Zoom</div>
+          </div>
+        </div>
+        <div class="actions floatleft">
+          <div class="buttonset">
+            <button type="button" class="btn btn-secondary btnRotateLeft" title="Rotate Left"><img src="@(PathHelper.UrlPath.Images)btn-cropper-rotate-left.svg" /></button>
+            <button type="button" class="btn btn-secondary btnRotateRight" title="Rotate Right"><img src="@(PathHelper.UrlPath.Images)btn-cropper-rotate-right.svg" /></button>
+          </div>
+          <div class="buttonset">
+            <button type="button" class="btn btn-secondary btnZoomOut" title="Zoom Out"><i class="fas fa-search-minus"></i></button>
+            <button type="button" class="btn btn-secondary btnZoomIn" title="Zoom In"><i class="fas fa-search-plus"></i></button>
+          </div>
+        </div>
+        <div class="buttonsAction floatright">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+          <button type="button" id="btnCropDone" class="btn btn-primary">Done</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+@if (Model.CanInvitePartners) {
+
+  <script type="text/javascript">
+
+    (function ($) {
+
+      var btnInvitePartner = $("#btnInvitePartner");
+      var divInvitePartner = $("#divInvitePartner");
+      var formInvitePartner = $("#formInvitePartner");
+      var btnSendInvite = $("#btnSendInvite");
+      var btnCancelInvite = $("#btnCancelInvite");
+
+      $(document).ready(function () {
+
+        formInvitePartner.submit(function (ev) { ev.preventDefault(); return false; });
+        formInvitePartner.find("input").keydown(function (ev) { if (ev.which == 13) return false; });
+        btnInvitePartner.click(InvitePartner);
+        btnSendInvite.click(SendInvite);
+        btnCancelInvite.click(CancelInvite);
+
+      });
+
+      function InvitePartner(ev) {
+        if (btnInvitePartner.is(":disabled")) return;
+        btnInvitePartner.prop("disabled", true);
+        divInvitePartner.slideDown();
+        formInvitePartner.find("input").eq(1).focus();
+      }
+
+      function SendInvite(ev) {
+        AjaxSubmit({
+          form: formInvitePartner,
+          onSuccess: function (jqXHR, data) { },
+          onFail: function (jqXHR, data) { },
+          onError: function (jqXHR, textStatus, errorThrown) { },
+          onAlways: function (data_or_jqXHR, textStatus, jqXHR_or_errorThrown) { }
+        });
+      }
+
+      function CancelInvite(ev) {
+        divInvitePartner.slideUp();
+        formInvitePartner[0].reset();
+        btnInvitePartner.prop("disabled", false);
+      }
+
+    })(jQuery);
+  </script>
+
+}
+
+<script type="text/javascript">
+  (function ($) {
+
+    var $clientForm = $("#clientForm");
+    var $settingsForm = $("#engageSettingsForm");
+    var $btnUpdateProfile = $("#btnUpdateProfile");
+    var $btnUpdateSettings = $("#btnUpdateSettings");
+    var $btnUpdateBio = $("#btnUpdateBio");
+    var $bioForm = $("#bioForm");
+    var $btnUpdateCompany = $("#btnUpdateCompany");
+    var $btnUpdatePartnerTags = $("#btnUpdatePartnerTags");
+    var $formTabs = $("#formTabs");
+    var $companyForm = $("#companyForm");
+    var $partnerTagsForm = $("#partnerTagsForm");
+    var isNewCoach = @(Model.IsNewCoach ? "true" : "false");
+    var $blockUser = $("#btnBlockLogin");
+
+    var Cropper, cropper, $cropperModal, $cropperModalImage;
+
+    $(document).ready(function () {
+
+      Cropper = window.Cropper;
+      $cropperModal = $("#cropperModal");
+      $cropperModalImage = $("#cropperModal .cropperImage");
+
+      if (isNewCoach) {
+        // Adjust menu.
+        $(".activeparent > ul.submenu > li.active a span").text("New Coach");
+        $(".activeparent > ul.submenu > li:not(.active)").hide();
+      }
+
+      $btnUpdateProfile.click(UpdateProfile);
+      $blockUser.click(UpdateBlockUser);
+      $btnUpdateSettings.click(UpdateSettings);
+      $btnUpdateBio.click(UpdateBio);
+      $btnUpdateCompany.click(UpdateCompany);
+      $btnUpdatePartnerTags.click(UpdatePartnerTags);
+
+      $('#@Model.ProfileImageControl.InputID').on('change', function () {
+        CropImage(this, false, $('#@Model.ProfileImageControl.ImgID'), "image/jpeg");
+        $('#@Model.ProfileImageControl.InputMessageID').text("Remember to Update Your Details to Save Changes");
+      });
+
+      $('#@Model.CompanyLogoControl.InputID').on('change', function () {
+        CropImage(this, true, $('#@Model.CompanyLogoControl.ImgID'), "image/png");
+      });
+
+      $("#cropperModal .btnRotateLeft").click(function (e) { cropper.rotate(-90); });
+      $("#cropperModal .btnRotateRight").click(function (e) { cropper.rotate(90); });
+      $("#cropperModal .btnZoomOut").click(function (e) { cropper.zoom(-0.1); });
+      $("#cropperModal .btnZoomIn").click(function (e) { cropper.zoom(0.1); });
+
+      $("#btnCropDone").click(function (e) {
+        if (typeof cropper != 'object') return;
+        var croppedCanvas = cropper.getCroppedCanvas();
+        var $imgTarget = $cropperModal.data("img-target");
+        $imgTarget.attr("src", croppedCanvas.toDataURL());
+        croppedCanvas.toBlob(function (blob) {
+          $imgTarget.data("blob", blob);
+          $cropperModal.modal("hide")
+        }, $cropperModal.data("img-mimetype"), 0.9);
+      });
+
+      $cropperModal.on('hidden.bs.modal', function () {
+        if (typeof cropper != "undefined" && cropper != null) {
+          if (cropper.destroy) cropper.destroy();
+          cropper = null;
+        }
+      });
+
+      // Activate initially selected tab.
+      $('.nav-tabs a[href="#panel-@Model.SelectedPageTab"]').tab('show');
+
+      $("#bioForm textarea").each(function () {
+        var textareaName = $(this).attr("name");
+
+        TinyMCEInit("textarea[name='" + textareaName + "']", {
+          autoresize_bottom_margin: 20,
+          min_height: 150,
+          plugins: 'autoresize lists link image paste code',
+          toolbar: 'undo redo | formatselect | bold italic underline | alignleft aligncenter alignright | bullist numlist | link  | removeformat | code',
+
+          setup: function (editor) {
+            // Apply character limit ONLY for BioShort and CoachCardBio
+            if (textareaName === "@Integral.Web.PortalSite.Pages_Albert.CoachEdit.FormFields.BioShort" || textareaName === "@Integral.Web.PortalSite.Pages_Albert.CoachEdit.FormFields.CoachCardBio") {
+              const maxChars = @ConfigHelper.Coach_ShortBio_MaxLength;
+
+              editor.on('keydown', function (e) {
+                const content = editor.getContent({ format: 'text' });
+                if (content.length >= maxChars) {
+                  // Allow backspace, delete, arrow keys, home, end, and modifier-key combos (Ctrl+A, Ctrl+Z, etc.)
+                  var allowedKeys = [8, 46, 37, 38, 39, 40, 35, 36]; // Backspace, Delete, Arrows, Home, End
+                  if (allowedKeys.indexOf(e.keyCode) === -1 && !e.ctrlKey && !e.metaKey) {
+                    e.preventDefault();
+                  }
+                }
+              });
+
+              editor.on('paste', function (e) {
+                const content = editor.getContent({ format: 'text' });
+                const pastedText = (e.clipboardData || window.clipboardData).getData('text');
+
+                if ((content.length + pastedText.length) > maxChars) {
+                  e.preventDefault();
+                  const allowedText = pastedText.substring(0, maxChars - content.length);
+                  editor.insertContent(allowedText);
+                }
+              });
+            }
+          }
+        });
+      });
+
+      $('#partnerTagsForm select').each(function () {
+        UpdateTagSelectOptions($(this));
+      });
+
+      // Bind change event handler to all <select> elements inside #partnerTagsForm
+      $('#partnerTagsForm select').on('change', function () {
+        UpdateTagSelectOptions($(this));
+      });
+
+    }); // ready.
+
+    function UpdateTagSelectOptions(select) {
+      var linkedList = select.next('.select2').find('.select2-selection__rendered');
+
+      select.find('option').each(function () {
+        var option = $(this);
+        var optionText = option.text();
+        var listItem = linkedList.find('li[title="' + optionText + '"]');
+
+        // Toggle the 'disabled' class based on the option's disabled state
+        if (option.is(':disabled')) {
+          listItem.addClass('disabled');
+          listItem.find('.select2-selection__choice__remove').remove();
+        } else {
+          listItem.removeClass('disabled');
+        }
+      });
+    }
+
+    function CropImage(fileInput, isLogo, $imgTarget, imgMimeType) {
+
+      $cropperModal.toggleClass("IsLogo", isLogo);
+      $cropperModal.data("img-target", $imgTarget);
+      $cropperModal.data("img-mimetype", imgMimeType);
+
+      if (fileInput.files && fileInput.files[0]) {
+        if (fileInput.files[0].type.match(/^image\//)) {
+          var reader = new FileReader();
+          reader.onload = function (evt) {
+            $cropperModalImage.on("load", function () {
+
+              if (typeof cropper != "undefined" && cropper != null) {
+                if (cropper.destroy) cropper.destroy();
+                cropper = null;
+              }
+
+              if (isLogo) {
+                cropper = new Cropper($cropperModalImage[0], {
+                  viewMode: 2,
+                  autoCrop: true,
+                  autoCropArea: 1,
+                  toggleDragModeOnDblclick: false,
+                  restore: false,
+                  movable: true,
+                  rotatable: true,
+                  scalable: true,
+                  zoomOnWheel: false,
+                  minContainerWidth: 400,
+                  maxContainerWidth: 400,
+                  minContainerHeight: 250,
+                  maxContainerHeight: 250,
+                  minCanvasWidth: 400,
+                  minCanvasHeight: 250,
+                  ready: function () {
+                    $cropperModal.modal();
+                  }
+                });
+             } else {
+                cropper = new Cropper($cropperModalImage[0], {
+                  viewMode: 3,
+                  autoCrop: false,
+                  autoCropArea: 1,
+                  aspectRatio: 1,
+                  dragMode: "move",
+                  toggleDragModeOnDblclick: false,
+                  restore: false,
+                  guides: false,
+                  center: false,
+                  highlight: false,
+                  movable: true,
+                  rotatable: true,
+                  scalable: true,
+                  cropBoxMovable: false,
+                  cropBoxResizable: false,
+                  zoomOnWheel: false,
+                  minContainerWidth: 250,
+                  maxContainerWidth: 250,
+                  minContainerHeight: 250,
+                  maxContainerHeight: 250,
+                  minCropBoxWidth: 250,
+                  minCropBoxHeight: 250,
+                  minCanvasWidth: 250,
+                  minCanvasHeight: 250,
+                  ready: function () {
+                    this.cropper.crop(); // as autoCrop=false
+                    $cropperModal.modal();
+                  }
+                });
+              }
+              $cropperModal.data("cropper", cropper);
+            });
+            $cropperModalImage.attr("src", evt.target.result);
+          };
+          reader.readAsDataURL(fileInput.files[0]);
+        }
+        else {
+          alert("Invalid file type! Please select an image file.");
+        }
+      } else {
+        alert('No file(s) selected.');
+      }
+    }
+
+    function UpdateSettings() {
+      AjaxSubmit({
+        form: $settingsForm,
+        action: "@Integral.Web.PortalSite.Pages_Albert.CoachEdit.AjaxAction.UpdateEngageSettings",
+        onSuccess: function (jqXHR, data) { },
+        onAlways: function () { }
+      });
+    }
+
+    function UpdateProfile() {
+
+      AjaxSubmit({
+        form: $clientForm,
+        action: "@Integral.Web.PortalSite.Pages_Albert.CoachEdit.AjaxAction.UpdateProfile",
+        onSuccess: function (jqXHR, data) {
+          var userPhotoUrl = "@PathHelper.Images.UserPhoto(Model.CoachInfo, PathHelper.Images.UserPhotoSize.Large, false)";
+          var userPlaceholderUrl = "@PathHelper.Images.UserPhoto_Missing()";
+          //SavePhoto("@Integral.Web.PortalSite.Pages_Albert.CoachEdit.AjaxAction.PartnerPhoto", data.CoachId, $imgProfilePic, userPhotoUrl, userPlaceholderUrl);
+        }
+      });
+    }
+
+    function UpdateBlockUser() {
+
+      common_ConfirmDialog("Confirm", "Are you sure you want to block user? This action can't be undone.", function (confirmed) {
+        if (confirmed) {
+          AjaxSubmit({
+            action: "@Integral.Web.PortalSite.Pages_Albert.CoachEdit.AjaxAction.BlockUser",
+            onSuccess: function (jqXHR, data) { }
+          });
+        }
+      });
+
+    }
+
+    function UpdateBio() {
+
+      tinymce.triggerSave(); // Sync editor content to textareas
+
+      AjaxSubmit({
+        form: $bioForm,
+        action: "@Integral.Web.PortalSite.Pages_Albert.CoachEdit.AjaxAction.UpdateBio",
+        onSuccess: function (jqXHR, data) {
+          return;
+        },
+        onFail: function (jqXHR, data) {
+        },
+        onError: function (jqXHR, textStatus, errorThrown) {
+          if (app_isDev) {
+            common_InfoDialog(jqXHR.responseText);
+          } else {
+            common_InfoDialog("Update failed, please try again later.");
+          }
+        },
+        onAlways: function () { }
+      });
+    }
+
+    function UpdateCompany() {
+
+      AjaxSubmit({
+        form: $companyForm,
+        action: "@Integral.Web.PortalSite.Pages_Albert.CoachEdit.AjaxAction.UpdateCompany",
+        onSuccess: function (jqXHR, data) {
+          var logoUrl = "@PathHelper.Images.TenantOrgLogo(Model.CoachInfo, true)";
+          //SavePhoto("@Integral.Web.PortalSite.Pages_Albert.CoachEdit.AjaxAction.TenantOrgLogo", data.CoachId, $imgCompanyLogo, logoUrl);
+        }
+      });
+    }
+
+    function UpdatePartnerTags() {
+
+      AjaxSubmit({
+        form: $partnerTagsForm,
+        action: "@Integral.Web.PortalSite.Pages_Albert.CoachEdit.AjaxAction.UpdatePartnerTags",
+        onSuccess: function (jqXHR, data) {
+          return;
+        },
+        onFail: function (jqXHR, data) {
+        },
+        onError: function (jqXHR, textStatus, errorThrown) {
+          if (app_isDev) {
+            common_InfoDialog(jqXHR.responseText);
+          } else {
+            common_InfoDialog("Update failed, please try again later.");
+          }
+        },
+        onAlways: function () { }
+      });
+    }
+
+    function SavePhoto(strAjaxAction, coachId, $imgTarget, photoImageUrl, placeholderImageUrl) {
+
+      if ($imgTarget.data("blob") == null) return;
+
+      jQuery.ajax({
+        url: "@PathHelper.Pages.CoachEdit(null)" + coachId,
+        data: {
+          "CoachId": coachId,
+          "image": $imgTarget.data("blob")
+        },
+        action: strAjaxAction,
+        processData: false,
+        contentType: false
+      }).done(function (response) {
+        if (typeof placeholderImageUrl == "string") {
+          // Change placeholder urls (if present) to proper photo url.
+          $('img[src^="' + placeholderImageUrl + '"]').each(function (i, img) { img.src = photoImageUrl; });
+        }
+        // Force browser to refresh all images which have the photo url.
+        app_ReloadImage(photoImageUrl);
+      });
+    }
+
+  })(jQuery);
+</script>

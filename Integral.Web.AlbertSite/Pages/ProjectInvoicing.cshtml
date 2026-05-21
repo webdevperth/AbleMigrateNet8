@@ -1,0 +1,480 @@
+@page
+@model Integral.Web.PortalSite.Pages_Albert.ProjectInvoicing
+@{ Layout = "_Layout_AdminLTE"; }
+
+<div class="proj-components invoiceInfo">
+  <div class="invoiceGenData">
+    <div class="row-info-text">
+      <label>Company: </label>
+      <div class="textHolder"> @Model.ProjectInfo.ClientCompanyName.HTMLEncode()</div>
+    </div>
+    <div class="row-info-text">
+      <label>Duration: </label>
+      <div class="textHolder"> @WebHelper.DisplayDate(Model.ProjectInfo.MinProgramStartDateUtc.UtcToTZOrNull(), "-") -
+      @WebHelper.DisplayDate(Model.ProjectInfo.MaxProgramEndDateUtc.UtcToTZOrNull(), "-")</div>
+    </div>
+    <div class="row-info-text">
+      <label>Inv/Order No: </label>
+      <div class="textHolder">@Model.ProjectInfo.PurchaseOrderNumber.ValueIfNullOrEmpty("[not set]").HTMLEncode()</div>
+    </div>
+  </div>
+
+  <div class="invoiceGenData">
+    <div class="row-info-text">
+      <label>Xero Contact: </label>
+      <div class="textHolder">@Model.ProjectInfo.XeroContactName.ValueIfNullOrEmpty("[not set]").HTMLEncode()</div>
+    </div>
+    <div class="row-info-text">
+      <label>Invoice Type: </label>
+      <div class="textHolder">@Model.ProjectInfo.InvoiceInstructionTypeName.HTMLEncode()</div>
+    </div>
+  </div>
+
+  <div class="mb30">
+
+    @* ShowQuoteList *@
+    <div class="components-contour contour-full mb30">
+
+      @foreach (var quote in Model.InvoiceItemsByQuote.Quotes) {
+
+        <div class="title title-main">Quote: <a href="@PathHelper.Pages.QuoteDetails(quote.QuoteGuid)">@quote.QuoteName.HTMLEncode()</a></div>
+
+        <div class="quoteInfo">
+
+          <table class="tblQuoteInfo">
+            <tr>
+              <td class="infoLeftCol">
+                <p>@(quote.IsAccepted ? "Accepted" : "Quote") Amount</p>
+                <p class="amt quoteAmt">@((quote.IsAccepted ? quote.ClientAcceptedAmt : quote.QuoteItemTotal).ToString("C", "--"))</p>
+                @if (quote.IsAccepted) {
+                  <p class="quoteAccepted">@WebHelper.DisplayDate(quote.ClientAcceptedUtc.Value.UtcToTZ(null), "-")</p>
+                } else {
+                  <p class="quoteAccepted">Not Yet Accepted</p>
+                }
+              </td>
+              <td>
+                <p>Total Components</p>
+                <p class="amt">@quote.ComponentsAmt.ToString("C")</p>
+                <p>Balance</p>
+                @{ var balance = quote.ClientAcceptedAmt - quote.ComponentsAmt; }
+                <p class="amt @(balance == 0 ? "zeroAmt" : "")">@balance.ToString("C", "--")</p>
+              </td>
+              <td>
+                <p>Total Delivered</p>
+                <p class="amt">@quote.DeliveredAmt.ToString("C")</p>
+                <p>Balance</p>
+                @{ balance = quote.ClientAcceptedAmt - quote.DeliveredAmt; }
+                <p class="amt @(balance == 0 ? "zeroAmt" : "")">@balance.ToString("C", "--")</p>
+              </td>
+              <td>
+                <p>Invoiced Amount</p>
+                <p class="amt">@quote.InvoiceItemsAmt.ToString("C")</p>
+                <p>Balance</p>
+                @{ balance = quote.ClientAcceptedAmt - quote.InvoiceItemsAmt; }
+                <p class="amt @(balance == 0 ? "zeroAmt" : "")">@balance.ToString("C", "--")</p>
+              </td>
+              <td>
+                <p>Invoiced to Xero</p>
+                <p class="amt">@quote.InvoicedAmt.ToString("C")</p>
+                <p>Balance</p>
+                @{ balance = quote.ClientAcceptedAmt - quote.InvoicedAmt; }
+                <p class="amt @(balance == 0 ? "zeroAmt" : "")">@balance.ToString("C", "--")</p>
+              </td>
+            </tr>
+          </table>
+          <div class="components-contour contour-full">
+            <div class="title title-main">Invoices</div>
+            <div class="invoiceList">
+              @if (!quote.Invoices.Exists(i => i.InvoiceId != null)) {
+                <div class="invoiceInfo">
+                  <p class="noInvoices">No Invoices</p>
+                </div>
+              } else {
+                foreach (var invoice in quote.Invoices) {
+                  if (invoice.InvoiceId == null) { continue; }
+                  <div class="invoiceInfo">
+
+                    @if (Model.CanDeleteInvoice) {
+                      <button class="btnDeleteInvoice btn btn-sm btn-secondary floatright"
+                        data-@(Integral.Web.PortalSite.Pages_Albert.ProjectInvoicing.FormFields.InvoiceId.ToLower())="@invoice.InvoiceId"
+                        data-@(Integral.Web.PortalSite.Pages_Albert.ProjectInvoicing.FormFields.InvoiceOrderNumber.ToLower())="@invoice.InvoiceNumber.HTMLEncode()">@Html.Raw(WebHelper.Icon.Delete)</button>
+                    }
+
+                    <div class="invHeading">
+                      <span class="invNumber">@invoice.InvoiceNumber</span>
+                      - <span>@WebHelper.DisplayDate(invoice.CreatedUtc.UtcToTZ(null), "-")</span>
+                      <button class="btnInvDate btn btn-xsm" title="Change Invoice Date"
+                        data-date="@TimeHelper.UtcToAppDefaultTimeZone(invoice.CreatedUtc).ToString("dd/MM/yyyy")"
+                        data-@(Integral.Web.PortalSite.Pages_Albert.ProjectInvoicing.FormFields.InvoiceId.ToLower())="@invoice.InvoiceId">@Html.Raw(WebHelper.Icon.Edit)</button>
+                      <span class="invDescr ml10">@invoice.InvoiceDescription.HTMLEncode()</span>
+                      @if (invoice.PaidUtc != null) {
+                        <p class="mt5"><b>Paid: <span>@WebHelper.DisplayDate(invoice.PaidUtc.Value.UtcToTZ(null), "-")</span></b></p>
+                      }
+                    </div>
+
+                    <div class="table-responsive">
+                      <table class="tblIvoiceItems table compressed">
+                        <thead>
+                          <tr>
+                            <th class="w400">Item</th>
+                            <th class="type-money">Unit Price</th>
+                            <th class="type-qty">Qty</th>
+                            <th class="type-money">Total</th>
+                            <th class="type-money-xlg">Component Total</th>
+                            <th class="type-date">Payment Date</th>
+                            <th class="type-qty">GST</th>
+                            <th class="type-icon"></th>
+                          </tr>
+                        </thead>
+                        @foreach (var invoiceItem in invoice.InvoiceItems) {
+                          <tr data-@(Integral.Web.PortalSite.Pages_Albert.ProjectInvoicing.FormFields.RemoveInvItemId.ToLower())="@invoiceItem.InvoiceItemId">
+                            <td>@invoiceItem.Description.HTMLEncode()</td>
+                            <td class="type-money">@invoiceItem.UnitPrice.ToString("C")</td>
+                            <td class="type-qty">@invoiceItem.Quantity</td>
+                            <td class="type-money">@((invoiceItem.UnitPrice * invoiceItem.Quantity).ToString("C"))</td>
+                            <td class="type-money-xlg">@invoiceItem.InvoiceItemTotalComponentAllocated</td>
+                            <td class="type-date">@WebHelper.DisplayDate(invoice.PaidUtc.UtcToTZOrNull(), "-")</td>
+                            <td class="align-center">@(invoiceItem.GSTApplicable ? "Yes" : "No")</td>
+                            <td class="type-icon">
+                              @if (Model.CanAddDeleteItems) {
+                                <button class="btnRemoveFromQuote btn btn-sm" title='Remove from Quote'
+                                  data-jid="@invoiceItem.ProjectId"
+                                  data-inviid="@invoiceItem.InvoiceItemId">@Html.Raw(WebHelper.Icon.MinusCircle)</button>
+                              }
+                            </td>
+                          </tr>
+                        }
+                        <tfoot>
+                          <tr>
+                            <td colspan="3" class="align-right">Invoice Total:</td>
+                            <td class="type-money">@invoice.InvoiceTotal.ToString("C")</td>
+                            <td colspan="2"></td>
+                          </tr>
+                        </tfoot>
+                      </table>
+                    </div>
+                  </div>
+                }
+              }
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+    <script>
+      +function ($) {
+        $(document).ready(function () {
+
+          $(".btnInvDate")
+            .datepicker({ format: "dd/mm/yyyy", title: "Change Invoice Date", autoclose: true })
+            .on("changeDate", ChangeInvDate)
+            .click(function () { $(this).datepicker("show"); });
+
+          $(".btnDeleteInvoice").click(DeleteInvoice);
+          $(".btnRemoveFromQuote").click(RemoveFromQuote);
+
+        });
+
+        function ChangeInvDate(evt) {
+          var $btn = $(this);
+          AjaxSubmit({
+            action: "@Integral.Web.PortalSite.Pages_Albert.ProjectInvoicing.AjaxAction.ChangeInvoiceDate",
+            data: {
+              "@Integral.Web.PortalSite.Pages_Albert.ProjectInvoicing.FormFields.InvoiceId": $btn.data("@Integral.Web.PortalSite.Pages_Albert.ProjectInvoicing.FormFields.InvoiceId.ToLower()"),
+              "@Integral.Web.PortalSite.Pages_Albert.ProjectInvoicing.FormFields.InvoiceDate": moment(evt.date).format()
+            }
+          });
+        }
+
+        function DeleteInvoice(evt) {
+
+          var $btn = $(this);
+          var invoiceId = $btn.data("@Integral.Web.PortalSite.Pages_Albert.ProjectInvoicing.FormFields.InvoiceId.ToLower()");
+          var invoiceNumber = $btn.data("@Integral.Web.PortalSite.Pages_Albert.ProjectInvoicing.FormFields.InvoiceOrderNumber.ToLower()");
+
+          common_ConfirmDialog("Delete Invoice", "Confirm deletion of invoice number " + invoiceNumber + "?<br/><br/>"
+            + "<small>Note - as a safety measure, this will delete the invoice but not the invoice items. "
+            + "The invoice items can be deleted separately afterwards, or assigned to a different invoice.</small>", null, function (confirmed) {
+            if (confirmed) {
+              AjaxSubmit({
+                action: "@Integral.Web.PortalSite.Pages_Albert.ProjectInvoicing.AjaxAction.DeleteInvoice",
+                data: {
+                  "@Integral.Web.PortalSite.Pages_Albert.ProjectInvoicing.FormFields.InvoiceId": invoiceId
+                }
+              });
+            }
+          });
+        }
+
+        function RemoveFromQuote(evt) {
+          var btn = $(evt.target);
+          var tr = btn.closest("tr");
+          var invItemId = toDecimalInt(tr.data("@Integral.Web.PortalSite.Pages_Albert.ProjectInvoicing.FormFields.RemoveInvItemId.ToLower()"), 0);
+          if (invItemId <= 0) {
+            alert("Something went wrong. Please reload page and try again.");
+            return;
+          }
+          AjaxSubmit({
+            action: "@Integral.Web.PortalSite.Pages_Albert.ProjectInvoicing.AjaxAction.RemoveItemFromQuote",
+            data: {
+              "@Integral.Web.PortalSite.Pages_Albert.ProjectInvoicing.FormFields.RemoveInvItemId": invItemId
+            }
+          });
+        }
+
+      }(jQuery);
+    </script>
+
+    @if (Model.ItemsWithoutQuoteCount > 0) {
+      @* ShowAssignToQuote *@
+      <div class="assign-to-quote">
+        <h4>Assign Invoice Items to Quotes</h4>
+        <div class="table-responsive width-auto">
+          <table class="table compressed tblAssignToQuotes">
+            <thead>
+              <tr>
+                <th class="w150">Inv No.</th>
+                <th class="type-description">Description</th>
+                <th class="type-money">Amount</th>
+                <th class="w400">Assign to Quote</th>
+                <th class="w100 mr10"></th>
+              </tr>
+            </thead>
+            <tbody>
+              @foreach (var item in Model.ItemsNoInvoiceOrQuote) {
+                if (item.QuoteId != null) { continue; }
+                <tr data-@Integral.Web.PortalSite.Pages_Albert.ProjectInvoicing.FormFields.AssignInvItemId="@item.InvoiceItemId">
+                  <td class="w150">@item.InvoiceNumber.HTMLEncode()</td>
+                  <td class="type-description">@item.Description.HTMLEncode()</td>
+                  <td class="type-money">@((item.UnitPrice * item.Quantity).ToString("C"))</td>
+                  <td class="w400">@Html.Raw(Model.GetQuoteSelectHtml(Integral.Web.PortalSite.Pages_Albert.ProjectInvoicing.FormFields.AssignQuoteId))</td>
+                  <td class="w100 mr10"><button class="btn btn-sm btn-primary btnAssignToQuote">Assign</button></td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <script>
+        +function ($) {
+          $(document).ready(function () {
+            var btnAssignToQuote = $(".btnAssignToQuote");
+            btnAssignToQuote.click(function (evt) {
+              var btn = $(evt.target);
+              var tr = btn.closest("tr");
+              var invItemId = toDecimalInt(tr.data("@Integral.Web.PortalSite.Pages_Albert.ProjectInvoicing.FormFields.AssignInvItemId.ToLower()"), 0);
+              if (invItemId <= 0) {
+                alert("Something went wrong. Please reload page and try again.");
+                return;
+              }
+              var quoteId = toDecimalInt(tr.find("select").val(), 0);
+              if (quoteId <= 0) {
+                alert("Please select a quote to assign this item.");
+                return;
+              }
+              AjaxSubmit({
+                action: "@Integral.Web.PortalSite.Pages_Albert.ProjectInvoicing.AjaxAction.AssignItemToQuote",
+                data: {
+                  "@Integral.Web.PortalSite.Pages_Albert.ProjectInvoicing.FormFields.AssignInvItemId": invItemId,
+                  "@Integral.Web.PortalSite.Pages_Albert.ProjectInvoicing.FormFields.AssignQuoteId": quoteId
+                }
+              });
+            });
+          });
+        }(jQuery);
+      </script>
+    }
+
+    @if (Model.CanAddDeleteItems) {
+      @* ShowAddInvoiceItem *@
+      <div class="add-invoice-item">
+        <form class="form-horizontal mt30" id="formAddInvoiceItem" action="#" method="post" onsubmit="return false;">
+          <input type="hidden" name="@PathHelper.FormKeys.AjaxAction" value="@Integral.Web.PortalSite.Pages_Albert.ProjectInvoicing.AjaxAction.AddInvoiceItem" />
+          <h4>New Invoice Item</h4>
+          <div class="table-responsive width-auto">
+            <table class="table compressed tblNewInvoiceItem">
+              <tr>
+                <td class="w125 align-right">Description:</td>
+                <td><input class="form-control" type="text" name="@Integral.Web.PortalSite.Pages_Albert.ProjectInvoicing.FormFields.InvItemDescription" size="30" value="" /></td>
+              </tr><tr>
+                <td class="w100 align-right">Unit Price:</td>
+                <td>
+                  <div class="flex flex-align-center">
+                    <div class="w150"><input class="form-control inp-currency" data-decimalPlaces="2" type="text" name="@Integral.Web.PortalSite.Pages_Albert.ProjectInvoicing.FormFields.InvItemUnitPrice" /></div>
+                    <div class="pl20 pr10">Qty:</div>
+                    <div class="w100"><input class="form-control" type="text" name="@Integral.Web.PortalSite.Pages_Albert.ProjectInvoicing.FormFields.InvItemQuantity" size="4" /></div>
+                    <div class="pl20 pr10 nowrap">GST Applicable:</div>
+                    <div class="w75">@Html.Raw(WebHelper.CustomCheckBox(Integral.Web.PortalSite.Pages_Albert.ProjectInvoicing.FormFields.InvItemGSTApplies, "1", false, null))</div>
+                  </div>
+                </td>
+              </tr><tr>
+                <td class="align-right">Quote:</td>
+                <td>@Html.Raw(Model.GetQuoteSelectHtml(Integral.Web.PortalSite.Pages_Albert.ProjectInvoicing.FormFields.InvItemQuoteId))</td>
+              </tr><tr>
+                <td></td>
+                <td><button class="btn btn-primary floatright" id="btnAddInvoiceItem">Add Invoice Item</button></td>
+              </tr>
+            </table>
+          </div>
+        </form>
+      </div>
+      <script>
+        +function ($) {
+          $(document).ready(function () {
+            var formAddInvoiceItem = $("#formAddInvoiceItem");
+            var btnAddInvoiceItem = $("#btnAddInvoiceItem");
+            btnAddInvoiceItem.click(function () {
+              AjaxSubmit({
+                form: formAddInvoiceItem,
+              });
+            });
+          });
+        }(jQuery);
+      </script>
+    }
+
+    @if (Model.CanSubmitInvoice) {
+      @* ShowCreateInvoice *@
+      <div class="create-invoice mb30">
+        <form class="form-horizontal" id="formCreateInvoice" action="#" method="post" onsubmit="return false;">
+          <input type="hidden" name="@PathHelper.FormKeys.AjaxAction" value="@Integral.Web.PortalSite.Pages_Albert.ProjectInvoicing.AjaxAction.SubmitInvoice" />
+
+          <div class="items-to-invoice mt30">
+            <h4>Items Available to Invoice:</h4>
+            <div class="table-responsive">
+              <table class="table compressed tblItemsToInvoice">
+                <thead>
+                  <tr>
+                    @if (Model.CanSubmitInvoice) {
+                      <th class="w50 align-center">Select</th>
+                    }
+                    <th class="type-date">Date</th>
+                    <th>Description</th>
+                    <th class="type-money">Unit Price</th>
+                    <th class="type-qty">Qty</th>
+                    <th class="type-money">Amount</th>
+                    <th class="type-money-xlg">Component Total</th>
+                    <th class="w75 align-center">GST</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @if (Model.ItemsToInvoiceCount == 0) {
+                    <tr><td colspan="7">None.</td></tr>
+                  } else {
+                    foreach (var row in Model.GetItemsToInvoiceRows()) {
+                      @Html.Raw(row)
+                    }
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          @if (Model.ItemsToInvoiceCount > 0 && Model.CanSubmitInvoice) {
+            <div class="w100p mt30">
+              <div class="flex flex-align-center">
+                <div class="w200 align-right pr10">Client Inv/Order Number:</div>
+                <div class="w500"><input class="form-control w100p" type="text" name="@Integral.Web.PortalSite.Pages_Albert.ProjectInvoicing.FormFields.InvoiceOrderNumber" size="20" value="@Model.ProjectInfo.PurchaseOrderNumber.HTMLEncode()" /></div>
+              </div>
+              <div class="flex flex-align-center flex-fill mt10">
+                <div class="w200 align-right pr10">Description:</div>
+                <div class=""><input class="form-control w100p" type="text" name="@Integral.Web.PortalSite.Pages_Albert.ProjectInvoicing.FormFields.InvoiceDescription" size="20" /></div>
+              </div>
+              <div class="flex flex-align-center flex-fill mt10">
+                <div class="w200 align-right pr10">Xero Client:</div>
+                <div>
+                  <select name="@Integral.Web.PortalSite.Pages_Albert.ProjectInvoicing.FormFields.InvoiceXeroContactId" class="form-control w100p" size="1">
+                    @Html.Raw(WebHelper.GetXeroContactOptions(true, Model.XeroContactsList, Model.ProjectInfo.XeroContactId))
+                  </select>
+                </div>
+              </div>
+              <div class="flex flex-align-center flex-fill mt20">
+                <div class="w200 align-right pr10 strong">Invoice Total:</div>
+                <div class="nowrap strong"><span id="invoiceTotal" class="invoiceTotal"></span></div>
+                <div class="align-right">
+                  <button class="btn btn-primary @(Model.CanSendInvoiceToXero ? "" : "disabled")" id="btnSubmitInvoice">Submit Invoice To Xero</button>
+                  @if (!Model.CanSendInvoiceToXero) {
+                    <p class="fa-sm mt10">Please set the Xero Account in <a href="@PathHelper.Pages.ProjectSettings(Model.ProjectInfo.JobNumber)">Project Settings</a> to enable this function.</p>
+                  }
+                </div>
+              </div>
+            </div>
+          }
+
+        </form>
+      </div>
+
+      @if (Model.ItemsToInvoiceCount > 0) {
+        <script type="text/javascript">
+          (function($) {
+
+            var formCreateInvoice, btnSubmitInvoice, allSameSign;
+
+            $(document).ready(function() {
+
+              formCreateInvoice = $("#formCreateInvoice");
+              btnSubmitInvoice = $("#btnSubmitInvoice");
+              btnSubmitInvoice.click(SubmitInvoice);
+
+              $(".tblItemsToInvoice input:checkbox").change(ShowInvoiceTotal);
+              ShowInvoiceTotal();
+
+              $(".btnDeleteItem").click(function (evt) {
+                var btn = $(evt.target);
+                var tr = btn.closest("tr");
+                var invItemId = toDecimalInt(tr.data("@Integral.Web.PortalSite.Pages_Albert.ProjectInvoicing.FormFields.DeleteInvItemId.ToLower()"), 0);
+                if (invItemId <= 0) {
+                  alert("Something went wrong. Please reload page and try again.");
+                  return;
+                }
+                if (!confirm("Do you wish to permanently delete this invoice item?")) return;
+                AjaxSubmit({
+                  action: "@Integral.Web.PortalSite.Pages_Albert.ProjectInvoicing.AjaxAction.DeleteInvItem",
+                  data: {
+                    "@Integral.Web.PortalSite.Pages_Albert.ProjectInvoicing.FormFields.DeleteInvItemId": invItemId
+                  }
+                });
+              });
+            });
+
+            function ShowInvoiceTotal() {
+              var total = 0;
+              var firstSign = null;
+              allSameSign = true;
+              $(".tblItemsToInvoice tr[data-amount]").each(function (i, e) {
+                $row = $(e);
+                if ($row.find("input:checkbox:checked").length == 1) {
+                  var rowAmount = parseFloat($row.data("amount"));
+                  var rowQty = parseFloat($row.data("qty"));
+                  if (firstSign == null) firstSign = Math.sign(rowAmount);
+                  else if (firstSign != Math.sign(rowAmount)) allSameSign = false; // Not all the same sign.
+                  total += rowAmount * rowQty;
+                }
+              });
+              if (total < 0) $("#invoiceTotal").text("($" + Math.abs(total).toFixed(2) + ")");
+              else $("#invoiceTotal").text("$" + total.toFixed(2));
+            }
+
+            function SubmitInvoice() {
+              if (!allSameSign) {
+                alert("All items in an invoice must be either positive or negative, not mixed.");
+                return;
+              }
+              AjaxSubmit({
+                form: formCreateInvoice,
+              });
+            }
+
+          })(jQuery);
+        </script>
+      }
+    }
+
+  </div>
+
+</div>
+
+@section PostScriptContent {
+
+}

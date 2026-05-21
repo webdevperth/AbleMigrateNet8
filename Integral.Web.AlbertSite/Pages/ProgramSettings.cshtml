@@ -1,0 +1,107 @@
+@page
+@model Integral.Web.PortalSite.Pages_Albert.ProgramSettings
+@{ Layout = "_Layout_AdminLTE"; }
+
+<div class="container-fluid form-horizontal">
+
+  <form id="formSettings" method="post" action="#" onsubmit="return false" class="form-horizontal">
+
+    <input type="hidden" name="@PathHelper.FormKeys.AjaxAction" value="update" />
+    <input type="hidden" name="@Integral.Web.PortalSite.Pages_Albert.ProgramSettings.FormFields.ProgramJobId" value="@Model.ProgramInfo.ProgramJobId" />
+    <input type="hidden" name="@Integral.Web.PortalSite.Pages_Albert.ProgramSettings.FormFields.ProgramJobGUID" value="@Model.ProgramInfo.ProgramJobGUID.ToString()" />
+
+    @if (Model.AddToProjectInfo == null) {
+      @Html.Raw(WebHelper.GetTextInput("Program/Job Number:", Integral.Web.PortalSite.Pages_Albert.ProgramSettings.FormFields.ProgramJobNumber, Model.ProgramInfo.ProgramJobNumber, 2, "", !Model.CanUpdateJobNumber))
+      @Html.Raw(WebHelper.GetTextDisplayRow("Company:", 8, Model.ProgramInfo.CompanyName))
+    } else {
+      <input type="hidden" name="@Integral.Web.PortalSite.Pages_Albert.ProgramSettings.FormFields.AddToProjectId" value="@Model.AddToProjectInfo.ProjectId" />
+      @Html.Raw(WebHelper.GetTextDisplayRow("Program/Job Number:", 8, Model.AddToProjectInfo.JobNumber))
+      @Html.Raw(WebHelper.GetTextDisplayRow("Company:", 8, Model.AddToProjectInfo.ClientCompanyName))
+    }
+    @Html.Raw(WebHelper.GetTextInput("Program Name:", Integral.Web.PortalSite.Pages_Albert.ProgramSettings.FormFields.ProgramJobName, Model.ProgramInfo.ProgramJobName, 6, "", !Model.CanEditSettings))
+
+    @if (Model.CanViewSettingsDates) {
+      @Html.Raw(WebHelper.GetInputDateRow("Program Start:", "", Model.ProgramInfo.ProgramStartDateUtc.UtcToTZOrNull(ConfigHelper.DefaultTimeZoneInfo), 2, 3, "(" + ConfigHelper.DefaultTimeZoneAbbrev + ")", !Model.CanEditSettings))
+      @Html.Raw(WebHelper.GetInputDateRow("Program End:", "", Model.ProgramInfo.ProgramEndDateUtc.UtcToTZOrNull(ConfigHelper.DefaultTimeZoneInfo), 2, 3, "(" + ConfigHelper.DefaultTimeZoneAbbrev + ")", !Model.CanEditSettings))
+    }
+
+    <hr>
+    @Html.Raw(Model.GetProgramStatusOptions("Program Status:"))
+    <hr>
+
+    @Html.Raw(Model.GetPartnerDropdownHtml("Project Coordinator:", Integral.Web.PortalSite.Pages_Albert.ProgramSettings.FormFields.ProjectCoordinatorUserId, 3, Model.ProgramInfo.ProjectCoordinatorUserId, !Model.CanEditSettings))
+    @Html.Raw(Model.GetPartnerDropdownHtml("Lead Consultant:", Integral.Web.PortalSite.Pages_Albert.ProgramSettings.FormFields.LeadConsultantUserId, 3, Model.ProgramInfo.LeadConsultantUserId, !Model.CanEditSettings))
+    @Html.Raw(Model.GetPartnerDropdownHtml("Sales Partner:", Integral.Web.PortalSite.Pages_Albert.ProgramSettings.FormFields.SalesPartnerUserId, 3, Model.ProgramInfo.SalesPartnerUserId, !Model.CanEditSettings))
+
+    @if (Model.CanViewPercentages) {
+      @Html.Raw(WebHelper.GetPercentInput("Delivery Percentage:", Integral.Web.PortalSite.Pages_Albert.ProgramSettings.FormFields.Partner_DeliveryPercentage, Model.ProgramInfo.Partner_DeliveryPercentage, 2, 1, "", !Model.CanEditPercentages))
+      @Html.Raw(WebHelper.GetPercentInput("Sales Delivery Percentage:", Integral.Web.PortalSite.Pages_Albert.ProgramSettings.FormFields.Partner_SalesDeliveryPercentage, Model.ProgramInfo.Partner_SalesDeliveryPercentage, 2, 1, "", !Model.CanEditPercentages))
+      @Html.Raw(WebHelper.GetPercentInput("PLC Percentage:", Integral.Web.PortalSite.Pages_Albert.ProgramSettings.FormFields.Partner_PLCPercentage, Model.ProgramInfo.Partner_PLCPercentage, 2, 1, "", !Model.CanEditPercentages))
+    }
+
+    @Html.Raw(WebHelper.GetRichTextArea("Program Notes:", Integral.Web.PortalSite.Pages_Albert.ProgramSettings.FormFields.ProgramNotes, 2, 8, Model.ProgramInfo.ProgramNotes, "", !Model.CanEditSettings))
+
+    @Html.Raw(WebHelper.GetRichTextArea("Booking Page Instructions:", Integral.Web.PortalSite.Pages_Albert.ProgramSettings.FormFields.BookingPageInstructions, 2, 8, Model.ProgramInfo.BookingPageInstructions, "", !Model.CanEditSettings))
+
+    @if (Model.CanEditSettings) {
+      <div class="btnholder">
+        <button type="button" class="btn btn-primary btnUpdate floatright" id="btnUpdate">@(Model.IsNewProgram ? "Create" : "Update") Program</button>
+        @if (!Model.IsNewProgram) {
+          <button type="button" class="btn btn-warning btnDelete floatleft" @(Model.DisableDelete ? (" title=\"" + Integral.Web.PortalSite.Pages_Albert.ProgramSettings.DisableDeleteMsg + "\"") : "") id="btnDelete">Delete Program</button>
+        }
+      </div>
+    }
+
+  </form>
+
+</div>
+
+@section PostScriptContent {
+
+  <script type="text/javascript">
+    (function($) {
+
+      var btnUpdate, formSettings, isNewProgram, disableDelete
+
+      $(document).ready(function() {
+
+        btnUpdate = $("#btnUpdate");
+        btnDelete = $("#btnDelete");
+        formSettings = $("#formSettings");
+        isNewProgram = @(Model.IsNewProgram ? "true" : "false");
+        disableDelete = @(Model.DisableDelete ? "true" : "false");
+
+        btnUpdate.click(UpdateProgram);
+        btnDelete.click(DeleteProgram);
+
+        if (isNewProgram) formSettings.find("input:text:not(:disabled):first").trigger("focus");
+
+      }); // ready.
+
+      function DeleteProgram() {
+
+        if (disableDelete) {
+          common_InfoDialog("@Integral.Web.PortalSite.Pages_Albert.ProgramSettings.DisableDeleteMsg");
+          return;
+        }
+
+        if (!confirm("Delete this Program?")) return;
+
+        AjaxSubmit({
+          form: formSettings,
+          action: "delete"
+        });
+      }
+
+      function UpdateProgram() {
+
+        AjaxSubmit({
+          form: formSettings,
+          action: "update"
+        });
+      }
+
+    })(jQuery);
+  </script>
+
+}
