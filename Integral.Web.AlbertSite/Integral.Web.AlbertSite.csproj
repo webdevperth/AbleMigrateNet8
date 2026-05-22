@@ -84,6 +84,7 @@
     <Compile Include="AppCode\IntercomHelpers.cs" />
     <Compile Include="AppCode\AmplitudeBootstrap.cs" />
     <Compile Include="AppCode\AmplitudeHelper.cs" />
+    <Compile Include="AppCode\AuthInitialization.cs" />
     <Compile Include="AppCode\LayoutModel.cs" />
     <Compile Include="AppCode\OrgReportContext.cs" />
     <Compile Include="AppCode\Coachee360Context.cs" />

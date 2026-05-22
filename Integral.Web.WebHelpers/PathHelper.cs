@@ -836,10 +836,10 @@ namespace Integral.Web {
     }
 
     public static class Endpoints {
-      public static string JSLogger() => $"{UrlPath.Ajax}jslogger.aspx";
-      public static string ProjectsForCompanyId(int? companyId) => $"{UrlPath.Ajax}AbleProjects.aspx?{AbleUrlKeys.CompanyId}={companyId.ToStringOrEmptyIfNull()}";
-      public static string ProgramsForCompanyId(int? companyId) => $"{UrlPath.Ajax}AblePrograms.aspx?{AbleUrlKeys.CompanyId}={companyId.ToStringOrEmptyIfNull()}";
-      public static string SetUserRole() => $"{UrlPath.Ajax}SetUserRole.aspx";
+      public static string JSLogger() => $"{UrlPath.Ajax}jslogger";
+      public static string ProjectsForCompanyId(int? companyId) => $"{UrlPath.Ajax}AbleProjects?{AbleUrlKeys.CompanyId}={companyId.ToStringOrEmptyIfNull()}";
+      public static string ProgramsForCompanyId(int? companyId) => $"{UrlPath.Ajax}AblePrograms?{AbleUrlKeys.CompanyId}={companyId.ToStringOrEmptyIfNull()}";
+      public static string SetUserRole() => $"{UrlPath.Ajax}SetUserRole";
     }
 
     public static class PublicEndpoints {

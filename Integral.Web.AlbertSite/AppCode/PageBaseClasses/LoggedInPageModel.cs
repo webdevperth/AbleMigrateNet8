@@ -69,27 +69,13 @@ namespace Integral.Web.PortalSite.AppCode.PageBaseClasses {
       // For convenience at the page level, set PageAjaxAction string from the commonly-used "AjaxAction" form field.
       if (SystemWeb.IsHttpPost) PageAjaxAction = WebHelper.GetAjaxaction();
 
-      // If not logged in, perform second check for a report-specific login.
-      if (userInfo == null) {
-        // Url needs to contain the coachee Guid that is requesting the report.
-
-        if (Guid.TryParse(WebHelper.GetQueryStringValue(PathHelper.AbleUrlKeys.CoacheeGuid, ""), out Guid coacheeGuid)) {
-          if (SessionHelper.PublicReport.GetIsLoggedIn(coacheeGuid)) {
-            return; // Coachee has logged into their public report, nothing more to check.
-          }
-        }
-
-      } else if (userInfo.IsSoftDeleted) {
-        // If user is deleted, log them out.
-
-        SessionHelper.LogOut();
-        SetRedirect(PathHelper.WebRoot);
+      if (!AuthInitialization.RequireLoggedInUser()) {
+        // Response already set (redirect / ajax session-expired payload).
         return;
       }
 
-      if (SessionHelper.RedirectIfNotLoggedIn(PathHelper.WebRoot)) {
-        return;
-      }
+      // Public-report coachees (no full userInfo) skip page-level access checks.
+      if (userInfo == null) return;
 
       // FallbackUrl first set here as the user's "landing page" after login.
       // In different app areas (project, program, etc) the user can visit,

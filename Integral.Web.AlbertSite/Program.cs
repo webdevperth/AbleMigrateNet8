@@ -5,6 +5,7 @@ using Integral.Integrations.Amplitude;
 using Integral.Integrations.Intercom;
 using Integral.Web;
 using Integral.Web.PortalSite.AppCode;
+using Integral.Web.PortalSite.Endpoints;
 using Integral.Web.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -147,6 +148,9 @@ app.Use(async (context, next) => {
 });
 
 app.MapRazorPages();
+
+AjaxEndpoints.MapEndpoints(app);
+ApiEndpoints.MapEndpoints(app);
 
 app.MapGet("/health", () => "ok");
 
