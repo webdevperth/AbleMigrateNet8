@@ -1,0 +1,22 @@
+@page "/error/404"
+@model Integral.Web.PortalSite.Pages_Albert.Error.NotFound
+@{ Layout = "_Layout_Public"; }
+
+<div class="onboarding-wrapper">
+
+  @Html.Raw(WebHelper.GetLoggedOutAbleLogo())
+
+  <div class="content-box">
+
+    <div class="content-box-form">
+
+      <h3>Page not found</h3>
+
+      <p>The page you requested could not be found.</p>
+
+      <p><a href="@PathHelper.WebRoot">Return to the home page</a></p>
+
+    </div>
+  </div>
+
+</div>
