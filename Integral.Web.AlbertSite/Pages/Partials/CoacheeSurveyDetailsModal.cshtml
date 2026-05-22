@@ -1,0 +1,364 @@
+@page "/Partials/CoacheeSurveyDetailsModal"
+@model Integral.Web.PortalSite.Page_Partials.CoacheeSurveyDetailsModal
+@{ Layout = null; }
+
+@if (Model.Content_ShowNoSurvey) {
+
+  <text>No information found for this survey.</text>
+
+} else {
+
+  <div class="coacheeSurvey form-horizontal half-height">
+
+    @if (Model.SurveyInfo != null) {
+
+      if (Model.SurveyInfo.SurveyTypeCode == ConfigHelper.SurveyTypeCodes.IOS) {
+
+        @* IOS Survey UI *@
+
+        <div class="alert alert-primary" role="alert">IOS Survey results are anonymous and reported only in aggregate.</div>
+
+        @Html.Raw(WebHelper.GetTextDisplayRow("Survey Name:", 8, $"{Model.SurveyInfo.SurveyName.HTMLEncode()}"))
+
+        if (Model.SurveyInfo.GetSendDateUtc() > DateTime.UtcNow) {
+          @Html.Raw(WebHelper.GetTextDisplayRow("Scheduled to Send:", 8, WebHelper.DisplayDate(SessionHelper.UtcToUserTime(Model.SurveyInfo.GetSendDateUtc()))))
+        } else {
+          @Html.Raw(WebHelper.GetTextDisplayRow("Sent On:", 8, WebHelper.DisplayDate(SessionHelper.UtcToUserTime(Model.SurveyInfo.GetSendDateUtc()))))
+        }
+
+        if (!Model.SurveyInfo.IsRatersOnly) {
+          @Html.Raw(WebHelper.GetTextDisplayRow(
+              "Close Date:", 8,
+              WebHelper.GetSpan("txtCloseDateSelf", "", Model.GetCloseDateSelf()) +
+              (!Model.CanChangeCloseDates
+                ? ""
+                : WebHelper.GetButton("Change", "btnChangeCloseDateSelf", false, WebHelper.ButtonStyle.Primary, WebHelper.ButtonSize.XSmall, "btnChange ml10"))
+          ))
+        }
+
+        if (Model.CoacheePartInfo != null) {
+          @Html.Raw(WebHelper.GetTextDisplayRow("Participant Completed:", 8, "<b>" + WebHelper.DisplayDate(SessionHelper.UtcToUserTime(Model.CoacheePartInfo.CompletedUTC), "Not completed.") + "</b>"))
+        }
+
+        <div class="mt20 flex gap15 flex-align-center">
+          @{
+            if (Model.CanEditSurveyInJarvis) {
+              @Html.Raw(WebHelper.GetLink(new WebHelper.LinkInfo() {
+                InnerHtml = "Admin: Edit in Jarvis",
+                Href = PathHelper.JarvisPages.OrgParticipantsUrl(Model.SurveyInfo.SurveyId, Model.SurveyInfo.IntakeNumber),
+                NewTab = true,
+                ButtonStyle = WebHelper.ButtonStyle.Primary,
+                ButtonSize = WebHelper.ButtonSize.Small
+              }));
+            }
+            if (SessionHelper.AppAccess.Surveys.CanViewOrgReportButtons()) {
+              bool orgReportEnabled = Model.CanViewSurveyReports && Model.ReportsAvailable;
+              @Html.Raw(WebHelper.GetLink(new WebHelper.LinkInfo() {
+                InnerHtml = "Client IOS Report",
+                Href = !orgReportEnabled ? "#" : PathHelper.Reports.OrganisationIOSReports(Model.SurveyInfo),
+                ButtonStyle = WebHelper.ButtonStyle.Primary,
+                ButtonSize = WebHelper.ButtonSize.Small,
+                Disabled = !orgReportEnabled
+              }));
+            }
+          }
+        </div>
+
+      } else {
+
+        @* Non-IOS Survey UI *@
+
+        if (SessionHelper.IsUserRoleLeader && Model.SurveyInfo.FoundParticipantBrief?.CanLeaderView360Report == false) {
+          <div class="alert alert-primary" role="alert">Survey results will be available once reviewed.</div>
+        }
+
+        @Html.Raw(WebHelper.GetTextDisplayRow("Survey Name:", 8, $"{Model.SurveyInfo.SurveyName.HTMLEncode()}"))
+
+        if (Model.SurveyInfo.GetSendDateUtc() > DateTime.UtcNow) {
+          @Html.Raw(WebHelper.GetTextDisplayRow("Scheduled to Send:", 8, WebHelper.DisplayDate(SessionHelper.UtcToUserTime(Model.SurveyInfo.GetSendDateUtc()))))
+        } else {
+          @Html.Raw(WebHelper.GetTextDisplayRow("Sent On:", 8, WebHelper.DisplayDate(SessionHelper.UtcToUserTime(Model.SurveyInfo.GetSendDateUtc()))))
+        }
+
+        if (!Model.SurveyInfo.IsRatersOnly) {
+          @Html.Raw(WebHelper.GetTextDisplayRow(
+              "Close Date (Self):", 8,
+              WebHelper.GetSpan("txtCloseDateSelf", "", Model.GetCloseDateSelf()) +
+              (!Model.CanChangeCloseDates
+                ? ""
+                : WebHelper.GetButton("Change", "btnChangeCloseDateSelf", false, WebHelper.ButtonStyle.Primary, WebHelper.ButtonSize.XSmall, "btnChange ml10"))
+          ))
+        }
+
+        if (!Model.SurveyInfo.IsSelfOnly) {
+          @Html.Raw(WebHelper.GetTextDisplayRow(
+              "Close Date (Raters):", 8,
+              WebHelper.GetSpan("txtCloseDateRaters", "", Model.GetCloseDateRaters()) +
+              (!Model.CanChangeCloseDates
+                ? ""
+                : WebHelper.GetButton("Change", "btnChangeCloseDateRaters", false, WebHelper.ButtonStyle.Primary, WebHelper.ButtonSize.XSmall, "btnChange ml10"))
+          ))
+        }
+
+        if (Model.CoacheePartInfo != null) {
+          @Html.Raw(WebHelper.GetTextDisplayRow("Participant Completed:", 8, "<b>" + WebHelper.DisplayDate(SessionHelper.UtcToUserTime(Model.CoacheePartInfo.CompletedUTC), "Not completed.") + "</b>"))
+          @Html.Raw(WebHelper.GetTextDisplayRow("Raters Completed:", 8, Model.CoacheePartInfo.RatersCompleted + " of " + Model.CoacheePartInfo.RatersNotDeclined))
+          @Html.Raw(WebHelper.GetTextDisplayRow("Report Sent:", WebHelper.DisplayDate_UtcToUserTime(Model.CoacheePartInfo.ReportSentUtc, "-")))
+        }
+
+        <div class="mt20 flex gap15 flex-align-center">
+          @if (Model.ReportsAvailable) {
+            if (SessionHelper.AppAccess.Surveys.CanViewReportButtons()) {
+              <div class="flex-inline">
+                <button class="btn btn-sm btn-primary btnSendReports @(Model.CanEmailSurveyReports ? "" : "disabled")" id="btnSendReports">Email Reports</button>
+                @Html.Raw(Model.CanEmailSurveyReports ? "" : WebHelper.GetIconTooltip(WebHelper.ActionButtonTypeEnum.info, "The report will be available and able to be sent once it has been closed.", "", "mr15 mt5"))
+              </div>
+              if (Model.SurveyInfo.FoundParticipantBrief?.IsReportAvailable_Online == true) {
+                <a class="btn btn-sm btn-primary" href="@PathHelper.Reports.CoacheeSurvey(Model.CoacheeInfo, Model.SurveyInfo)">Coachee Online Report</a>
+              }
+            }
+            if (Model.SurveyInfo.FoundParticipantBrief?.IsReportAvailable_PDF == true) {
+              <a class="btn btn-sm btn-primary" href="@PathHelper.Reports.ParticipantPDFReport(Model.SurveyInfo.ReportType, Model.SurveyInfo.SurveyId, Model.SurveyInfo.FoundParticipantBrief.PartUniqueId)" target="_blank">Coachee PDF Report</a>
+            }
+          }
+          @if (Model.CanEditSurveyInJarvis) {
+            <a class="btn btn-sm btn-primary" href="@PathHelper.JarvisPages.ParticipantsUrl(Model.SurveyInfo.SurveyId, Model.SurveyInfo.IntakeNumber)" target="_blank">Admin: Edit in Jarvis</a>
+          }
+          @if (Model.CanInviteRaters) {
+            <a class="btn btn-sm btn-primary" href="@PathHelper.Pages.ParticipantRaters(Model.SurveyInfo.SurveyUID, Model.SurveyInfo.FoundParticipantBrief.PartUniqueId)" target="_blank">Invite Raters</a>
+          }
+        </div>
+
+        <div class="row-info">
+          <div class="surveyContent">
+            <ul class="nav nav-tabs">
+              @if (Model.CanViewRaters) {
+                <li role="presentation" class="@(Model.ActiveTab == Integral.Web.PortalSite.Page_Partials.CoacheeSurveyDetailsModal.ActiveTabEnum.Responses ? "" : "active")">
+                  <a class="nav-link" id="raters-tab" data-toggle="tab" href="#raters-panel" role="tab" aria-controls="raters-panel" aria-selected="true">Raters (if applicable)</a>
+                </li>
+              }
+              <li role="presentation" class="@(Model.ActiveTab == Integral.Web.PortalSite.Page_Partials.CoacheeSurveyDetailsModal.ActiveTabEnum.Responses ? "active" : "")">
+                <a class="nav-link" id="responses-tab" data-toggle="tab" href="#responses-panel" role="tab" aria-controls="responses-panel" aria-selected="false">Responses</a>
+              </li>
+            </ul>
+
+            <div class="tab-content" id="surveyDataTContent">
+              @if (Model.CanViewRaters) {
+                <div class="tab-pane fade in @(Model.ActiveTab == Integral.Web.PortalSite.Page_Partials.CoacheeSurveyDetailsModal.ActiveTabEnum.Responses ? "" : "active")" id="raters-panel" role="tabpanel" aria-labelledby="raters-tab">
+                  @if (Model.RaterList.Participants.Count == 0 || Model.RaterList.Participants == null) {
+
+                    @Html.Raw(WebHelper.GetNoRecordsBadge())
+
+                  } else {
+                    <div class="table-responsive width-auto">
+                    <table class="tblRaters table">
+                      <thead>
+                        <tr>
+                          <th class="type-fullname">Name</th>
+                          <th class="type-email">Email</th>
+                          <th class="type-rater-completed">Completed</th>
+                          <th class="type-date">Last Reminder</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        @foreach (var raterListItem in Model.RaterList.Participants) {
+                          <tr>
+                            <td class="type-fullname">@raterListItem.FullName</td>
+                            <td class="type-email">@raterListItem.Email</td>
+                            <td class="type-rater-completed">@Html.Raw(raterListItem.CompletedUTC == null
+                                    ? (@"No&nbsp; <a class=""survey-status-view-survey"" target=""_blank"" href=""" + PathHelper.Pages.Survey(Model.SurveyInfo, raterListItem.PartUID) + @""">" + WebHelper.Icon.Survey + "</a>")
+                                    : ("Yes " + WebHelper.Icon.CheckCircle.AddClass("icon-color-green")))</td>
+                            <td class="type-date">@Html.Raw(raterListItem.CompletedUTC != null ? "" :
+                                                        (raterListItem.LastReminderUTC != null
+                                                        ? WebHelper.DisplayDate(raterListItem.LastReminderUTC)
+                                                        : WebHelper.DisplayDate(raterListItem.CreatedUTC)))</td>
+                          </tr>
+                        }
+                      </tbody>
+                      @if (Model.SurveyInfo?.IsClosed == false && Model.RaterList.Participants.Exists(p => p.CompletedUTC == null)) {
+                        <tfoot>
+                          <tr>
+                            <td colspan="2">&nbsp;</td>
+                            <td>
+                              <button type="button" class="btn btn-primary btn-sm btnSendReminders" id="btnSendReminders">Send Reminders</button>
+                            </td>
+                          </tr>
+                        </tfoot>
+                      }
+                    </table>
+                    </div>
+                  }
+                </div>
+              }
+
+              <div class="tab-pane fade in @(Model.ActiveTab == Integral.Web.PortalSite.Page_Partials.CoacheeSurveyDetailsModal.ActiveTabEnum.Responses ? "active" : "")" id="responses-panel" role="tabpanel" aria-labelledby="responses-tab">
+
+                @if (SessionHelper.AppAccess.Surveys.CanViewResponses(Model.ProgramInfo, Model.CoacheeInfo, Model.SurveyInfo)) {
+
+                  <div class="questionlist">
+                    @foreach (var questionListItem in Model.QuestionList.Questions) {
+                      Model.SetQuestionListItem(questionListItem);
+                      <div class="qnrow @Model.qnRowClass">
+                        <div class="qnum">@Html.Raw(Model.questionNumber)</div>
+                        <div class="qnbody">
+                          <div class="qtxt @Model.questionTextClass"><div class="qansnum @Model.answerNumericClass">@Html.Raw(Model.answerNumeric)</div>
+                            @questionListItem.QuestionTextSelf.</div>
+                          <div class="qanstxt @Model.answerTextClass">@Html.Raw(Model.answerText)</div>
+                        </div>
+                      </div>
+                    }
+                  </div>
+
+                }
+
+              </div>
+            </div>
+
+            <div id="modalSendReports" class="hidden">
+              <form id="formSendReports" method="post" action="#">
+                @if (Model.SurveyInfo.FoundParticipantBrief?.IsReportAvailable_Online == true) {
+                  @Html.Raw(WebHelper.CustomCheckBox(Integral.Web.PortalSite.Page_Partials.CoacheeSurveyDetailsModal.FormFields.SendWebReport, "1", Model.DefaultSendOnlineReport, true, "Send Online Report Link"))
+                }
+                @if (Model.SurveyInfo.FoundParticipantBrief?.IsReportAvailable_PDF == true
+                    && Model.SurveyInfo.SurveyType != DbHelper.AlbertSurveys.SurveyTypeEnum.Standard360) {
+                  @Html.Raw(WebHelper.CustomCheckBox(Integral.Web.PortalSite.Page_Partials.CoacheeSurveyDetailsModal.FormFields.SendPDFReport, "1", Model.DefaultSendPDFReport, "Send PDF Report Link"))
+                }
+              </form>
+            </div>
+
+          </div>
+        </div>
+
+      }
+
+    }
+
+  </div>
+
+}
+
+<script>
+
+  // Closure for Surveys Tab.
+  (function ($) {
+
+    var incompleteRaters = toDecimalInt("@Model.IncompleteRaters", 0);
+    var btnSendReminders, btnChangeCloseDateSelf, btnChangeCloseDateRaters;
+    var btnSendReports, modalSendReports, formSendReports;
+
+    $(document).ready(function () {
+
+      @if (!Model.IsNewCoachee) {
+        <text>
+
+        btnSendReminders = $("#btnSendReminders");
+        btnChangeCloseDateSelf = $("#btnChangeCloseDateSelf");
+        btnChangeCloseDateRaters = $("#btnChangeCloseDateRaters");
+        btnSendReports = $("#btnSendReports");
+        modalSendReports = $("#modalSendReports");
+        formSendReports = $("#formSendReports");
+
+        if (incompleteRaters > 0 && btnSendReminders.length == 1) {
+          btnSendReminders.text("Send " + incompleteRaters + " Reminder" + (incompleteRaters > 1 ? "s" : ""));
+          btnSendReminders.show();
+          btnSendReminders.click(SendReminders);
+        }
+
+        btnChangeCloseDateSelf
+          .datepicker({ format: "dd/mm/yyyy", title: "Select Self Close Date", autoclose: true })
+          .datepicker("update", "@Model.GetDatePickerCloseDateSelf()")
+          .on("changeDate", function (e) {
+            UpdateCloseDate(true, e.date);
+          })
+          .click(function (e) {
+            $(this).datepicker("show");
+          });
+
+        btnChangeCloseDateRaters
+          .datepicker({ format: "dd/mm/yyyy", title: "Select Rater Close Date", autoclose: true })
+          .datepicker("update", "@Model.GetDatePickerCloseDateRaters()")
+          .on("changeDate", function (e) {
+            UpdateCloseDate(false, e.date);
+          })
+          .click(function (e) {
+            $(this).datepicker("show");
+          });
+
+        btnSendReports.on("click", function () {
+          var formParent = modalSendReports.parent();
+          BootstrapDialog.show({
+            title: "Email Report Links",
+            message: "",
+            buttons: [
+              {
+                label: 'Cancel',
+                cssClass: 'btn-secondary',
+                action: function (dialog) { dialog.close(); }
+              },
+              {
+                label: 'Send Now',
+                cssClass: 'btn-primary',
+                action: function (dialog) { dialog.close(); SendReports(); }
+              }
+            ],
+            onshow: function (dialog) {
+              modalSendReports.appendTo(dialog.getModalBody().find(".bootstrap-dialog-message"));
+              modalSendReports.show();
+            },
+            onhide: function (dialog) {
+              modalSendReports.hide().appendTo(formParent);
+            }
+          });
+        });
+
+        </text>
+      }
+
+    }); // Doc ready.
+
+    function SendReports() {
+
+      AjaxSubmit({
+        form: formSendReports,
+        url: "@PathHelper.Partials.CoacheeSurveyDetailsModal(Model.CoacheeInfo.CoacheeId, WebHelper.GetQueryStringValue(PathHelper.AbleUrlKeys.SurveyUId))",
+        action: "@Integral.Web.PortalSite.Page_Partials.CoacheeSurveyDetailsModal.AjaxAction.SendReports"
+      });
+    }
+
+    function UpdateCloseDate(isSelf, closeDate) {
+
+      var ajaxAction, btnChangeCloseDate, formDateKey
+
+      if (isSelf) {
+        ajaxAction = "@Integral.Web.PortalSite.Page_Partials.CoacheeSurveyDetailsModal.AjaxAction.UpdateCloseDateSelf";
+        formDateKey = "@Integral.Web.PortalSite.Page_Partials.CoacheeSurveyDetailsModal.FormFields.CloseDateSelf";
+        btnChangeCloseDate = btnChangeCloseDateSelf;
+      } else {
+        ajaxAction = "@Integral.Web.PortalSite.Page_Partials.CoacheeSurveyDetailsModal.AjaxAction.UpdateCloseDateRaters";
+        formDateKey = "@Integral.Web.PortalSite.Page_Partials.CoacheeSurveyDetailsModal.FormFields.CloseDateRaters";
+        btnChangeCloseDate = btnChangeCloseDateRaters;
+      }
+
+      var submitData = { };
+      submitData[formDateKey] = moment(closeDate).format("@WebHelper.DATE_OUTPUT_FORMAT_MOMENTJS").toString();
+
+      AjaxSubmit({
+        url: "@PathHelper.Partials.CoacheeSurveyDetailsModal(Model.CoacheeInfo.CoacheeId, WebHelper.GetQueryStringValue(PathHelper.AbleUrlKeys.SurveyUId))",
+        action: ajaxAction,
+        data: submitData
+      });
+    }
+
+    function SendReminders() {
+
+      if (incompleteRaters == 0) return;
+
+      AjaxSubmit({
+        url: "@SystemWeb.RequestRawUrl",
+        action: "@Integral.Web.PortalSite.Page_Partials.CoacheeSurveyDetailsModal.AjaxAction.SendReminders"
+      });
+    }
+
+  })(jQuery);
+
+</script>

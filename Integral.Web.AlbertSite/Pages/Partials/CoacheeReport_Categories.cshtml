@@ -1,0 +1,70 @@
+@page "/Partials/CoacheeReport_Categories"
+@model Integral.Web.PortalSite.Page_Partials.CoacheeReport_Categories
+@{ Layout = null; }
+
+@*-- Note requires reports.css --*@
+
+<div class="ctlCA360FT">
+
+  <div class="table-responsive">
+
+    <table class="table tblScores">
+      <thead>
+        <tr>
+          <td class="cTitle minw250">Overall Leadership Indicators</td>
+          <td class="cProg minw250">
+            @(Model.HasPreSurvey ? $"Pre-Post" : $"Comparison to {Integral.Web.PortalSite.Reports.OrgReports.Benchmark_Display_Text.UCaseFirstChar()}")
+          </td>
+          <td class="cFeedb minw200">Your Feedback</td>
+        </tr>
+      </thead>
+      <tbody>
+
+        @foreach (var category in Model.Categories) {
+
+          <tr class="rowSkill rowid_@(category.CategoryHeadingId) @Model.GetBenchComparisonRowClass(category)">
+            <td class="cTitle">@category.CategoryHeading.HTMLEncode()</td>
+            <td class="cProg">
+              <div class="progPts">
+                @if (Model.HasPreSurvey) {
+                  <p>@Model.GetPrePostComparisonText(category.SurveySelfScore, category.PreSurveySelfScore)</p>
+                  <p class="progPtsPre">@Model.GetPrePostComparisonText(category.SurveyRaterScore, category.PreSurveyRaterScore)</p>
+                } else {
+                  @Model.GetBenchComparisonText(category)
+                }
+              </div>
+            </td>
+            <td class="cFeedb">
+              <div class="scoreBars" data-tooltip="<b>Rater Result</b><br>Compared to Self: @(category.SurveyRaterScore - category.SurveySelfScore)">
+
+                @Html.Raw(WebHelper.GetSurveyViewerScoreBar(WebHelper.SurveyViewerScoreBarType.Self, Model.ScoreMinValue, Model.ScoreMaxValue,
+                                                      "Self", category.SurveySelfScore, Model.NormDisplayName, Model.Hide360ReportNorms ? null : category.NormSelfScore))
+
+                @if (Model.RaterCount > 0) {
+                  @Html.Raw(WebHelper.GetSurveyViewerScoreBar(WebHelper.SurveyViewerScoreBarType.Rater, Model.ScoreMinValue, Model.ScoreMaxValue,
+                                                      "Rater", category.SurveyRaterScore, Model.NormDisplayName, Model.Hide360ReportNorms ? null : category.NormRaterScore, "mt15"))
+                }
+              </div>
+            </td>
+          </tr>
+        }
+
+      </tbody>
+    </table>
+  </div>
+</div>@*-- ctlCA360FT --*@
+
+
+<script type="text/javascript">
+
+  (function ($) {
+
+    $(document).ready(function () {
+      new jBox('Tooltip', {
+        attach: '.ctlCA360FT .barDot[title]', position: { y: 'top' }
+      });
+    });
+
+  })(jQuery);
+
+</script>

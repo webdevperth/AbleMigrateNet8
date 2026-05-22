@@ -99,6 +99,12 @@
     <Compile Include="AppCode\PageBaseClasses\QuotePageBase.cs" />
     <Compile Include="AppCode\PageBaseClasses\ModulePageBase.cs" />
     <Compile Include="AppCode\PageBaseClasses\SettingsPageBase.cs" />
+    <Compile Include="AppCode\PageBaseClasses\CoacheeReportPartialBase.cs" />
+    <Compile Include="AppCode\PageBaseClasses\CompanyReportPartialBase.cs" />
+    <Compile Include="AppCode\PageBaseClasses\SkillsViewerPartialBase.cs" />
+    <Compile Include="AppCode\PageBaseClasses\SurveyViewerPartialBase.cs" />
+    <Compile Include="AppCode\ReportHelper.HeatMap.cs" />
+    <Compile Include="AppCode\StripeHelper.cs" />
     <Compile Include="AppCode\ApplicationInsightsExtensions.cs" />
     <Compile Include="AppCode\IntercomEventBuilderExtensions.cs" />
   </ItemGroup>

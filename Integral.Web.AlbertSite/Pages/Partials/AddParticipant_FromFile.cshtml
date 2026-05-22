@@ -1,0 +1,379 @@
+@page "/Partials/AddParticipant_FromFile"
+@model Integral.Web.PortalSite.Page_Partials.AddParticipant_FromFile
+@{ Layout = null; }
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.3/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+
+<style>
+  .process-step .btn:focus{outline:none}
+  .process{display:table;width:100%;position:relative}
+  .process-row{display:table-row}
+  .process-step button[disabled]{opacity:1 !important;filter: alpha(opacity=100) !important}
+  .process-row:before{top:40px;bottom:0;position:absolute;content:" ";width:100%;height:1px;background-color:#ccc;z-order:0}
+  .process-step{display:table-cell;text-align:center;position:relative}
+  .process-step .inactive-step { background-color: #634cff; border: 1px solid transparent; color: #fff; }
+  .process-panel .active-step { background-color: #2d19b6; color: #fff; }
+  .step-panel-header{width:50px;height:50px;text-align:center;font-size:27px;border-radius:50%; display: inline-block; pointer-events: none;}
+  .process-row::before { top: 27px !important; }
+  .step-panel-header i { padding-top: 4px; }
+  #fileInput { pointer-events:all; }
+  .ui-sortable { cursor: move; }
+</style>
+
+<div class="container-fluid process-panel">
+
+  <div>
+    @Html.Raw(Model.GetAssignationInfo())
+  </div>
+
+  <div class="row">
+
+    <div class="process">
+      <div class="process-row nav nav-tabs">
+        <div class="process-step">
+          <div class="active-step step-panel-header" data-toggle="tab" href="#menuInstructions"><i class="fa fa-info"></i></div>
+        </div>
+        <div class="process-step">
+          <div class="inactive-step step-panel-header" data-toggle="tab" href="#menuFile"><i class="fa fa-file"></i></div>
+        </div>
+        <div class="process-step">
+          <div class="inactive-step step-panel-header" data-toggle="tab" href="#menuColumns"><i class="fa fa-cogs"></i></div>
+        </div>
+        <div class="process-step">
+          <div class="inactive-step step-panel-header" data-toggle="tab" href="#menuReview"><i class="fa fa-check"></i></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tab-content">
+
+      <div id="menuInstructions" class="tab-pane fade active in">
+        <h3>Instructions:</h3>
+        <p>1. <b>Upload file:</b></p>
+        <ul class="mt5 mb15">
+          <li>Select a CSV/XLSX/XLS file containing participant information.</li>
+          <li>Ensure the file includes mandatory fields: First Name, Last Name, and Email.</li>
+          <li>Optional field: Phone number.</li>
+          <li>Be mindful that if the fields are not in the <b>correct format</b>, the participant will be <b>skipped.</b></li>
+          <li>Email format: <b>example@example.example</b>  - Phone number: <b>123456789</b></li>
+        </ul>
+        <p>2. <b>Select the column order:</b></p>
+        <ul class="mt5 mb15">
+          <li>Once the file is analyzed, select in what order the columns are to get the data correctly.</li>
+        </ul>
+        <p>3. <b>Review and confirm:</b></p>
+        <ul class="mt5 mb15">
+          <li>Review the data and confirm the import.</li>
+        </ul>
+        <p>4. <b>Errors found:</b></p>
+        <ul class="mt5 mb15">
+          <li>If any errors would be found in the process, the details will be prompted at the end.</li>
+        </ul>
+        <ul class="list-unstyled list-inline pull-right mt10 mb20">
+          <li><button type="button" class="btn btn-primary next-step">Start <i class="fa fa-chevron-right"></i></button></li>
+        </ul>
+      </div>
+
+      <div id="menuFile" class="tab-pane fade">
+        <h3>Upload file:</h3>
+        <p>Select a CSV/XLSX/XLS file containing participant information.</p>
+        <div class="mt20 mb20">
+          <input class="mb30" type="file" id="fileInput" accept=".csv, .xlsx, .xls">
+          @Html.Raw(WebHelper.CustomCheckBox(Integral.Web.PortalSite.Page_Partials.AddParticipant_FromFile.FormFields.FileHasHeader, "1", true, "File has header row.",
+              WebHelper.GetIconTooltip(WebHelper.ActionButtonTypeEnum.info, "Info:",
+              "If you uncheck this checkbox, that means that the file does not <br/>have a header and will count the first row as a participant data.")))
+        </div>
+        <ul class="list-unstyled list-inline pull-right">
+          <li><button type="button" class="btn inactive-step prev-step"><i class="fa fa-chevron-left"></i> Back</button></li>
+          <li><button type="button" class="btn btn-primary next-step btnSelectFile disabled">Next <i class="fa fa-chevron-right"></i></button></li>
+        </ul>
+      </div>
+
+      <div id="menuColumns" class="tab-pane fade">
+        <h3>Select column order:</h3>
+        <p>Select the order of the columns in the file to be in the following order:</p>
+        <div class="mt20 mb20 table-responsive" id="columnsFoundSelection"></div>
+        <ul class="list-unstyled list-inline pull-right">
+          <li><button type="button" class="btn inactive-step prev-step"><i class="fa fa-chevron-left"></i> Back</button></li>
+          <li><button type="button" class="btn btn-primary next-step btnSaveColumnOrder">Next <i class="fa fa-chevron-right"></i></button></li>
+        </ul>
+      </div>
+
+      <div id="menuReview" class="tab-pane fade">
+        <h3>Review and confirm:</h3>
+        <p class="mt20 mb10"><b>File name: </b><span class="lblFileName"></span></p>
+        <p class="lblHeader mb20"></p>
+        <p class="mt10 mb20"><b>Column order: </b><br />The top row is the expected order to analyze the file.<br />The second row is your selection in the previous tab.</p>
+        <div class="table-responsive mt10 mb20">
+          <table class="table table-bordered w100p">
+            <thead>
+              <tr>
+                <th class="align-center">First Name</th>
+                <th class="align-center">Last Name</th>
+                <th class="align-center">Email</th>
+                <th class="align-center colPhone">Phone Number</th>
+              </tr>
+            </thead>
+            <tbody class="lblColumns"></tbody>
+          </table>
+        </div>
+        <ul class="list-unstyled list-inline pull-right">
+          <li><button type="button" class="btn inactive-step prev-step"><i class="fa fa-chevron-left"></i> Back</button></li>
+          <li><button id="saveParticipants" type="button" class="btn btn-success"><i class="fa fa-check"></i> Add Participants</button></li>
+        </ul>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script type="text/javascript">
+  (function ($) {
+
+    var canSelectColums, orderedColumns, docHasHeader, fileName;
+    var btnSaveParticipants, chkDocHadHeader, fileInput;
+
+    $(document).ready(function () {
+
+      canSelectColums = true;
+      orderedColumns = [];
+      docHasHeader = true;
+      fileName = "";
+      btnSaveParticipants = $("#saveParticipants");
+      fileInput = $("#fileInput");
+      chkDocHadHeader = $("#chk_@(Integral.Web.PortalSite.Page_Partials.AddParticipant_FromFile.FormFields.FileHasHeader)_1");
+
+      // Switch panel on next or previous click
+      $('.next-step, .prev-step').on('click', function (e) {
+        var $activeTab = $('.tab-pane.active');
+
+        // Check if the click event originated from within the active tab
+        if ($(e.target).closest('.tab-pane').is($activeTab)) {
+          $('.step-panel-header.active-step').removeClass('active-step').addClass('inactive-step');
+
+          if ($(e.target).hasClass('next-step')) {
+            var nextTab = $activeTab.next('.tab-pane').attr('id');
+            $('[href="#' + nextTab + '"]').addClass('active-step').removeClass('inactive-step');
+            $('[href="#' + nextTab + '"]').tab('show');
+          } else {
+            var prevTab = $activeTab.prev('.tab-pane').attr('id');
+            $('[href="#' + prevTab + '"]').addClass('active-step').removeClass('inactive-step');
+            $('[href="#' + prevTab + '"]').tab('show');
+          }
+        }
+      });
+
+      // Analyze file
+      fileInput.change(CheckFile);
+      chkDocHadHeader.change(function () {
+        if (canSelectColums) {
+          fileInput.trigger('change'); // Re-analyze file if checkbox changed.
+        }
+      });
+
+      btnSaveParticipants.click(AddParticipantsWithFile);
+    });
+
+    function CheckFile(e) {
+      var file = e.target.files[0];
+      if (!file) return;
+
+      var reader = new FileReader();
+      reader.onload = function (e) {
+        fileName = file.name;
+        var extension = file.name.split('.').pop().toLowerCase();
+        if (extension === 'csv') {
+          parseCSV(e.target.result);
+        } else if (extension === 'xls' || extension === 'xlsx') {
+          parseExcel(e.target.result);
+        } else {
+          $('#columnsFoundSelection').html('Unsupported file format');
+        }
+      };
+      reader.readAsBinaryString(file);
+    }
+
+    function parseCSV(csvData) {
+      var parsedData = Papa.parse(csvData, { header: true });
+      displayColumns(parsedData.meta.fields);
+    }
+
+    function parseExcel(binaryData) {
+      var workbook = XLSX.read(binaryData, { type: 'binary' });
+      var firstSheetName = workbook.SheetNames[0];
+      var firstSheet = workbook.Sheets[firstSheetName];
+      var columnInfo = [];
+
+      if (!firstSheet || !firstSheet['!ref']) {
+        alert('The document is empty, select one with valid data.');
+        DisableFormsForSelection()
+        return;
+      } else {
+        $('.btnSaveColumnOrder').removeClass('disabled');
+      }
+
+      // Get range of the first row
+      var range = XLSX.utils.decode_range(firstSheet['!ref']);
+      for (var C = range.s.c; C <= range.e.c; ++C) {
+        var cellAddress = { c: C, r: range.s.r }; // Construct cell address
+        var cellRef = XLSX.utils.encode_cell(cellAddress); // Get cell reference
+        var cell = firstSheet[cellRef]; // Get cell object
+        if (cell && cell.t) {
+          columnInfo.push(cell.v); // Push cell value to column names array
+        }
+      }
+
+      docHasHeader = chkDocHadHeader.is(':checked');
+      displayColumns(columnInfo);
+    }
+
+    function displayColumns(columns) {
+
+      if (columns.length === 0) {
+        DisableFormsForSelection();
+        alert('The document is empty, select one with valid data.');
+        return;
+      }
+      if (columns.length > 4) {
+        DisableFormsForSelection();
+        alert('The document has more than 5 columns, select one with valid data.');
+        return;
+      }
+
+      canSelectColums = true;
+      $(".btnSelectFile").removeClass("disabled");
+
+      // Create the list of columns as example
+      var exampleList = '<ul class="list-group"><li class="list-group-item">FIRST NAME</li><li class="list-group-item">LAST NAME</li><li class="list-group-item">EMAIL</li>';
+      if (columns.length > 3) {
+        exampleList += '<li class="list-group-item colPhone">PHONE</li>';
+      }
+      exampleList += '</ul>';
+
+      // Create the list of columns found in the file to organize
+      var sortableList = '<ul class="list-group" id="sortableList">';
+      columns.forEach(function (column, index) {
+        sortableList += '<li class="list-group-item ">' + column + '<input type="hidden" name="columnIndex[]" value="' + index + '"></li>';
+      });
+      sortableList += '</ul>';
+
+      var tableHTML = '<table class="table"><tr><td class="align-center">EXPECTED ORDER</td><td class="align-center">COLUMN TO SORT</td></tr><tr><td>' + exampleList + '</td><td>' + sortableList + '</td></tr></table>';
+      $('#columnsFoundSelection').html(tableHTML);
+
+      // Make the columns sortable
+      $("#sortableList").sortable();
+      $("#sortableList").disableSelection();
+
+      // Show or hide the phone column
+      if (columns.length < 4) {
+        $('.colPhone').hide();
+      } else {
+        $('.colPhone').show();
+      }
+
+      // Trigger next step
+      $('.next-step').click();
+
+      // Save button click handler
+      $('.btnSaveColumnOrder').click(function () {
+
+        if (!canSelectColums) {
+          alert("You need to select a valid file first");
+          return;
+        }
+
+        orderedColumns = $('#sortableList li').map(function () {
+          var columnValue = $(this).text();
+          var columnIndex = $(this).find('input[type="hidden"]').val();
+          return { value: columnValue, index: columnIndex };
+        }).get();
+        GetReviewInfo();
+      });
+
+    }
+
+    function GetReviewInfo() {
+      $('.lblFileName').text(fileName);
+
+      if (docHasHeader) {
+        $('.lblHeader').html('The document <b>has a header</b>, so the info to register in the system starts <b>from the second row</b>');
+      } else {
+        $('.lblHeader').html('The document <b>does not have a header</b>, so the info to register in the system starts <b>from the first row</b>');
+      }
+
+      $('.lblColumns').html(''); // Empty table rows
+      var tblCols = "";
+      $.each(orderedColumns, function (index, column) {
+        tblCols += '<td class="align-center">' + column.value + '</td>';
+      });
+
+      $('.lblColumns').append('<tr>' + tblCols + '</tr>');
+    }
+
+    function DisableFormsForSelection() {
+      $(".btnSelectFile").addClass("disabled");
+      $('.btnSaveColumnOrder').addClass('disabled');
+      canSelectColums = false;
+      $('#columnsFoundSelection').html('');
+    }
+
+    function AddParticipantsWithFile() {
+      if (!canSelectColums) {
+        alert("You need to select a valid file first");
+        return;
+      }
+
+      AjaxSubmit({
+        url: "@PathHelper.CurrentUrl",
+        action: "@Integral.Web.PortalSite.Page_Partials.AddParticipant_FromFile.AjaxAction.StartAjaxSubmit",
+        onSuccess: function (jqXHR, data) {
+          PostFileToAnalyze();
+        },
+        onError: function (jqXHR, textStatus, errorThrown) {
+          common_InfoDialog("Failed to add participants, please try again later.");
+        },
+        onAlways: function (data_or_jqXHR, textStatus, jqXHR_or_errorThrown) { }
+      });
+    }
+
+    function PostFileToAnalyze() {
+
+      btnSaveParticipants.addClass('disabled');
+      var columnIndexesArray = orderedColumns.map(function (column) {
+        return parseInt(column.index);
+      });
+
+      $.ajax({
+        url: "@PathHelper.CurrentUrl",
+        action: "@Integral.Web.PortalSite.Page_Partials.AddParticipant_FromFile.AjaxAction.AddParticipantsWithFile",
+        data: {
+          "@Integral.Web.PortalSite.Page_Partials.AddParticipant_FromFile.FormFields.FileInput": $('#fileInput')[0].files[0],
+          "@Integral.Web.PortalSite.Page_Partials.AddParticipant_FromFile.FormFields.FileHasHeader": chkDocHadHeader.is(':checked') ? "1" : "0",
+          "@Integral.Web.PortalSite.Page_Partials.AddParticipant_FromFile.FormFields.ColumnIndexesArray": columnIndexesArray
+        },
+        processData: false,
+        contentType: false,
+        success: function (response) {
+          if (response.data) {
+            var resultMsg = response.data["@Integral.Web.PortalSite.Page_Partials.AddParticipant_FromFile.AjaxReturnData.ResultMsg"];
+
+            if (resultMsg) {
+              common_InfoDialog(resultMsg);
+            } else {
+              location.reload();
+            }
+          } else {
+            common_InfoDialog("Failed to add participants, please try again later.");
+          }
+        },
+        error: function (xhr, status, error) {
+          common_InfoDialog("Failed to add participants, please try again later.");
+        }
+      });
+      btnSaveParticipants.removeClass('disabled');
+    }
+
+  })(jQuery);
+
+</script>

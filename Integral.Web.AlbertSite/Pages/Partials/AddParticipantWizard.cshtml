@@ -1,0 +1,648 @@
+@page "/Partials/AddParticipantWizard"
+@model Integral.Web.PortalSite.Page_Partials.AddParticipantWizard
+@{ Layout = null; }
+
+<style>
+  @@media (min-width: 1140px) {
+    #addpaxwizard .tab-content { min-width: 750px; min-height: 280px; }
+  }
+
+  #addpaxwizard .btnGroup_CoachingType > .btn { line-height: 23px; }
+
+  .choose-plan-wrapper { display: flex; gap: 25px; justify-content: center; align-items: stretch; padding-top: 10px; }
+  .choose-plan-wrapper .plan-card { display:flex; flex-direction: column; gap: 25px; width: 260px; padding: 20px; border-radius: 15px;
+                                    box-shadow: 0 0 0px 3px #ddd; transition: box-shadow .4s; cursor: pointer; position: relative; }
+  .choose-plan-wrapper .plan-card > .card-top { flex: 1; }
+  .choose-plan-wrapper .plan-card > .card-bottom { flex: 0; padding: 3px 0; }
+  .choose-plan-wrapper .plan-card > .card-bottom > .seats-available { text-align: center; line-height: 25px; }
+  .choose-plan-wrapper .plan-card:has(input:disabled) { opacity: 0.6; pointer-events: none; cursor: not-allowed; }
+
+  .choose-plan-wrapper .plan-name { display: block; margin: 5px 0 0; font-family: 'heading',sans-serif; font-size: 17px; font-weight: 700; color: var(--heading-color); line-height: 1.4; min-height: 30px; }
+  .choose-plan-wrapper .plan-price { display: block; margin: 10px 0; font-family: 'heading',sans-serif; font-size: 22px; font-weight: 700; color: var(--heading-color); line-height: 1.4; }
+  .choose-plan-wrapper .plan-price-per { font-size: 16px; }
+  .choose-plan-wrapper .plan-includes { display: block; margin: 0 0 12px; font-size: 14px; font-weight: 700; line-height: 1.5; }
+  .choose-plan-wrapper .plan-feature-item { display: block; margin-left: 22px; margin-bottom: 8px; position: relative; font-weight: 600; letter-spacing: -0.3pt; }
+  .choose-plan-wrapper .plan-feature-item:before { content: "✓"; display: block; position: absolute; left: -25px; width: 20px; height: 20px;
+                                                background: #f0edff; border-radius: 50%; color: #634cff; font-size: 12px; text-align: center; line-height: 20px; }
+  .choose-plan-wrapper .plan-button { display: block; text-align: center; border: 1px solid #999; color: #5f30e2;
+                                      padding: 15px; border-radius: 0.5em; font-weight: bold; transition: 0.2s; }
+  .choose-plan-wrapper .plan-button:before { content: "Choose Plan"; }
+
+  .choose-plan-wrapper .plan-card:not(:has(input:checked)):hover { box-shadow: var(--box-hover-shadow); }
+  .choose-plan-wrapper .plan-card:has(input:checked) { box-shadow: 0 0 0px 5px var(--logo-color); }
+  .choose-plan-wrapper .plan-card:has(input:checked) .plan-button { background-color: #5f30e2; color: white; }
+
+  .choose-plan-wrapper .plan-card:has(.existing-plan) .plan-button { background-color: var(--sw-anchor-done-background-color); color: #fff; }
+  .choose-plan-wrapper .plan-card:has(.existing-plan) .plan-button:before { content: "Existing Plan"; }
+
+  .choose-plan-wrapper .plan-card:has(.required-plan):before { content: "Required Plan"; position: absolute; display: flex;
+    top: 0; left: 50%; transform: translate(-50%, -50%); background-color: #5F30E2; color: #fff; font-weight: bold;
+    padding: 0 30px; border-radius: 16px; line-height: 32px; white-space: nowrap; }
+
+  #addpaxwizard .plan-upgrade-notice { display: flex; gap: 10px; margin-top: 20px;
+                                       border: 1px solid #ddd; border-radius: 5px; padding: 10px; }
+  #addpaxwizard .plan-upgrade-notice .glyphicon { font-size: 1.2rem; color: var(--logo-color); }
+
+  #addpaxwizard .final-summary {
+    display: grid; grid-template-columns: auto 1fr; column-gap: 15px; align-items: center; row-gap: 15px;
+    font-size: 16px; margin: 30px 50px 0;
+  }
+  #addpaxwizard .final-summary > label + div { font-weight: var(--body-font-weight-bold); color: var(--body-bold-color); }
+  #addpaxwizard .final-summary > label + div .confirm-fee-note { font-weight: var(--body-font-weight-normal); color: var(--body-bold-color); }
+
+</style>
+
+<div id="addpaxwizard">
+
+  <form>
+    <input type="hidden" name="@PathHelper.FormKeys.AjaxAction" value="@Integral.Web.PortalSite.Page_Partials.AddParticipantWizard.FormModes.Validate" />
+  </form>
+
+  <ul class="nav nav-progress">
+    <li class="nav-item">
+      <a class="nav-link" href="#">
+        <div class="num">1</div>
+        <div class="num-title">Program</div>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="#">
+        <div class="num">2</div>
+        <div class="num-title">Participant</div>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="#">
+        <div class="num">3</div>
+        <div class="num-title">Features</div>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="#">
+        <div class="num">4</div>
+        <div class="num-title">Learner Plan</div>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="#">
+        <div class="num">5</div>
+        <div class="num-title">Finish</div>
+      </a>
+    </li>
+  </ul>
+
+  <div class="tab-content">
+
+    <div class="tab-pane" role="tabpanel">
+      <a class="tab-pane-anchor opacity0" tabindex="0" />
+      <form class="form-horizontal">
+
+        @Html.Raw(new WebHelper.Form.FormRow() {
+            LabelText = "Participant Name:",
+            ContentHtml = new WebHelper.Form.TextInputDual() {
+              Autofocus = true,
+              Input1Name = Integral.Web.PortalSite.Page_Partials.AddParticipantWizard.FormFields.PaxFirstName,
+              Input1Placeholder = "First Name",
+              Input2Name = Integral.Web.PortalSite.Page_Partials.AddParticipantWizard.FormFields.PaxLastName,
+              Input2Placeholder = "Last Name",
+            }.ToHtml()
+          }.ToHtml())
+
+        @Html.Raw(new WebHelper.Form.FormRow() {
+            LabelText = "Participant Email:",
+            ContentHtml = new WebHelper.Form.TextInput() {
+              InputName = Integral.Web.PortalSite.Page_Partials.AddParticipantWizard.FormFields.PaxEmail,
+              Placeholder = "someone@somewhere.com",
+            }.ToHtml()
+          }.ToHtml())
+
+        <hr />
+
+        @Html.Raw(new WebHelper.Form.FormRow() {
+            LabelText = "Client Company:",
+            ContentHtml = new WebHelper.Form.Select() {
+              InputName = Integral.Web.PortalSite.Page_Partials.AddParticipantWizard.FormFields.CompanyId,
+              Placeholder = "Select or Add Company",
+              Options = Model.GetCompanyOptions(),
+            }.ToHtml()
+          }.ToHtml())
+
+        @Html.Raw(new WebHelper.Form.FormRow() {
+            LabelText = "New Company Name:",
+            Hidden = true,
+            ContentHtml = new WebHelper.Form.TextInput() {
+              InputName = Integral.Web.PortalSite.Page_Partials.AddParticipantWizard.FormFields.CompanyName,
+            }.ToHtml()
+          }.ToHtml())
+
+        @Html.Raw(new WebHelper.Form.FormRow() {
+            LabelText = "Project:",
+            ContentHtml = new WebHelper.Form.Select() {
+              InputName = Integral.Web.PortalSite.Page_Partials.AddParticipantWizard.FormFields.ProjectJobNumber,
+              Placeholder = "Select or add Project",
+              IsReadOnly = true,
+              Options = new System.Collections.Generic.List<WebHelper.SelectOption>() { new WebHelper.SelectOption(PathHelper.AbleUrlValues.IdNew, "[Add New Project]") },
+            }.ToHtml()
+          }.ToHtml())
+
+        @Html.Raw(new WebHelper.Form.FormRow() {
+            LabelText = "New Project Name:",
+            Hidden = true,
+            ContentHtml = new WebHelper.Form.TextInput() {
+              InputName = Integral.Web.PortalSite.Page_Partials.AddParticipantWizard.FormFields.ProjectName
+            }.ToHtml()
+          }.ToHtml())
+
+        @Html.Raw(new WebHelper.Form.FormRow() {
+            LabelText = "Program:",
+            ContentHtml = new WebHelper.Form.Select() {
+              InputName = Integral.Web.PortalSite.Page_Partials.AddParticipantWizard.FormFields.ProgramJobId,
+              Placeholder = "Select or add Program",
+              IsReadOnly = true,
+              Options = new System.Collections.Generic.List<WebHelper.SelectOption>() { new WebHelper.SelectOption(PathHelper.AbleUrlValues.IdNew, "[Add New Program]") },
+            }.ToHtml()
+          }.ToHtml())
+
+        @Html.Raw(new WebHelper.Form.FormRow() {
+            LabelText = "New Program Name:",
+            Hidden = true,
+            ContentHtml = new WebHelper.Form.TextInput() {
+              InputName = Integral.Web.PortalSite.Page_Partials.AddParticipantWizard.FormFields.ProgramName
+            }.ToHtml()
+          }.ToHtml())
+
+      </form>
+    </div>
+
+    <div class="tab-pane" role="tabpanel">
+      <a class="tab-pane-anchor opacity0" tabindex="0" />
+      <form class="form-horizontal">
+
+        @Html.Raw(new WebHelper.Form.FormRow() {
+            LabelText = "On-Boarding Date:",
+            ContentHtml = new WebHelper.Form.DatePicker() {
+              InputName = Integral.Web.PortalSite.Page_Partials.AddParticipantWizard.FormFields.OnBoardingDate,
+              Value = DateTime.Now,
+              RightHtml = new WebHelper.Form.CheckBox() {
+                InputName = Integral.Web.PortalSite.Page_Partials.AddParticipantWizard.FormFields.SendWelcomeNow,
+                Autofocus = true,
+                Label = "<b>Send Welcome Email Now</b>",
+                LabelIsHtml = true,
+                LabelPosition = WebHelper.Form.CheckboxLabelPosition.After,
+                Classes = "ml20"
+              }.ToHtml()
+            }.ToHtml()
+          }.ToHtml())
+
+        <hr />
+
+        @Html.Raw(new WebHelper.Form.FormRow() {
+            LabelText = "Coaching Sessions:",
+            ContentHtml = new WebHelper.Form.ButtonGroup(Integral.Web.PortalSite.Page_Partials.AddParticipantWizard.FormFields.CoachingType, Model.GetCoachingSessionButtons(), null) {
+              Value = DbHelper.AlbertCoachingTypes.GetIntercomValue_NoCoaching(),
+              Classes = "w650"
+            }.ToHtml()
+          }.ToHtml())
+
+        @Html.Raw(new WebHelper.Form.FormRow() {
+            LabelText = "Number of Sessions:",
+            ContentHtml = new WebHelper.Form.TextInput() {
+              InputName = Integral.Web.PortalSite.Page_Partials.AddParticipantWizard.FormFields.SessionsAllocated,
+              WidthPreset = WebHelper.Form.ControlWidthPreset.SmallNumber,
+            }.ToHtml()
+          }.ToHtml())
+
+        @Html.Raw(new WebHelper.Form.FormRow() {
+            LabelText = "Assign Coach:",
+            ContentHtml = Model.GetCoachDropdown()
+          }.ToHtml())
+
+        @Html.Raw(new WebHelper.Form.FormRow() {
+            LabelText = "Meet Coach Date:",
+            ContentHtml = new WebHelper.Form.DatePicker() {
+              InputName = Integral.Web.PortalSite.Page_Partials.AddParticipantWizard.FormFields.MeetCoachDate,
+              Value = DateTime.Now,
+              RightHtml = new WebHelper.Form.CheckBox() {
+                InputName = Integral.Web.PortalSite.Page_Partials.AddParticipantWizard.FormFields.SendMeetCoachNow,
+                Label = "<b>Send Meet Coach Email Now</b>",
+                LabelIsHtml = true,
+                LabelPosition = WebHelper.Form.CheckboxLabelPosition.After,
+                Classes = "ml20"
+              }.ToHtml()
+            }.ToHtml()
+          }.ToHtml())
+
+      </form>
+    </div>
+
+    <div class="tab-pane" role="tabpanel">
+      <a class="tab-pane-anchor opacity0" tabindex="0" />
+      <form class="form-horizontal">
+
+        @Html.Raw(Model.GetFeatureCheckbox(Integral.Web.PortalSite.Page_Partials.AddParticipantWizard.PlanFeature.Nudges))
+        @Html.Raw(Model.GetFeatureCheckbox(Integral.Web.PortalSite.Page_Partials.AddParticipantWizard.PlanFeature.Pulse))
+        @Html.Raw(Model.GetFeatureCheckbox(Integral.Web.PortalSite.Page_Partials.AddParticipantWizard.PlanFeature.AICoaching))
+
+      </form>
+    </div>
+
+    <div class="tab-pane" role="tabpanel">
+      <a class="tab-pane-anchor opacity0" tabindex="0" />
+      <form class="form-horizontal">
+
+        <div class="choose-plan-wrapper">
+          @for (int i = 0; i < Model.AllSubscriptions.Count; i++) {
+            var prevSub = i == 0 ? null : Model.AllSubscriptions[i - 1];
+            @Html.Raw(WebHelper.PurchaseServices.GetLearnerPlanSelectionCard(
+              thisSub: Model.AllSubscriptions[i],
+              prevSub: prevSub,
+              orgSubItems: Model.OrgSubscriptionItems,
+              inputName: Integral.Web.PortalSite.Page_Partials.AddParticipantWizard.FormFields.SubscriptionGuid,
+              isSelected: false,
+              buttonText: string.Empty
+            ))
+          }
+        </div>
+
+      </form>
+    </div>
+
+    <div class="tab-pane" role="tabpanel">
+      <a class="tab-pane-anchor opacity0" tabindex="0" />
+
+      <div class="customHtml"></div>
+
+    </div>
+  </div>
+
+</div>
+
+<script>
+
+  $(function () {
+
+    AbleJS.Stripe.GetStripe(); // Preload stripe.js so its ready for the popup if needed.
+
+    const $wizard = $("#addpaxwizard");
+
+    $wizard.smartWizard({
+
+      selected: 0,
+      justified: true,
+      autoAdjustHeight: false,
+      theme: 'dots', // basic, arrows, square, round, dots
+      backButtonSupport: true,
+      enableUrlHash: false,
+      transition: {
+        animation: 'fade',
+        speed: '400',
+        easing: '',
+      },
+      toolbar: {
+        showNextButton: true, // show/hide a Next button
+        showPreviousButton: true, // show/hide a Previous button
+        position: 'bottom', // none/ top/ both bottom
+        extraHtml: `<button class="btn btn-secondary floatleft ml0" onclick="common_CloseDialog(this)" tabindex="-1">Cancel</button>`
+      },
+      anchor: {
+        enableNavigation: true, // Enable/Disable anchor navigation
+        enableNavigationAlways: false, // Activates all anchors clickable always
+        enableDoneState: true, // Add done state on visited steps
+        markPreviousStepsAsDone: true, // When a step selected by url hash, all previous steps are marked done
+        unDoneOnBackNavigation: true, // While navigate back, done state will be cleared
+        enableDoneStateNavigation: true // Enable/Disable the done state navigation
+      },
+      keyboard: {
+        keyNavigation: false, // Enable/Disable keyboard navigation(left and right keys are used if enabled)
+        keyLeft: [37], // Left key code
+        keyRight: [39] // Right key code
+      },
+      lang: { // Language variables for button
+        next: 'Next',
+        previous: 'Back'
+      },
+      style: {
+        btnCss: 'btn btn-primary',
+      },
+      disabledSteps: [],
+      errorSteps: [],
+      warningSteps: [],
+      hiddenSteps: [],
+      getContent: null
+    })
+      .on("loaded", function (e, x) {
+
+        let $wizElm = $(e.target);
+        let $toolbar = $wizElm.find(".sw-toolbar-elm");
+        let $btnNext = $toolbar.find(".sw-btn-next");
+
+        $btnNext.click(evt => {
+          if ($btnNext.hasClass("btn-sw-confirm")) {
+            // Final validation after confirm.
+            let stepInfo = $wizard.smartWizard("getStepInfo");
+            ValidateForm($wizElm, stepInfo.currentStep, stepInfo.currentStep);
+          }
+        });
+
+      })
+      .on("leaveStep", function (e, anchorObject, stepIndexFrom, stepIndexTo, stepDirection) {
+
+        if (stepIndexTo <= 0) stepIndexTo = 0;
+
+        if ($wizard.data("allowleaveonce") === true) {
+          $wizard.data("allowleaveonce", false);
+          return true;
+        }
+
+        // Ensure remove error state from previous step.
+        $wizard.smartWizard("unsetState", [stepIndexFrom], 'error');
+
+        // Always allow if going backwards.
+        if (stepIndexTo <= stepIndexFrom) return true;
+
+        // Validate when going forward.
+        let stepInfo = $wizard.smartWizard("getStepInfo");
+        let $wizElm = $(e.target);
+        ValidateForm($wizElm, stepIndexFrom, stepIndexTo);
+        return false; // Stay on current panel, validation changes panel manually.
+
+      })
+      .on("showStep", function (e, anchorObject, stepIndexTo, stepDirection, stepPosition) {
+
+        let stepInfo = $wizard.smartWizard("getStepInfo");
+        let stepIndexFrom = stepInfo.currentStep;
+        let totalSteps = stepInfo.totalSteps;
+
+        let $wizElm = $(e.target);
+        let $form = $wizElm.find("form").eq(stepIndexTo);
+        let $pane = $wizElm.find("tab-pane").eq(stepIndexTo);
+        let $toolbar = $wizElm.find(".sw-toolbar-elm");
+
+        let $btnPrev = $toolbar.find(".sw-btn-prev");
+        let $btnNext = $toolbar.find(".sw-btn-next");
+
+        $btnPrev.html(`<ion-icon name="chevron-back-outline"></ion-icon> Back`).addClass("btn-secondary").removeClass("btn-primary");
+        if (stepIndexTo > 0) {
+          $btnPrev.enable();
+        } else {
+          $btnPrev.disable();
+        }
+
+        if (stepIndexTo < totalSteps - 1) {
+          $btnNext.html(`Next <ion-icon name="chevron-forward-outline"></ion-icon>`).removeClass("btn-success btn-sw-confirm").addClass("btn-primary");
+        } else {
+          $btnNext.html(`Confirm <i class="fas fa-check"></i>`).removeClass("btn-primary").addClass("btn-success btn-sw-confirm");
+        }
+        setTimeout(() => { $btnNext.enable(); }, 100);
+
+        $wizElm.find("> .nav.nav-progress .nav-link").removeAttr("tabindex");
+        $wizElm.find("> .nav.nav-progress .nav-link:not(.done,.active)").prop("tabindex", -1);
+
+        // Focus first visible field, or the tab pane anchor.
+        let $firstInput = $("#addpaxwizard form").find('input[name]:visible,select[name]:visible').not(".control-datepicker").eq(0);
+        if ($firstInput.length === 1) {
+          $firstInput.focus();
+        } else {
+          $firstInput = $firstInput.closest(".tab-pane").children(".tab-pane-anchor");
+        }
+      });
+
+    function ValidateForm($wizElm, stepIndexFrom, stepIndexTo) {
+
+      AjaxSubmit({
+        form: $wizElm.find("form"), // All forms in the wizard (each tab is a separate form).
+        url: "@PathHelper.CurrentUrl",
+        action: "@Integral.Web.PortalSite.Page_Partials.AddParticipantWizard.FormModes.Validate",
+        data: {
+          "@Integral.Web.PortalSite.Page_Partials.AddParticipantWizard.FormFields.StepIndexFrom": stepIndexFrom,
+          "@Integral.Web.PortalSite.Page_Partials.AddParticipantWizard.FormFields.StepIndexTo": stepIndexTo,
+        },
+        url: "@PathHelper.CurrentUrl", // This partial url not browser url.
+        onAlways: function (response, textStatus, errorThrown) {
+          HandleValidateResult($wizElm, stepIndexFrom, stepIndexTo, response.data);
+        }
+      });
+
+    }
+
+    function HandleValidateResult($wizElm, stepIndexFrom, stepIndexTo, responseData) {
+
+      const newStepIndexTo = toInt(responseData["@Integral.Web.PortalSite.Page_Partials.AddParticipantWizard.AjaxReturnData.ValidateNewStepIndex"], 0);
+
+      if (newStepIndexTo < stepIndexTo) { // Not progressing.
+        $wizard.smartWizard("setState", [newStepIndexTo], 'error');
+      }
+      if (newStepIndexTo !== stepIndexFrom) {
+        $wizard.data("allowleaveonce", true); // Prevent leavestep check loop.
+        $wizard.smartWizard("goToStep", newStepIndexTo);
+      }
+
+      const $paneTo = $wizElm.find(".tab-pane").eq(stepIndexTo);
+
+      const nextPaneHtml = responseData["@Integral.Web.PortalSite.Page_Partials.AddParticipantWizard.AjaxReturnData.NextPaneHtml"] || "";
+      $paneTo.find(".customHtml").html(nextPaneHtml);
+
+      const $inpPlans = $paneTo.find("input").filterByName("@Integral.Web.PortalSite.Page_Partials.AddParticipantWizard.FormFields.SubscriptionGuid");
+
+      // Ensure all plan options are reset, select first one by default.
+      $inpPlans.enable().removeClass("existing-plan required-plan").eq(0).setChecked();
+
+      // If subscription guid passed, select the matching one.
+      const preselectedSubscriptionGuid = responseData["@Integral.Web.PortalSite.Page_Partials.AddParticipantWizard.AjaxReturnData.PreselectSubscriptionGuid"];
+      if (!isStringNullOrEmpty(preselectedSubscriptionGuid)) {
+        $inpPlans.setChecked(preselectedSubscriptionGuid);
+      }
+
+      // If participant has existing subscription, disable the plans below it (i.e. it can't be downgraded).
+      const existingSubscriptionGuid = responseData["@Integral.Web.PortalSite.Page_Partials.AddParticipantWizard.AjaxReturnData.ExistingSubscriptionGuid"];
+      if (!isStringNullOrEmpty(existingSubscriptionGuid)) {
+        const $inpExistingPlan = $inpPlans.filterByValue(existingSubscriptionGuid);
+        if ($inpExistingPlan.length === 1) {
+          $inpExistingPlan.addClass("existing-plan");
+          $inpExistingPlan.closest(".plan-card").prevAll().find("input").filterByName("@Integral.Web.PortalSite.Page_Partials.AddParticipantWizard.FormFields.SubscriptionGuid").disable();
+        }
+      }
+
+      // If participant has required subscription, disable the plans below it (i.e. it can't be downgraded).
+      const requiredSubscriptionGuid = responseData["@Integral.Web.PortalSite.Page_Partials.AddParticipantWizard.AjaxReturnData.RequiredSubscriptionGuid"];
+      if (!isStringNullOrEmpty(requiredSubscriptionGuid)) {
+        const $inpRequiredPlan = $inpPlans.filterByValue(requiredSubscriptionGuid);
+        if ($inpRequiredPlan.length === 1) {
+          $inpRequiredPlan.addClass("required-plan");
+        }
+      }
+
+      // If StripeClientSecret passed, show payment method popup.
+      let organisationGuidForPaymentMethod = responseData["@Integral.Web.PortalSite.Page_Partials.AddParticipantWizard.AjaxReturnData.OrganisationGuidForPaymentMethod"];
+      if (!isStringNullOrEmpty(organisationGuidForPaymentMethod)) {
+        ShowStripePopup($wizElm, stepIndexFrom, stepIndexTo, organisationGuidForPaymentMethod);
+      }
+    }
+
+    function ShowStripePopup($wizElm, stepIndexFrom, stepIndexTo, organisationGuidForPaymentMethod) {
+
+      const partialUrl = AbleJS.Util.PatchQuery({
+        url: "@PathHelper.Partials.StripePaymentMethod()",
+        params: { "@PathHelper.AbleUrlKeys.OrganisationGuid": organisationGuidForPaymentMethod }
+      });
+
+      // Show payment method dialog over top of qty dialog.
+      // When popup closes, resubmit form submission to perform validation again,
+      // which also checks again if payment method is present.
+      common_ShowPartialModal({
+        partialUrl: partialUrl,
+        modalTitle: "Enter Payment Details",
+        //customClass: "minw500",
+        buttons: {},
+        onClosed: function (dialogRef) {
+          ValidateForm($wizElm, stepIndexFrom, stepIndexTo);
+        }
+      });
+    }
+
+  });
+
+  $(function () {
+
+    const $wizard = $("#addpaxwizard");
+
+    const $selCompanyId = $wizard.find('select[name="@Integral.Web.PortalSite.Page_Partials.AddParticipantWizard.FormFields.CompanyId"]');
+    const $inpCompanyName = $wizard.find('input[name="@Integral.Web.PortalSite.Page_Partials.AddParticipantWizard.FormFields.CompanyName"]');
+    const $selProjectJobNumber = $wizard.find('select[name="@Integral.Web.PortalSite.Page_Partials.AddParticipantWizard.FormFields.ProjectJobNumber"]');
+    const $inpProjectName = $wizard.find('input[name="@Integral.Web.PortalSite.Page_Partials.AddParticipantWizard.FormFields.ProjectName"]');
+    const $selProgramJobId = $wizard.find('select[name="@Integral.Web.PortalSite.Page_Partials.AddParticipantWizard.FormFields.ProgramJobId"]');
+    const $inpProgramName = $wizard.find('input[name="@Integral.Web.PortalSite.Page_Partials.AddParticipantWizard.FormFields.ProgramName"]');
+    const $coachingForm = $wizard.find(".pax-coaching-form");
+    const $inpCoachingType = $wizard.find('input[name="@Integral.Web.PortalSite.Page_Partials.AddParticipantWizard.FormFields.CoachingType"]');
+    const $coachingSessions = $wizard.find('input[name="@Integral.Web.PortalSite.Page_Partials.AddParticipantWizard.FormFields.SessionsAllocated"]');
+    const $coachUserId = $wizard.find('select[name="@Integral.Web.PortalSite.Page_Partials.AddParticipantWizard.FormFields.CoachUserId"]');
+    const $meetCoachDate = $wizard.find('input[name="@Integral.Web.PortalSite.Page_Partials.AddParticipantWizard.FormFields.MeetCoachDate"]');
+    const $sendMeetCoachNow = $wizard.find('input[name="@Integral.Web.PortalSite.Page_Partials.AddParticipantWizard.FormFields.SendMeetCoachNow"]');
+
+    $selCompanyId.change(ChangeCompany);
+    $selProjectJobNumber.change(ChangeProject);
+    $selProgramJobId.change(ChangeProgram);
+    $inpCoachingType.change(ChangeCoachingType);
+    ChangeCoachingType()
+
+    function ChangeCompany(ev) {
+
+      const companyId = toInt($selCompanyId.val(), 0) // Will be zero if new company.
+      if (companyId > 0) {
+        $inpCompanyName.hideRow();
+        $inpProjectName.hideRow();
+        $inpProgramName.hideRow();
+        $selProjectJobNumber.showRow().enable().val("").trigger('change').focus();
+        $selProgramJobId.showRow().readonly().val("").trigger('change');
+        GetProjects(companyId); // Update projects list - will be blank for new company.
+      } else {
+        // New company, show prj/prg name rows.
+        $selProjectJobNumber.hideRow().val("@PathHelper.AbleUrlValues.IdNew").trigger('change');
+        $selProgramJobId.hideRow().val("@PathHelper.AbleUrlValues.IdNew").trigger('change');
+        $inpCompanyName.showRow().focus();
+        $inpProjectName.showRow();
+        $inpProgramName.showRow();
+      }
+    }
+
+    function ChangeProject(ev) {
+
+      let jobNumber = $selProjectJobNumber.val();
+      if (jobNumber === "@PathHelper.AbleUrlValues.IdNew") {
+        $selProgramJobId.hideRow().enable().val("@PathHelper.AbleUrlValues.IdNew");
+        $inpProjectName.showRow().focus();
+        $inpProgramName.showRow();
+      } else if (!isStringNullOrEmpty(jobNumber)) {
+        $($inpProjectName, $inpProgramName).hideRow();
+        GetProgramOptions(jobNumber, function () { $selProgramJobId.showRow().enable().val("").trigger('change').focus(); });
+      }
+    }
+
+    function ChangeProgram(evt) {
+
+      let selectedValue = $selProgramJobId.val();
+      if (selectedValue === "@PathHelper.AbleUrlValues.IdNew") {
+        $inpProgramName.showRow().focus();
+      } else if (!isStringNullOrEmpty(selectedValue)) {
+        $inpProgramName.hideRow().focus();
+      }
+    }
+
+    function GetProjects(cid) {
+
+      var selectedValue = $selProjectJobNumber.val();
+      var foundSelected = false;
+
+      $selProjectJobNumber.find('option:not([value=""],[value="@PathHelper.AbleUrlValues.IdNew"])').remove();
+      $selProjectJobNumber.prop('selectedIndex', -1);
+
+      $.get("@PathHelper.Endpoints.ProjectsForCompanyId(null)" + cid, function (responseData) {
+
+        if (responseData && responseData.Projects && responseData.Projects.InfoList) {
+
+          for (var i_project in responseData.Projects.InfoList) {
+
+            var project = responseData.Projects.InfoList[i_project];
+
+            var $option = $("<option/>", {
+              value: project.JobNumber,
+              text: project.JobNumber + ": " + project.ProjectName,
+            }).data("jobnumber", project.JobNumber);
+
+            if (selectedValue && $option.prop("value") === selectedValue) {
+              $option.prop("selected", true);
+              foundSelected = true;
+            }
+            $selProjectJobNumber.append($option);
+          }
+          //if (!foundSelected) setTimeout(function () { $selProjectJobNumber.focus().select2("open"); }, 200);
+        } else if ($selCompanyId.val() != "") {
+          //$selProjectJobNumber.find('option[value="@PathHelper.AbleUrlValues.IdNew"]').prop("selected", true);
+        }
+        $selProjectJobNumber.val("");
+        $selProjectJobNumber.trigger("change");
+      }, "json");
+    }
+
+    function GetProgramOptions(projectJobNumber, callback) {
+
+      $inpProgramName.closest(".row").hide();
+      $selProgramJobId.find('option:not([value=""],[value="@PathHelper.AbleUrlValues.IdNew"])').remove();
+      $selProgramJobId.closest(".row").slideDown();
+
+      AjaxSubmit({
+        url: "@PathHelper.CurrentUrl", // Partial url not browser url.
+        action: "@Integral.Web.PortalSite.Page_Partials.AddParticipantWizard.FormModes.GetProgramOptions",
+        data: {
+          "@Integral.Web.PortalSite.Page_Partials.AddParticipantWizard.FormFields.ProjectJobNumber": projectJobNumber
+        },
+        onSuccess: function (jqXHR, responseData) {
+          $selProgramJobId.append(responseData["@Integral.Web.PortalSite.Page_Partials.AddParticipantWizard.AjaxReturnData.ProgramOptionsHtml"]);
+          $selProgramJobId.val("").trigger("change");
+          if (isFunction(callback)) callback();
+        }
+      });
+    }
+
+    function ChangeCoachingType() {
+
+      let coachingType = $inpCoachingType.filter(":checked").val();
+
+      if (!isString(coachingType)) return;
+
+      if (coachingType == "@DbHelper.AlbertCoachingTypes.GetIntercomValue_NoCoaching()") {
+        $coachingSessions.disable();
+        $coachUserId.disable();
+        $meetCoachDate.disable()
+        $sendMeetCoachNow.disable();
+      } else {
+        $coachingSessions.enable();
+        $coachUserId.enable();
+        $meetCoachDate.enable()
+        $sendMeetCoachNow.enable();
+      }
+    }
+
+  });
+
+</script>

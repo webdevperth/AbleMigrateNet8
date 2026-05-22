@@ -1,0 +1,56 @@
+@page "/Partials/CoacheeReport_Detail"
+@model Integral.Web.PortalSite.Page_Partials.CoacheeReport_Detail
+@{ Layout = null; }
+
+@*-- Note requires reports.css --*@
+
+<div class="RptPub360Detailed">
+
+  @foreach (var category in Model.GetCategoryGroups()) {
+
+    <div class="boxBorder">
+      <div class="boxTitle"><h4>@category.CategoryHeading.HTMLEncode()</h4></div>
+
+      @foreach (var qnItem in category.Questions) {
+        string surveySelfPercent = WebHelper.GetCSSPercentFromRatio(qnItem.SurveySelfScore, Model.ScoreMaxValue);
+        string surveyRaterPercent = WebHelper.GetCSSPercentFromRatio(qnItem.SurveyRaterScore, Model.ScoreMaxValue);
+        string normSelfPercent = WebHelper.GetCSSPercentFromRatio(qnItem.NormSelfScore, Model.ScoreMaxValue);
+        string normRaterPercent = WebHelper.GetCSSPercentFromRatio(qnItem.NormRaterScore, Model.ScoreMaxValue);
+        <div class="question @Model.GetBenchComparisonRowClass(qnItem)" data-gid="@qnItem.GblQuestionId">
+          <div class="qnText">
+            @qnItem.GblQuestionText.HTMLEncode()
+          </div>
+          <div class="qnBars">
+            <div class="scoreBars" data-tooltip="<b>Rater Result</b><br>Min: @qnItem.SurveyRaterMinScore, Max: @qnItem.SurveyRaterMaxScore<br/>Compared to Self: @(qnItem.SurveyRaterScore - qnItem.SurveySelfScore)">
+
+              @Html.Raw(WebHelper.GetSurveyViewerScoreBar(WebHelper.SurveyViewerScoreBarType.Self, Model.ScoreMinValue, Model.ScoreMaxValue,
+                                                    "Self", qnItem.SurveySelfScore, Model.NormDisplayName, Model.Hide360ReportNorms ? null : qnItem.NormSelfScore))
+
+              @if (Model.RaterCount > 0) {
+                @Html.Raw(WebHelper.GetSurveyViewerScoreBar(WebHelper.SurveyViewerScoreBarType.Rater, Model.ScoreMinValue, Model.ScoreMaxValue,
+                                                      "Rater", qnItem.SurveyRaterScore, Model.NormDisplayName, Model.Hide360ReportNorms ? null : qnItem.NormRaterScore))
+              }
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+</div>
+
+
+<script type="text/javascript">
+
+  (function ($) {
+
+    $(document).ready(function () {
+      new jBox('Tooltip', {
+        attach: '.RptPub360Detailed .barDot[title]', position: { y: 'top' }
+      });
+    });
+
+
+  })(jQuery);
+
+</script>

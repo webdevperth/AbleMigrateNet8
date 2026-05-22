@@ -1,0 +1,20 @@
+@page "/Partials/SurveyViewer_Comments"
+@model Integral.Web.PortalSite.Page_Partials.SurveyViewer_Comments
+@{ Layout = null; }
+
+@*-- Note requires reports.css --*@
+
+<div class="RptPub360Cmnt">
+
+  @Html.Raw(Model.RenderQuestions())
+
+</div>
+
+
+<script type="text/javascript">
+
+  (function ($) {
+
+  })(jQuery);
+
+</script>

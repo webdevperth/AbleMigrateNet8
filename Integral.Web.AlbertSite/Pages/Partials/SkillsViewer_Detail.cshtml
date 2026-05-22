@@ -1,0 +1,84 @@
+@page "/Partials/SkillsViewer_Detail"
+@model Integral.Web.PortalSite.Page_Partials.SkillsViewer_Detail
+@{ Layout = null; }
+
+@*-- Note requires reports.css --*@
+
+<div class="RptPub360Detailed">
+
+  @{
+    int iQn = 0;
+    while (iQn < Model.Questions.Count) {
+      var firstInGroup = Model.Questions[iQn];
+      int thisHeadingId = firstInGroup.CategoryHeadingId;
+
+      <div class="boxBorder">
+        <div class="boxTitle"><h4>@firstInGroup.CategoryHeading.HTMLEncode()</h4></div>
+
+        @{
+          decimal selfSum = 0, raterSum = 0;
+          int qnCount = 0;
+
+          while (iQn < Model.Questions.Count) {
+
+            var qnItem = Model.Questions[iQn];
+            if (thisHeadingId != qnItem.CategoryHeadingId) break;
+
+            <div class="question @Model.GetBenchComparisonRowClass(qnItem)" data-gblid="@qnItem.GblQuestionId">
+              <div class="qnText">
+                @qnItem.GblQuestionText.HTMLEncode()
+              </div>
+              <div class="qnBars">
+                <div class="scoreBars">
+                  @Html.Raw(WebHelper.GetSurveyViewerScoreBar(WebHelper.SurveyViewerScoreBarType.Self, Model.SurveyStats.ScaleMinScore, Model.SurveyStats.ScaleMaxScore, "Self", qnItem.SelfAllScore, Model.BenchmarkDisplayName, qnItem.SelfBenchScore))
+                  @if (Model.SurveyStats.RaterAllCount > 0) {
+                    @Html.Raw(WebHelper.GetSurveyViewerScoreBar(WebHelper.SurveyViewerScoreBarType.Rater, Model.SurveyStats.ScaleMinScore, Model.SurveyStats.ScaleMaxScore, "Rater", qnItem.RaterAllScore, Model.BenchmarkDisplayName, qnItem.RaterBenchScore))
+                  }
+                </div>
+              </div>
+            </div>
+
+            iQn++;
+
+            // For category average.
+            selfSum += qnItem.SelfAllScore ?? 0;
+            raterSum += qnItem.RaterAllScore ?? 0;
+            qnCount++;
+          }
+
+          if (ConfigHelper.IsDevServer) {
+            decimal selfAvg = qnCount == 0 ? 0 : selfSum / qnCount;
+            decimal raterAvg = qnCount == 0 ? 0 : raterSum / qnCount;
+            <div class="question">
+              <div class="qnText">[DEV] Category Average:</div>
+              <div class="qnBars">
+                <div class="scoreBars">
+                  @Html.Raw(WebHelper.GetSurveyViewerScoreBar(WebHelper.SurveyViewerScoreBarType.Self, Model.SurveyStats.ScaleMinScore, Model.SurveyStats.ScaleMaxScore, "Self", selfAvg, Model.BenchmarkDisplayName, null))
+                  @Html.Raw(WebHelper.GetSurveyViewerScoreBar(WebHelper.SurveyViewerScoreBarType.Rater, Model.SurveyStats.ScaleMinScore, Model.SurveyStats.ScaleMaxScore, "Rater", raterAvg, Model.BenchmarkDisplayName, null))
+                </div>
+              </div>
+            </div>
+          }
+        }
+
+      </div>
+    }
+  }
+
+</div>
+
+
+<script type="text/javascript">
+
+  (function ($) {
+
+    $(document).ready(function () {
+      new jBox('Tooltip', {
+        attach: '.RptPub360Detailed .barDot[title]', position: { y: 'top' }
+      });
+    });
+
+
+  })(jQuery);
+
+</script>

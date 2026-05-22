@@ -1,0 +1,75 @@
+@page "/Partials/CompanyReport_Focus"
+@model Integral.Web.PortalSite.Page_Partials.CompanyReport_Focus
+@{ Layout = null; }
+
+<div class="flex flex-align-center mb10">
+  <div class="flex1"></div>
+  <div class="flex flex-align-center gap10">
+    <div>Sort By: </div>
+    <select class="CompanyReport_Focus_SortBy w125 noselect2">
+      @foreach (var option in Model.RowSortOptions) {
+        @Html.Raw($"<option value=\"{option.Key.HTMLEncode()}\"{((Model.QueryRowSortBy == option.Value.OptionEnum) ? " selected" : "")}>{option.Value.DisplayText.HTMLEncode()}</option>")
+      }
+    </select>
+  </div>
+</div>
+
+<script type="text/javascript">
+  (function ($) {
+
+    var selSortBy, partialInfo;
+
+    $(document).ready(function () {
+      selSortBy = $(".CompanyReport_Focus_SortBy");
+      selSortBy.change(ChangeSortBy);
+      partialInfo = common_GetPartialInfo(selSortBy);
+    });
+
+    function ChangeSortBy() {
+      partialInfo.LoadUrl(null, { "@Integral.Web.PortalSite.Page_Partials.CompanyReport_Focus.QueryKeys.RowSortBy": selSortBy.val() });
+    }
+
+  })(jQuery);
+</script>
+
+<div class="RptPub360Focus">
+
+  @foreach (var focusSection in Model.FocusSections) {
+    <div class="boxBorder @focusSection.ClassName">
+      <div class="boxTitle"><div class="catCircle"></div><h4>@focusSection.CategoryName.HTMLEncode()</h4></div>
+      @foreach (var qnItem in focusSection.Questions) {
+        <div class="question @Model.GetBenchComparisonRowClass(qnItem)">
+          <div class="qnText">
+            <div class="sectionTitle">@qnItem.CategoryHeading.HTMLEncode()</div>
+            <div>@qnItem.GblQuestionText.HTMLEncode()</div>
+          </div>
+          <div class="qnBars">
+            <div class="scoreBars">
+              @Html.Raw(WebHelper.GetSurveyViewerScoreBar(WebHelper.SurveyViewerScoreBarType.Self, Model.SurveyStats.ScaleMinScore, Model.SurveyStats.ScaleMaxScore, "Self", qnItem.SelfAllScore, Model.BenchmarkDisplayName, qnItem.SelfBenchScore))
+              @if (Model.SurveyStats.RaterAllCount > 0) {
+                @Html.Raw(WebHelper.GetSurveyViewerScoreBar(WebHelper.SurveyViewerScoreBarType.Rater, Model.SurveyStats.ScaleMinScore, Model.SurveyStats.ScaleMaxScore, "Rater", qnItem.RaterAllScore, Model.BenchmarkDisplayName, qnItem.RaterBenchScore))
+              }
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+</div>
+
+
+<script type="text/javascript">
+
+  (function ($) {
+
+    $(document).ready(function () {
+      new jBox('Tooltip', {
+        attach: '.RptPub360Detailed .barDot[title]', position: { y: 'top' }
+      });
+    });
+
+
+  })(jQuery);
+
+</script>

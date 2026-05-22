@@ -1,0 +1,66 @@
+@page "/Partials/QuoteRequestModal"
+@model Integral.Web.PortalSite.Page_Partials.QuoteRequestModal
+@{ Layout = null; }
+
+  <div class="w100p" id="requestContainer">
+
+    @Html.Raw(Model.GeneralInfoHtml)
+
+    @Html.Raw(WebHelper.GetTextAreaVertical("Your request specification:", true, Integral.Web.PortalSite.Page_Partials.QuoteRequestModal.FormFields.RequestText, 12, "", "reqtext"))
+
+    <button type="button" class="btn btn-primary float-right" id="btnSend">Send</button>
+
+  </div><!-- /.content -->
+
+
+  <script type="text/javascript">
+    (function ($) {
+
+      var btnSend;
+
+      $(document).ready(function () {
+
+        $("div.reqtext").removeClass("w100p");
+        $("div.reqtext p").removeClass("ml5");
+        $("div.reqtext textarea").addClass("resize-none");
+        $("label.control-label").removeClass("col-md-2");
+        $("label.control-label").addClass("col-md-3");
+        $(".display-only > div").addClass("type-quotereq-title");
+
+        var requestContainer = $('#requestContainer');
+        btnSend = $("#btnSend");
+
+        @if (!Model.GeneralInfoHtml.IsNullOrEmpty()) {
+          <text>requestContainer.height(290);</text>
+        } else {
+          <text>requestContainer.height(210);</text>
+        }
+
+        btnSend.click(SendQuoteRequest);
+
+      }); // ready.
+
+      function SendQuoteRequest() {
+
+        var requestText = $("textarea[name='RequestText']").val();
+
+        AjaxSubmit({
+          action: "@Integral.Web.PortalSite.Page_Partials.QuoteRequestModal.AjaxAction.SendQuoteRequest",
+          data: {
+            "@Integral.Web.PortalSite.Page_Partials.QuoteRequestModal.FormFields.RequestText": requestText
+          },
+          url: "@PathHelper.Partials.QuoteRequestModal((Model.ProjectInfo != null ? Model.ProjectInfo.JobNumber : ""))",
+          onSuccess: function (jqXHR, data) {
+            window.Intercom('trackEvent', 'quote_updated', {
+              job_number: @(Model.ProjectInfo?.JobNumber ?? "0")
+            });
+          },
+          onFail: function (jqXHR, data) { },
+          onError: function (jqXHR, textStatus, errorThrown) { },
+          onAlways: function (data_or_jqXHR, textStatus, jqXHR_or_errorThrown) { }
+        });
+      }
+
+
+    })(jQuery);
+  </script>

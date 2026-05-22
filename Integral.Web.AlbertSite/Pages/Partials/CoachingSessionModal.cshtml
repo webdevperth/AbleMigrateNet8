@@ -1,0 +1,119 @@
+@page "/Partials/CoachingSessionModal"
+@model Integral.Web.PortalSite.Page_Partials.CoachingSessionModal
+@{ Layout = null; }
+
+@if (Model.SessionInfo != null) {
+
+  <div class="session-item session-upcoming">
+
+    <form id="SessionListForm" class="form-horizontal label-narrow" method="post" action="#" onsubmit="return false;">
+
+      <input type="hidden" name="sessionid" value="@Model.SessionInfo.SessionId" />
+      <input type="hidden" name="@PathHelper.FormKeys.AjaxAction" value="" />
+
+      @Html.Raw(WebHelper.GetInputDateRow("Session Date:", Integral.Web.PortalSite.Page_Partials.CoachingSessionModal.FormFields.ApptDateUtc,
+            Model.IsNewSession ? null : Model.SessionInfo?.GetApptDateInCoachTZ(), 2, 10, "", Model.IsReadOnly))
+
+      @Html.Raw(WebHelper.GetTimePickerRow("Session Time:", Integral.Web.PortalSite.Page_Partials.CoachingSessionModal.FormFields.SessionTime,
+            Model.IsNewSession ? null : Model.SessionInfo?.GetApptDateInCoachTZ(), "(" + Model.CoachInfo.TimeZoneIdIana + ")", Model.IsReadOnly))
+
+      @Html.Raw(WebHelper.GetTextInput("Duration (mins):", Integral.Web.PortalSite.Page_Partials.CoachingSessionModal.FormFields.DurationMins,
+            Model.SessionInfo.DurationMins.ToString(),
+            2, "", Model.IsReadOnly))
+
+      @Html.Raw(Model.GetStatusOptions("Session Status:"))
+
+      @if (Model.CanViewCoachingNotes) {
+        @Html.Raw(WebHelper.GetRichTextArea("Coach Notes:", Integral.Web.PortalSite.Page_Partials.CoachingSessionModal.FormFields.CoachNotes, 2, 10, Model.SessionInfo.CoachNotes, "", !Model.CanEditNotes))
+      }
+
+      <div class="modal-footer-buttons">
+        <div><button type="button" class="btn btn-secondary btnClose">Cancel</button></div>
+        <div>
+          @if (Model.IsNewSession) {
+            <button type="button" class="btn btn-primary btnUpdateSession" data-action="@Integral.Web.PortalSite.Page_Partials.CoachingSessionModal.AjaxAction.Update">Add Booking</button>
+          } else {
+            @if (Model.CanDelete) {
+              <button type="button" class="btn btn-danger btnUpdateSession" data-action="@Integral.Web.PortalSite.Page_Partials.CoachingSessionModal.AjaxAction.Delete">Delete Booking</button>
+            }
+            <button type="button" class="btn btn-primary btnUpdateSession ml30" data-action="@Integral.Web.PortalSite.Page_Partials.CoachingSessionModal.AjaxAction.Update">Update Booking</button>
+          }
+        </div>
+      </div>
+
+    </form>
+  </div>
+
+}
+
+@{ var scriptId = new Random((int)DateTime.Now.Ticks).Next(100000); }
+
+<script id="@scriptId">
+
+  // Closure for Coaching Sessions Tab.
+  (function ($) {
+
+    var dialogRef = null;
+    var modalBody = null;
+    var modalForm = null;
+
+    $(document).ready(function () {
+
+      // Find modal objects based on the random ID given to this script tag.
+      var scripts = document.getElementsByTagName("script");
+      for (var i = scripts.length - 1; i >= 0; i--) {
+        if (scripts[i].id == @scriptId) {
+          var thisScript = $(scripts[i]);
+          var modalDialog = thisScript.closest(".modal-dialog");
+          dialogRef = modalDialog.data("@WebHelper.DataAttrName.DialogRef");
+          modalBody = modalDialog.find(".modal-body");
+          modalForm = modalBody.find("form");
+          break;
+        }
+      }
+
+      $(".btnUpdateSession").click(UpdateSession);
+      $(".btnClose").click(function () { dialogRef.close(); });
+
+      @if (Model.IsReadOnly) {
+        if (Model.CanEditNotes) {
+          <text>$("textarea[name=coachnotes]").focus();</text>
+        } else {
+          <text>$(".btnCancel").focus();</text>
+        }
+      } else if (Model.IsNewSession) {
+        <text>$("#SessionListForm input:not([type=hidden])").eq(0).focus();</text>
+      }
+
+    });
+
+    function UpdateSession(evt) {
+
+      var thisBtn = $(evt.target);
+      var ajaxAction = thisBtn.data("action");
+      if (ajaxAction == "@Integral.Web.PortalSite.Page_Partials.CoachingSessionModal.AjaxAction.Delete") {
+        common_ConfirmDialog("Delete Session?", "Please confirm deleting this session.", null, function (e) {
+          if (e === true) ContinueUpdate(thisBtn, ajaxAction);
+        })
+        return;
+      } else {
+        ContinueUpdate(thisBtn, ajaxAction);
+      }
+    }
+
+    function ContinueUpdate(thisBtn, ajaxAction) {
+
+      AjaxSubmit({
+        form: modalForm,
+        action: ajaxAction,
+        url: "@PathHelper.Partials.CoachingSessionModal(Model.CoacheeInfo.CoacheeId, WebHelper.GetQueryStringValue(PathHelper.AbleUrlKeys.CoachingSessionId))",
+        onSuccess: function (jqXHR, data) { },
+        onFail: function (jqXHR, data) { },
+        onError: function (jqXHR, textStatus, errorThrown) { },
+        onAlways: function (data_or_jqXHR, textStatus, jqXHR_or_errorThrown) { }
+      });
+    }
+
+  })(jQuery);
+
+</script>

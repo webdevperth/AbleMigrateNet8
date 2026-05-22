@@ -1,0 +1,29 @@
+@page "/Partials/ParticipantSlideoutPanel"
+@model Integral.Web.PortalSite.Page_Partials.ParticipantSlideoutPanel
+@{ Layout = null; }
+
+<div class="flex1 overflow-y-auto">
+
+  <div class="flex-wrap flex-justify-center">
+    <img class="profile-image" src="@Model.UserPhotoUrl" alt="Profile Image" />
+    <div class="align-self-end">
+      <h4 class="mt5 mb5">@Model.CoacheeInfo.GetFullName().HTMLEncode()</h4>
+      <div>@Model.CoacheeInfo.EmailAddress.HTMLEncode()</div>
+    </div>
+  </div>
+
+  <hr/>
+
+  <div class="details-list">@Html.Raw(Model.ActivityInfoHtml)</div>
+
+  <div>
+    <div class="table-title">Monthly Activity Minutes</div>
+    @Html.Raw(WebHelper.Charts.Coachee.GetMonthlyActivityChart(Model.CoacheeInfo.CoacheeId, DateTime.UtcNow.AddMonths(-5), DateTime.UtcNow, 250, "mt15"))
+    <div class="table-title">Monthly Progress</div>
+    @Html.Raw(WebHelper.Charts.Coachee.GetMonthlyProgressChart(Model.CoacheeInfo.CoacheeId, DateTime.UtcNow.AddMonths(-5), DateTime.UtcNow, 250, "mt15"))
+  </div>
+
+</div>
+@if (Model.CanViewParticipantProfile) {
+  <div class="flex0 mt20"><a class="btn btn-secondary" href="@Model.CoacheeEditUrl">Full Profile</a></div>
+}

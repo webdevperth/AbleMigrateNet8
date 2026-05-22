@@ -1,0 +1,78 @@
+@page "/Partials/CoacheeReport_PrePost"
+@model Integral.Web.PortalSite.Page_Partials.CoacheeReport_PrePost
+@{ Layout = null; }
+
+@*-- Note requires reports.css --*@
+
+<div class="RptPub360PrePost">
+
+  @foreach (var category in Model.GetCategoryGroups()) {
+
+    <div class="boxBorder">
+      <div class="boxTitle"><h4>@category.CategoryHeading.HTMLEncode()</h4></div>
+
+      @foreach (var qnItem in category.Questions) {
+        string preSurveySelfStyle = $"style=\"width:{WebHelper.GetCSSPercentFromRatio(qnItem.PreSelfScore, Model.ScoreMaxValue)}\"";
+        string surveySelfStyle = $"style=\"width:{WebHelper.GetCSSPercentFromRatio(qnItem.PostSelfScore, Model.ScoreMaxValue)}\"";
+        string preSurveyRaterStyle = $"style=\"width:{WebHelper.GetCSSPercentFromRatio(qnItem.PreRaterScore, Model.ScoreMaxValue)}\"";
+        string surveyRaterStyle = $"style=\"width:{WebHelper.GetCSSPercentFromRatio(qnItem.PostRaterScore, Model.ScoreMaxValue)}\"";
+        <div class="question @Model.GetBenchComparisonRowClass(qnItem)" data-gblid="@qnItem.GblQuestionId">
+          <div class="qnText">
+            @qnItem.GblQuestionText.HTMLEncode()
+          </div>
+          <div class="qnBars col-md-3">
+            <div class="scoreBars">
+              <div class="scoreBar preScoreBar">
+                <div class="barTitle">Self-Pre</div>
+                <div class="barBg">
+                  <span class="barLine barSelf" @Html.Raw(preSurveySelfStyle)></span>
+                </div>
+                <div class="barScore">@(qnItem.PreSelfScore == null ? "NA" : qnItem.PreSelfScore.ToString("0.0", ""))</div>
+              </div>
+              <div class="scoreBar">
+                <div class="barTitle">Self-Post</div>
+                <div class="barBg">
+                  <span class="barLine barSelf" @Html.Raw(surveySelfStyle)></span>
+                </div>
+                <div class="barScore">@(qnItem.PostSelfScore == null ? "NA" : qnItem.PostSelfScore.ToString("0.0", ""))</div>
+              </div>
+              @if (Model.RaterCount > 0) {
+                <div class="scoreBar preScoreBar">
+                  <div class="barTitle">Rater-Pre</div>
+                  <div class="barBg">
+                    <span class="barLine barRater" @Html.Raw(preSurveyRaterStyle)></span>
+                  </div>
+                  <div class="barScore">@(qnItem.PreRaterScore == null ? "NA" : qnItem.PreRaterScore.ToString("0.0", ""))</div>
+                </div>
+                <div class="scoreBar">
+                  <div class="barTitle">Rater-Post</div>
+                  <div class="barBg">
+                    <span class="barLine barRater" @Html.Raw(surveyRaterStyle)></span>
+                  </div>
+                  <div class="barScore">@(qnItem.PostRaterScore == null ? "NA" : qnItem.PostRaterScore.ToString("0.0", ""))</div>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+</div>
+
+
+<script type="text/javascript">
+
+  (function ($) {
+
+    $(document).ready(function () {
+      new jBox('Tooltip', {
+        attach: '.RptPub360PrePost .barDot[title]', position: { y: 'top' }
+      });
+    });
+
+
+  })(jQuery);
+
+</script>

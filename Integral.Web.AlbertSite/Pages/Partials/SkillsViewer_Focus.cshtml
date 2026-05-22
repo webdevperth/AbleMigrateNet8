@@ -1,0 +1,99 @@
+@page "/Partials/SkillsViewer_Focus"
+@model Integral.Web.PortalSite.Page_Partials.SkillsViewer_Focus
+@{ Layout = null; }
+
+<div class="flex flex-align-center mb10">
+  <div class="flex1"></div>
+  <div class="flex flex-align-center gap10">
+    <div>Sort By: </div>
+    <select class="SkillsViewer_Focus_SortBy w125 noselect2">
+      @foreach (var option in Model.RowSortOptions) {
+        @Html.Raw($"<option value=\"{option.Key.HTMLEncode()}\" {(Model.QueryRowSortBy == option.Value.OptionEnum).ToValue("selected")}>{option.Value.DisplayText.HTMLEncode()}</option>")
+      }
+    </select>
+  </div>
+</div>
+
+<script type="text/javascript">
+  (function ($) {
+
+    var selSortBy, partialInfo;
+
+    $(document).ready(function () {
+      selSortBy = $(".SkillsViewer_Focus_SortBy");
+      selSortBy.change(ChangeSortBy);
+      partialInfo = common_GetPartialInfo(selSortBy);
+    });
+
+    function ChangeSortBy() {
+      partialInfo.LoadUrl(null, { "@Integral.Web.PortalSite.Page_Partials.SkillsViewer_Focus.QueryKeys.RowSortBy": selSortBy.val() });
+    }
+
+  })(jQuery);
+</script>
+
+<div class="RptPub360Focus">
+
+  @{
+    // Highest scoring q's.
+    var highest = (from q in Model.Questions orderby q.SortByScore descending select q).Take(ConfigHelper.Reports_FocusTab_RowsPerTable).ToList();
+    <div class="boxBorder modeHighest">
+      <div class="boxTitle"><div class="catCircle"></div><h4>@("Highest Scoring Statements".HTMLEncode())</h4></div>
+      @foreach (var qnItem in highest) {
+        <div class="question @Model.GetBenchComparisonRowClass(qnItem)">
+          <div class="qnText">
+            <div class="sectionTitle">@qnItem.CategoryHeading.HTMLEncode()</div>
+            <div>@qnItem.GblQuestionText.HTMLEncode()</div>
+          </div>
+          <div class="qnBars">
+            <div class="scoreBars">
+              @Html.Raw(WebHelper.GetSurveyViewerScoreBar(WebHelper.SurveyViewerScoreBarType.Self, Model.SurveyStats.ScaleMinScore, Model.SurveyStats.ScaleMaxScore, "Self", qnItem.SelfAllScore, Model.BenchmarkDisplayName, qnItem.SelfBenchScore))
+              @if (Model.SurveyStats.RaterAllCount > 0) {
+                @Html.Raw(WebHelper.GetSurveyViewerScoreBar(WebHelper.SurveyViewerScoreBarType.Rater, Model.SurveyStats.ScaleMinScore, Model.SurveyStats.ScaleMaxScore, "Rater", qnItem.RaterAllScore, Model.BenchmarkDisplayName, qnItem.RaterBenchScore))
+              }
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+
+    // Lowest scoring q's.
+    var lowest = (from q in Model.Questions orderby q.SortByScore ascending select q).Take(ConfigHelper.Reports_FocusTab_RowsPerTable).ToList();
+    <div class="boxBorder modeLowest">
+      <div class="boxTitle"><div class="catCircle"></div><h4>@("Lowest Scoring Statements".HTMLEncode())</h4></div>
+      @foreach (var qnItem in lowest) {
+        <div class="question @Model.GetBenchComparisonRowClass(qnItem)">
+          <div class="qnText">
+            <div class="sectionTitle">@qnItem.CategoryHeading.HTMLEncode()</div>
+            <div>@qnItem.GblQuestionText.HTMLEncode()</div>
+          </div>
+          <div class="qnBars">
+            <div class="scoreBars">
+              @Html.Raw(WebHelper.GetSurveyViewerScoreBar(WebHelper.SurveyViewerScoreBarType.Self, Model.SurveyStats.ScaleMinScore, Model.SurveyStats.ScaleMaxScore, "Self", qnItem.SelfAllScore, Model.BenchmarkDisplayName, qnItem.SelfBenchScore))
+              @if (Model.SurveyStats.RaterAllCount > 0) {
+                @Html.Raw(WebHelper.GetSurveyViewerScoreBar(WebHelper.SurveyViewerScoreBarType.Rater, Model.SurveyStats.ScaleMinScore, Model.SurveyStats.ScaleMaxScore, "Rater", qnItem.RaterAllScore, Model.BenchmarkDisplayName, qnItem.RaterBenchScore))
+              }
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+</div>
+
+
+<script type="text/javascript">
+
+  (function ($) {
+
+    $(document).ready(function () {
+      new jBox('Tooltip', {
+        attach: '.RptPub360Focus .barDot[title]', position: { y: 'top' }
+      });
+    });
+
+
+  })(jQuery);
+
+</script>

@@ -1,0 +1,106 @@
+@page "/Partials/SkillsViewer_Overview"
+@model Integral.Web.PortalSite.Page_Partials.SkillsViewer_Overview
+@{ Layout = null; }
+
+<div class="ctlCA360SoT">
+
+  <div class="flex gap25 flex-column-sm">
+
+    <div class="boxBorder">
+      <div class="boxTitle">
+        <h4>Overall Score</h4>
+        @Html.Raw(WebHelper.Icon.TooltipHelp.AddTooltip("All surveys, including Pre and Post").ToString())
+      </div>
+      <div class="boxBody boxScores boxBgBottom">
+        @if (Model.SurveyStats.SelfAllCount > 0) {
+          <div class="scoreRow">
+            <div class="scoreAcross scoreLeft">
+              <div class="score">@Model.GetScoreFormatted(Model.SelfAllScore, "NA")<span class="sub"> / @Model.SurveyStats.ScaleMaxScore</span></div>
+              <div class="barOuter"><div class="bar"></div></div>
+              <div class="subtitle">Self (@Model.SurveyStats.SelfAllCount)</div>
+            </div>
+            <div class="scoreAcross scoreRight">
+              <div class="score">@Model.GetScoreFormatted(Model.SelfBenchScore, "NA")<span class="sub"> / @Model.SurveyStats.ScaleMaxScore</span></div>
+              <div class="barOuter"><div class="bar"><span>..........</span></div></div>
+              <div class="subtitle">Self Norm<div class="benchTypeName">(@Model.BenchmarkDisplayName, n=@Model.Bench360ResponseCountSelf)</div></div>
+            </div>
+          </div>
+        }
+        @if (Model.SurveyStats.RaterAllCount > 0) {
+          <div class="scoreRow raterRow">
+            <div class="scoreAcross scoreLeft">
+              <div class="score">@Model.GetScoreFormatted(Model.RaterAllScore, "NA")<span class="sub"> / @Model.SurveyStats.ScaleMaxScore</span></div>
+              <div class="barOuter"><div class="bar"></div></div>
+              <div class="subtitle">Rater (@Model.SurveyStats.RaterAllCount)</div>
+            </div>
+            <div class="scoreAcross scoreRight">
+              <div class="score">@Model.GetScoreFormatted(Model.RaterBenchScore, "NA")<span class="sub"> / @Model.SurveyStats.ScaleMaxScore</span></div>
+              <div class="barOuter"><div class="bar"><span>..........</span></div></div>
+              <div class="subtitle">Rater Norm<div class="benchTypeName">(@Model.BenchmarkDisplayName, n=@Model.Bench360ResponseCountRater)</div></div>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+
+    @if (Model.ShowPrePostBox) {
+      <div class="boxBorder mt0">
+        <div class="boxTitle"><h4>Pre-Post Scores</h4></div>
+        <div class="boxBody boxScores boxBgBottom">
+          @if (Model.SurveyStats.SelfAllCount > 0) {
+            <div class="scoreRow">
+              <div class="scoreAcross scoreLeft">
+                <div class="score">@Model.GetScoreFormatted(Model.SelfPreScore, "NA")<span class="sub"> / @Model.SurveyStats.ScaleMaxScore</span></div>
+                <div class="barOuter"><div class="bar"></div></div>
+                <div class="subtitle">Pre-Survey Self (@Model.SurveyStats.SelfPreCount)</div>
+              </div>
+              <div class="scoreAcross scoreLeft">
+                <div class="score">@Model.GetScoreFormatted(Model.SelfPostScore, "NA")<span class="sub"> / @Model.SurveyStats.ScaleMaxScore</span></div>
+                <div class="barOuter"><div class="bar"></div></div>
+                <div class="subtitle">Post-Survey Self (@Model.SurveyStats.SelfPostCount)</div>
+              </div>
+              <div class="scoreAcross scoreRight">
+                <div class="score">@Model.GetScoreFormatted(Model.SelfPostScore - Model.SelfPreScore, "NA")<span class="sub"> / @Model.SurveyStats.ScaleMaxScore</span></div>
+                <div class="barOuter"><div class="bar"><span>..........</span></div></div>
+                <div class="subtitle">Pre-Post Change</div>
+              </div>
+            </div>
+          }
+          @if (Model.SurveyStats.RaterAllCount > 0) {
+            <div class="scoreRow raterRow">
+              <div class="scoreAcross scoreLeft">
+                <div class="score">@Model.GetScoreFormatted(Model.RaterPreScore, "NA")<span class="sub"> / @Model.SurveyStats.ScaleMaxScore</span></div>
+                <div class="barOuter"><div class="bar"></div></div>
+                <div class="subtitle">Pre-Survey Rater (@Model.SurveyStats.RaterPreCount)</div>
+              </div>
+              <div class="scoreAcross scoreLeft">
+                <div class="score">@Model.GetScoreFormatted(Model.RaterPostScore, "NA")<span class="sub"> / @Model.SurveyStats.ScaleMaxScore</span></div>
+                <div class="barOuter"><div class="bar"></div></div>
+                <div class="subtitle">Post-Survey Rater (@Model.SurveyStats.RaterPostCount)</div>
+              </div>
+              <div class="scoreAcross scoreRight">
+                <div class="score">@Model.GetScoreFormatted(Model.RaterPostScore - Model.RaterPreScore, "NA")<span class="sub"> / @Model.SurveyStats.ScaleMaxScore</span></div>
+                <div class="barOuter"><div class="bar"><span>..........</span></div></div>
+                <div class="subtitle">Pre-Post Rater Change</div>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    }
+
+  </div>
+</div>
+
+<script>
+
+  (function ($) {
+
+    $(document).ready(function () {
+
+
+    }); // Doc ready.
+
+  })(jQuery);
+
+</script>

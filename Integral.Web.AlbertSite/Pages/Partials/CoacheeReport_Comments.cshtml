@@ -1,0 +1,49 @@
+@page "/Partials/CoacheeReport_Comments"
+@model Integral.Web.PortalSite.Page_Partials.CoacheeReport_Comments
+@{ Layout = null; }
+
+@*-- Note requires reports.css --*@
+
+<div class="RptPub360Cmnt">
+
+  @if (Model.Questions.IsNullOrEmpty()) {
+
+    <text>No text responses found.</text>
+
+  } else {
+
+    foreach (var group in Model.GetCommentGroups()) {
+
+      <div class="boxBorder">
+        <div class="boxTitle"><h4>@group.QuestionText.HTMLEncode()</h4></div>
+
+        @foreach (var entry in group.Entries) {
+          if (entry.IsHeading) {
+            <div class="question row qnHeading">
+              <div class="qnText col-md-12">
+                @entry.HeadingText
+              </div>
+            </div>
+          } else {
+            <div class="question row @(entry.Question.IsSelf ? "qnText-self" : "qnText-rater")">
+              <div class="qnText col-md-12">
+                @Html.Raw(entry.Question.ResponseText.HTMLEncode().Replace("\n", "<br>"))
+              </div>
+            </div>
+          }
+        }
+      </div>
+    }
+
+  }
+
+</div>
+
+
+<script type="text/javascript">
+
+  (function ($) {
+
+  })(jQuery);
+
+</script>

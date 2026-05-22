@@ -1,0 +1,43 @@
+@page "/Partials/ActivityChart"
+@model Integral.Web.PortalSite.Page_Partials.ActivityChart
+@{ Layout = null; }
+
+@if (Model.ShowEmptyStatePageHtml) {
+
+  @Html.Raw(WebHelper.GetEmptyStatePageHtml(
+    title: "Program Insights",
+    description: $"No insights yet. {(Model.CanSendSurvey ? "Add your first survey to get program insights!" : "")}",
+    addActionHtml: Model.CanSendSurvey,
+    actionButtonText: "Add Survey",
+    actionButtonPath: PathHelper.Pages.ProgramSendSurvey()))
+
+} else {
+
+  <div class="flex flex-space-between">
+    <div class="table-title">Monthly @(Model.SelectedChartUnits == PathHelper.ActivityChartUnits.Minutes ? "Activity Minutes" : "Interactions")</div>
+    @Html.Raw(Model.GetUnitsButtonsHtml())
+  </div>
+
+  @Html.Raw(WebHelper.Charts.GetStackedBarChart(Integral.Web.PortalSite.Page_Partials.ActivityChart.PixelHeight, Model.StackLegend, Model.Bars))
+
+}
+
+<script type="text/javascript">
+
+  (function ($) {
+
+    $(document).ready(function () {
+
+      var partialInfo = @Html.Raw(WebHelper.GetJQueryPartialInfo());
+
+      var $unitsButtons = partialInfo.contentElement.find('[name="@Integral.Web.PortalSite.Page_Partials.ActivityChart.UnitsButtonsName"]');
+
+      $unitsButtons.on("change", function (evt) {
+        partialInfo.LoadUrl(null, { "@PathHelper.AbleUrlKeys.ChartUnits": $(evt.target).val() });
+      });
+
+    });
+
+  })(jQuery);
+
+</script>

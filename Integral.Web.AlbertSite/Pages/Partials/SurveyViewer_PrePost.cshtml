@@ -1,0 +1,27 @@
+@page "/Partials/SurveyViewer_PrePost"
+@model Integral.Web.PortalSite.Page_Partials.SurveyViewer_PrePost
+@{ Layout = null; }
+
+@*-- Note requires reports.css --*@
+
+<div class="RptPub360PrePost">
+
+  @Html.Raw(Model.RenderQuestions())
+
+</div>
+
+
+<script type="text/javascript">
+
+  (function ($) {
+
+    $(document).ready(function () {
+      new jBox('Tooltip', {
+        attach: '.RptPub360PrePost .barDot[title]', position: { y: 'top' }
+      });
+    });
+
+
+  })(jQuery);
+
+</script>

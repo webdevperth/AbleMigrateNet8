@@ -1,0 +1,62 @@
+@page "/Partials/AddParticipant_Singular"
+@model Integral.Web.PortalSite.Page_Partials.AddParticipant_Singular
+@{ Layout = null; }
+
+<form id="profileForm" class="form-horizontal">
+
+  @Html.Raw(Model.GetAssignationInfo())
+
+  @Html.Raw(WebHelper.GetTextInputDual("Name:",
+        Integral.Web.PortalSite.Page_Partials.AddParticipant_Singular.FormFields.FirstName, Model.CoacheeInfo.FirstName, "First Name",
+        Integral.Web.PortalSite.Page_Partials.AddParticipant_Singular.FormFields.LastName, Model.CoacheeInfo.LastName, "Last Name",
+        false, WebHelper.InputMaxLength.EmailName))
+  @Html.Raw(WebHelper.GetTextInput("Email Address:", Integral.Web.PortalSite.Page_Partials.AddParticipant_Singular.FormFields.EmailAddress, Model.CoacheeInfo.EmailAddress, 8, "", false))
+  @Html.Raw(WebHelper.GetTextInput("Mobile Number:", Integral.Web.PortalSite.Page_Partials.AddParticipant_Singular.FormFields.MobilePhone, Model.CoacheeInfo.MobilePhone, 8, "", false, false))
+
+  <div class="btnholder">
+    <button type="button" class="btn btn-primary floatright btnSaveProfile" data-addpaxafter="false" data-waitmsg="Updating...">Create Participant</button>
+    <button type="button" class="btn btn-primary floatright mr20 btnSaveProfile" data-addpaxafter="true" data-waitmsg="Updating...">Create and Add Another</button>
+  </div>
+
+</form>
+
+<script type="text/javascript">
+  (function ($) {
+
+    var btnSaveProfile = $(".btnSaveProfile");
+
+    $(document).ready(function () {
+
+      btnSaveProfile.click(SaveProfileChanges);
+
+    });
+
+    function SaveProfileChanges(evt) {
+
+      var thisBtn = $(evt.target);
+      var profileForm = $("#profileForm");
+      var addpaxafter = thisBtn.data('addpaxafter');
+
+      AjaxSubmit({
+        form: profileForm,
+        url: "@PathHelper.CurrentUrl",
+        action: "@Integral.Web.PortalSite.Page_Partials.AddParticipant_Singular.AjaxAction.UpdateProfile",
+        data: {
+          "@Integral.Web.PortalSite.Page_Partials.AddParticipant_Singular.FormFields.AddParticipantAfterCurrent": addpaxafter
+        },
+        onSuccess: function (jqXHR, data) { },
+        onError: function (jqXHR, textStatus, errorThrown) {
+          common_InfoDialog("Update failed, please try again later.");
+        },
+        onAlways: function (data_or_jqXHR, textStatus, jqXHR_or_errorThrown) {
+          // Clean fields if selected to add another after saving current.
+          if (addpaxafter) {
+            $('#profileForm input[type="text"]').val("");
+          }
+        }
+      });
+    }
+
+  })(jQuery);
+
+</script>

@@ -1,0 +1,57 @@
+@page "/Partials/SurveyViewer_Focus"
+@model Integral.Web.PortalSite.Page_Partials.SurveyViewer_Focus
+@{ Layout = null; }
+
+@if (Model.ShowScores) {
+  <div class="flex flex-align-center mb10">
+    <div class="flex1"></div>
+    <div class="flex flex-align-center gap10">
+      <div>Sort By: </div>
+      <select class="SurveyViewer_Focus_SortBy w125 noselect2">
+        @foreach (var option in Model.RowSortOptions) {
+          <!option value="@option.Key.HTMLEncode()" @Html.Raw((Model.QueryRowSortBy == option.Value.OptionEnum).ToValue("selected"))>@option.Value.DisplayText.HTMLEncode()</!option>
+        }
+      </select>
+    </div>
+  </div>
+}
+
+<script type="text/javascript">
+  (function ($) {
+
+    var selSortBy, partialInfo;
+
+    $(document).ready(function () {
+      selSortBy = $(".SurveyViewer_Focus_SortBy");
+      selSortBy.change(ChangeSortBy);
+      partialInfo = common_GetPartialInfo(selSortBy);
+    });
+
+    function ChangeSortBy() {
+      partialInfo.LoadUrl(null, { "@Integral.Web.PortalSite.Page_Partials.SurveyViewer_Focus.QueryKeys.RowSortBy": selSortBy.val() });
+    }
+
+  })(jQuery);
+</script>
+
+<div class="RptPub360Focus">
+
+  @Html.Raw(Model.RenderQuestions())
+
+</div>
+
+
+<script type="text/javascript">
+
+  (function ($) {
+
+    $(document).ready(function () {
+      new jBox('Tooltip', {
+        attach: '.RptPub360Focus .barDot[title]', position: { y: 'top' }
+      });
+    });
+
+
+  })(jQuery);
+
+</script>

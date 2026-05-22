@@ -1,0 +1,46 @@
+@page "/Partials/CompanyReport_Detail"
+@model Integral.Web.PortalSite.Page_Partials.CompanyReport_Detail
+@{ Layout = null; }
+
+@* Note requires reports.css *@
+
+<div class="RptPub360Detailed">
+
+  @foreach (var categoryGroup in Model.GroupedQuestions) {
+    <div class="boxBorder">
+      <div class="boxTitle"><h4>@categoryGroup.CategoryHeading.HTMLEncode()</h4></div>
+      @foreach (var qnItem in categoryGroup.Questions) {
+        <div class="question @Model.GetBenchComparisonRowClass(qnItem)">
+          <div class="qnText">
+            @qnItem.GblQuestionText.HTMLEncode()
+          </div>
+          <div class="qnBars">
+            <div class="scoreBars">
+              @Html.Raw(WebHelper.GetSurveyViewerScoreBar(WebHelper.SurveyViewerScoreBarType.Self, Model.SurveyStats.ScaleMinScore, Model.SurveyStats.ScaleMaxScore, "Self", qnItem.SelfAllScore, Model.BenchmarkDisplayName, qnItem.SelfBenchScore))
+              @if (Model.SurveyStats.RaterAllCount > 0) {
+                @Html.Raw(WebHelper.GetSurveyViewerScoreBar(WebHelper.SurveyViewerScoreBarType.Rater, Model.SurveyStats.ScaleMinScore, Model.SurveyStats.ScaleMaxScore, "Rater", qnItem.RaterAllScore, Model.BenchmarkDisplayName, qnItem.RaterBenchScore))
+              }
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+</div>
+
+
+<script type="text/javascript">
+
+  (function ($) {
+
+    $(document).ready(function () {
+      new jBox('Tooltip', {
+        attach: '.RptPub360Detailed .barDot[title]', position: { y: 'top' }
+      });
+    });
+
+
+  })(jQuery);
+
+</script>

@@ -1,0 +1,79 @@
+@page "/Partials/CoacheeReport_Focus"
+@model Integral.Web.PortalSite.Page_Partials.CoacheeReport_Focus
+@{ Layout = null; }
+
+<div class="flex flex-align-center mb10">
+  <div class="flex1"></div>
+  <div class="flex flex-align-center gap10">
+    <div>Sort By: </div>
+    <div id="SortSelect" class="btn-group btn-group-toggle" data-toggle="buttons">
+      @Html.Raw(Model.GetSortButtons())
+    </div>
+  </div>
+</div>
+
+<script type="text/javascript">
+  (function ($) {
+
+    var partialInfo, SortSelect;
+
+    $(document).ready(function () {
+      SortSelect = $("#SortSelect");
+      partialInfo = common_GetPartialInfo(SortSelect);
+      SortSelect.on("change", "input", SortSelectChange);
+    });
+
+    function SortSelectChange(evt) {
+      partialInfo.LoadUrl(null, { "@PathHelper.AbleUrlKeys.SortBy": SortSelect.find(".active input").val() });
+    }
+
+  })(jQuery);
+</script>
+
+<div class="RptPub360Focus">
+
+  @foreach (var box in Model.GetFocusBoxes()) {
+
+    <div class="boxBorder @box.ClassName">
+      <div class="boxTitle"><div class="catCircle"></div><h4>@box.CategoryName.HTMLEncode()</h4></div>
+
+      @foreach (var qnItem in box.Questions) {
+        <div class="question @Model.GetBenchComparisonRowClass(qnItem)">
+          <div class="qnText">
+            <div class="sectionTitle">@qnItem.CategoryHeading.HTMLEncode()</div>
+            <div>@qnItem.GblQuestionText.HTMLEncode()</div>
+          </div>
+          <div class="qnBars">
+            <div class="scoreBars" data-tooltip="<b>Rater Result</b><br>Compared to Self: @(qnItem.SurveyRaterScore - qnItem.SurveySelfScore)">
+
+              @Html.Raw(WebHelper.GetSurveyViewerScoreBar(WebHelper.SurveyViewerScoreBarType.Self, Model.ScoreMinValue, Model.ScoreMaxValue,
+                                                    "Self", qnItem.SurveySelfScore, Model.NormDisplayName, Model.Hide360ReportNorms ? null : qnItem.NormSelfScore))
+
+              @if (Model.RaterCount > 0) {
+                @Html.Raw(WebHelper.GetSurveyViewerScoreBar(WebHelper.SurveyViewerScoreBarType.Rater, Model.ScoreMinValue, Model.ScoreMaxValue,
+                                                      "Rater", qnItem.SurveyRaterScore, Model.NormDisplayName, Model.Hide360ReportNorms ? null : qnItem.NormRaterScore))
+              }
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+</div>
+
+
+<script type="text/javascript">
+
+  (function ($) {
+
+    $(document).ready(function () {
+      new jBox('Tooltip', {
+        attach: '.RptPub360Focus .barDot[title]', position: { y: 'top' }
+      });
+    });
+
+
+  })(jQuery);
+
+</script>

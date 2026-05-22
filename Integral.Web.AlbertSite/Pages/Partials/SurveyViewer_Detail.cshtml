@@ -1,0 +1,27 @@
+@page "/Partials/SurveyViewer_Detail"
+@model Integral.Web.PortalSite.Page_Partials.SurveyViewer_Detail
+@{ Layout = null; }
+
+@*-- Note requires reports.css --*@
+
+<div class="RptPub360Detailed">
+
+  @Html.Raw(Model.RenderQuestions())
+
+</div>
+
+
+<script type="text/javascript">
+
+  (function ($) {
+
+    $(document).ready(function () {
+      new jBox('Tooltip', {
+        attach: '.RptPub360Detailed .barDot[title]', position: { y: 'top' }
+      });
+    });
+
+
+  })(jQuery);
+
+</script>
