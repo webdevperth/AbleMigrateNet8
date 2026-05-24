@@ -13,6 +13,7 @@ namespace Integral.Web {
       public const string Referrer = "X-Able-Referrer";
       public const string IsTabulator = "X-Able-IsTabulator";
       public const string DebugMessage = "X-Able-DebugMessage";
+      public const string AntiforgeryToken = "X-Able-RequestVerificationToken";
     }
 
     public class RequestItemKey {
@@ -20,6 +21,14 @@ namespace Integral.Web {
       public const string ReferrerUri = "ReferrerUri";
       public const string SequentialNumber = "SequentialNumber";
       public const string RequestExiting = "RequestExiting";
+      public const string AntiforgeryToken = "X-Able-RequestVerificationToken";
+    }
+
+    public static string GetRequestAntiForgeryToken() {
+      return SystemWeb.GetRequestItemValue(RequestItemKey.AntiforgeryToken).ToStringOrEmptyIfNull();
+    }
+    public static void SetRequestAntiForgeryToken(string antiForgeryToken) {
+      SystemWeb.SetRequestItemValue(RequestItemKey.AntiforgeryToken, antiForgeryToken);
     }
 
     public static class Regex {

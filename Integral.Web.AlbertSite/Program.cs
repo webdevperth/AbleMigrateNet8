@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Rewrite;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.AspNetCore.Antiforgery;
 
 internal class Program {
 
@@ -68,6 +69,13 @@ internal class Program {
     builder.Services.AddSingleton<IConfigSource>(sp => new ConfigSource_AspNetCore(builder.Configuration));
 
     builder.Services.AddRazorPages().AddNewtonsoftJson();
+
+    // Antiforgery tokens are validated by Razor Pages on every unsafe HTTP verb (POST/PUT/DELETE/PATCH).
+    // Allow AJAX callers to supply the token in a header instead of a hidden form field — the layout
+    // emits the token as a JS constant and AjaxSubmit.js attaches it to every request.
+    builder.Services.AddAntiforgery(options => {
+      options.HeaderName = AppHelper.HttpHeaders.AntiforgeryToken;
+    });
 
     builder.Services.AddDistributedMemoryCache();
 
@@ -160,7 +168,13 @@ internal class Program {
     }
 
     app.Use(async (context, next) => {
+
       AppHelper.SetRequestStartTimeUtcNow();
+
+      // Store per-request antiforgery token for use with forms.
+      var antiforgery = context.RequestServices.GetRequiredService<IAntiforgery>();
+      AppHelper.SetRequestAntiForgeryToken(antiforgery.GetAndStoreTokens(context).RequestToken);
+
       await next();
     });
 

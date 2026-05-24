@@ -89,6 +89,11 @@ function AjaxSubmit() { // waitMsg, jqForm, options { url, doScroll }, fnCallbac
 
   options = $.extend({}, defaultOptions, options);
 
+  // Attach antiforgery token (emitted by the layout) so Razor Pages POSTs pass AutoValidateAntiforgeryToken.
+  if (isString(app_AntiforgeryToken) && isString(HttpHeader_AntiforgeryToken)) {
+    options.headers[HttpHeader_AntiforgeryToken] = app_AntiforgeryToken;
+  }
+
   if (options.retainStatusWait === true) {
     options.showStatusSuccess = false;
     options.showStatusFail = false;

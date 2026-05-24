@@ -1,4 +1,4 @@
-@{
+﻿@{
     Layout = null;
     var LayoutData = LayoutModel.GetCurrent();
 
@@ -251,10 +251,12 @@
       const app_formKey_UserRole = "@PathHelper.FormKeys.UserRole";
       const app_formKey_AjaxAction = "@PathHelper.FormKeys.AjaxAction";
       const app_SetUserRoleUrl = "@PathHelper.Endpoints.SetUserRole()";
+      const app_AntiforgeryToken = "@AppHelper.GetRequestAntiForgeryToken()";
       const HttpHeader_IsAjax = "@AppHelper.HttpHeaders.IsAjax";
       const HttpHeader_AjaxAction = "@AppHelper.HttpHeaders.AjaxAction";
       const HttpHeader_IsPartial = "@AppHelper.HttpHeaders.IsPartial";
       const HttpHeader_Referrer = "@AppHelper.HttpHeaders.Referrer";
+      const HttpHeader_AntiforgeryToken = "@AppHelper.HttpHeaders.AntiforgeryToken";
       const AjaxReturnValue_StackDump = "@WebHelper.AjaxReturnValues.AppErrorStackDump";
       const AjaxReturnValue_IsAppException = "@WebHelper.AjaxReturnValues.IsAppException";
       const AjaxReturnValue_NewSurveyId = "@WebHelper.AjaxReturnValues.NewSurveyId";
