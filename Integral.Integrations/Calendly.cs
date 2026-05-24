@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Integral.Web;
 using Integral.Web.Services;
 using Newtonsoft.Json;
-using System.Net;
+using System.Net.Http;
 
 namespace Integral.Integrations {
 
@@ -90,12 +90,12 @@ namespace Integral.Integrations {
     public static string GetWebhookStatusJson() {
       // Get the status of the webhooks in Calendly.
       // Just used as a tool for manual testing, see \tools\calendly-status.aspx.
-      using (var web = new System.Net.WebClient()) {
-        ServicePointManager.Expect100Continue = true;
-        ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
-        web.Headers.Add("X-TOKEN", APIToken);
-        string json = web.DownloadString("https://calendly.com/api/v1/hooks/");
-        return json;
+
+      using (var client = new HttpClient()) {
+        client.DefaultRequestHeaders.Add("X-TOKEN", APIToken);
+        var response = client.GetAsync("https://calendly.com/api/v1/hooks/").GetAwaiter().GetResult();
+        response.EnsureSuccessStatusCode();
+        return response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
       }
     }
 

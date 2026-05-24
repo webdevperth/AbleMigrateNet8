@@ -24,7 +24,6 @@ namespace Integral.Web {
     };
 
     const string ConnectionStringName_IntegralDb = "IntegralDb";
-    const string ConnectionStringName_IntegralDb_EF = "IntegralDb_EF";
 
     public const string DefaultTimeZoneIdIana = "Australia/Perth";
     public const string DefaultTimeZoneAbbrev = "WST";
@@ -371,7 +370,7 @@ namespace Integral.Web {
 
     private static IConfigSource _configSource => ServiceLocator.Instance.GetRequiredService<IConfigSource>();
 
-    public static string AppRootPath { get; private set; }
+    public static string WebRootPhysicalPath { get; private set; }
     public static string UploadsFolderName { get; private set; }
     public static string UploadsFolderPath { get; private set; }
     public static string UnitTestProjectPath { get; private set; }
@@ -655,14 +654,14 @@ namespace Integral.Web {
       if (IsUnitTestRunning) {
         // When running unit tests in the IDE, we must set location of web.config manually.
 
-        AppRootPath = Regex.Match(AppDomain.CurrentDomain.BaseDirectory, @"^.*Integral\\").Value + @"Albert\WebApplication\AbleWebApp\Integral.Web.AlbertSite\"; // Kind-of-not-hacky-ish as long as project paths are consistent under "\Integral\".
+        WebRootPhysicalPath = Regex.Match(AppDomain.CurrentDomain.BaseDirectory, @"^.*Integral\\").Value + @"Albert\WebApplication\AbleWebApp\Integral.Web.AlbertSite\"; // Kind-of-not-hacky-ish as long as project paths are consistent under "\Integral\".
         UnitTestProjectPath = Regex.Match(AppDomain.CurrentDomain.BaseDirectory, @"^.*AbleWebApp\\").Value + @"UnitTests\";
         UnitTestResourcesPath = UnitTestProjectPath + @"resources\";
 
       } else {
         // Normal running.
 
-        AppRootPath = SystemWeb.ServerMapPath("/wwwroot").EnsureEndsWith("\\", StringExt.Ensure.IfNotBlank);
+        WebRootPhysicalPath = SystemWeb.ServerMapPath("/wwwroot").EnsureEndsWith("\\", StringExt.Ensure.IfNotBlank);
       }
 
       IsLiveServer = IsUnitTestRunning ? false : bool.Parse(GetAppSettingRequired("IsLive"));
@@ -676,10 +675,10 @@ namespace Integral.Web {
       // If set, it refers to the mounted file storage path in the Azure App Service.
       // Setting can be omitted on local dev machine, which defaults to "Storage" folder in web root.
       UploadsFolderName = GetAppSettingRequired("UploadsFolderName");
-      UploadsFolderPath = GetAppSettingOrDefault("UploadsFolderPath", AppRootPath + UploadsFolderName, true).EnsureEndsWith("\\", StringExt.Ensure.IfNotBlank);
+      UploadsFolderPath = GetAppSettingOrDefault("UploadsFolderPath", WebRootPhysicalPath + UploadsFolderName, true).EnsureEndsWith("\\", StringExt.Ensure.IfNotBlank);
 
       // Location of app-generated log files. Defaults to "/logs" under the web root (which must be made writeable by IIS)
-      LogsFolderPath = GetAppSettingOrDefault("LogsFolderPath", AppRootPath + "logs", true).EnsureEndsWith("\\", StringExt.Ensure.IfNotBlank);
+      LogsFolderPath = GetAppSettingOrDefault("LogsFolderPath", WebRootPhysicalPath + "logs", true).EnsureEndsWith("\\", StringExt.Ensure.IfNotBlank);
 
       SetWebConfigValues();
 
@@ -949,7 +948,7 @@ namespace Integral.Web {
 
     private static string GetConfigFileContent(string virtualPath) {
       try {
-        return System.IO.File.ReadAllText(AppRootPath + virtualPath.Replace("/", "\\"));
+        return System.IO.File.ReadAllText(WebRootPhysicalPath + virtualPath.Replace("/", "\\"));
       } catch (Exception e) {
         throw new ApplicationException("Can't find config file: " + virtualPath, e);
       }

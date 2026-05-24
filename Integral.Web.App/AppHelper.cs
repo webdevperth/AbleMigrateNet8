@@ -117,7 +117,7 @@ namespace Integral.Web {
 
     public static string MapPath(string httpPath) {
       if (ConfigHelper.IsUnitTestRunning) {
-        return (ConfigHelper.AppRootPath + httpPath.Replace("/", @"\")).Replace(@"\\", @"\");
+        return (ConfigHelper.WebRootPhysicalPath + httpPath.Replace("/", @"\")).Replace(@"\\", @"\");
       } else {
         return SystemWeb.ServerMapPath(httpPath);
       }
