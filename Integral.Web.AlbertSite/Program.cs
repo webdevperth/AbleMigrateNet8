@@ -1,5 +1,4 @@
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Globalization;
 using System.Net;
 using Integral.Integrations.Amplitude;
@@ -9,205 +8,199 @@ using Integral.Web.PortalSite.AppCode;
 using Integral.Web.PortalSite.Endpoints;
 using Integral.Web.Services;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Rewrite;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
-// Force TLS 1.2 / 1.3 for all outbound HTTPS — required for modern API integrations.
-ServicePointManager.SecurityProtocol =
-  SecurityProtocolType.Tls12 | SecurityProtocolType.Tls13;
+internal class Program {
 
-var builder = WebApplication.CreateBuilder(args);
+  private static Uri LaunchUrl;
 
-// Configuration sources (CreateBuilder already adds appsettings.json,
-// appsettings.{Environment}.json, env vars and user secrets in development).
-// Add appsettings.Local.json for developer-local secrets that should never be committed.
-builder.Configuration.AddJsonFile("appsettings.Local.json", optional: true, reloadOnChange: true);
+  private static void Main(string[] args) {
 
-builder.Services.AddHttpContextAccessor();
+    // Force TLS 1.2 / 1.3 for all outbound HTTPS — required for modern API integrations.
+    ServicePointManager.SecurityProtocol =
+      SecurityProtocolType.Tls12 | SecurityProtocolType.Tls13;
 
-builder.Services.AddSingleton<ISystemWeb, SystemWeb_AspNetCore>();
+    var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddMemoryCache();
-builder.Services.AddSingleton<IAppCache, AppCache_AspNetCore>();
+    // Configuration sources (CreateBuilder already adds appsettings.json,
+    // appsettings.{Environment}.json, env vars and user secrets in development).
+    // Add appsettings.Local.json for developer-local secrets that should never be committed.
+    builder.Configuration.AddJsonFile("appsettings.Local.json", optional: true, reloadOnChange: true);
 
-builder.Services.AddSingleton<IConfigSource>(sp => new ConfigSource_AspNetCore(builder.Configuration));
+    var applicationUrls = builder.Configuration.GetValue<string>("ApplicationUrl");
+    if (!applicationUrls.IsNullOrEmpty()) builder.WebHost.UseUrls(applicationUrls);
 
-builder.Services.AddRazorPages().AddNewtonsoftJson();
+    LaunchUrl = builder.Configuration.GetValue<Uri>("LaunchUrl");
 
-builder.Services.AddDistributedMemoryCache();
-builder.Services.AddSession(o => {
-  o.IdleTimeout       = TimeSpan.FromMinutes(120);
-  o.Cookie.HttpOnly   = true;
-  o.Cookie.IsEssential = true;
-  o.Cookie.SameSite   = SameSiteMode.Strict;
-});
+    // For localhost, this ensures that the domain in X-Forwarded-Host (like when using Cloudflare tunnel forwarding)
+    // is recoggnised as the actual domain in the app request context, instead of localhost.
+    // Helps when mimicing prod behaviour as one can assume a proper domain is being used.
+    builder.Services.Configure<ForwardedHeadersOptions>(options => {
+      options.ForwardedHeaders =
+          ForwardedHeaders.XForwardedHost |
+          ForwardedHeaders.XForwardedProto |
+          ForwardedHeaders.XForwardedFor;
+      // Optional for local development
+      options.KnownNetworks.Clear();
+      options.KnownProxies.Clear();
+    });
 
-builder.Services.AddApplicationInsightsTelemetry(options => {
-  // Connection string priority: env var APPLICATIONINSIGHTS_CONNECTION_STRING (read by default),
-  // then ApplicationInsights:ConnectionString in IConfiguration, then the legacy flat key.
-  if (string.IsNullOrWhiteSpace(options.ConnectionString)) {
-    options.ConnectionString = builder.Configuration["ApplicationInsightsConnectionString"];
-  }
-});
+    builder.Services.AddHsts(options => {
+      options.MaxAge = TimeSpan.FromDays(365);
+      options.IncludeSubDomains = true;
+      options.Preload = false; // set true only if you intend to submit to browser preload lists
+    });
 
-builder.Services.Configure<RequestLocalizationOptions>(o => {
-  var au = new CultureInfo("en-AU");
-  o.DefaultRequestCulture = new RequestCulture(au, au);
-  o.SupportedCultures     = new[] { au };
-  o.SupportedUICultures   = new[] { au };
-});
+    builder.Services.AddHttpContextAccessor();
 
-var app = builder.Build();
+    builder.Services.AddSingleton<ISystemWeb, SystemWeb_AspNetCore>();
 
-// Wire legacy ServiceLocator -> DI so existing call sites
-// (ServiceLocator.Instance.GetService<T>) keep working unchanged.
-ServiceLocator.Instance.Register<ISystemWeb>  (() => app.Services.GetRequiredService<ISystemWeb>());
-ServiceLocator.Instance.Register<IAppCache>   (() => app.Services.GetRequiredService<IAppCache>());
-ServiceLocator.Instance.Register<IConfigSource>(() => app.Services.GetRequiredService<IConfigSource>());
+    builder.Services.AddMemoryCache();
+    builder.Services.AddSingleton<IAppCache, AppCache_AspNetCore>();
 
-// One-time DI registration formerly performed by IHttpModule.Init implementations.
-// Order: ApplicationInsights first so other modules can use ITelemetryService in their error paths.
-ApplicationInsightsBootstrap.Initialize();
-IntercomBootstrap.Initialize();
-AmplitudeBootstrap.Initialize();
+    builder.Services.AddSingleton<IConfigSource>(sp => new ConfigSource_AspNetCore(builder.Configuration));
 
-AppHelper.SetAppStartTime(DateTime.UtcNow);
+    builder.Services.AddRazorPages().AddNewtonsoftJson();
 
-// Graceful shutdown — invoke the same Shutdown() calls the .NET Framework Application_End did.
-app.Lifetime.ApplicationStopping.Register(() => {
+    builder.Services.AddDistributedMemoryCache();
 
-  try {
-    ServiceLocator.Instance.GetService<IIntercomEventService>()?.Shutdown();
-  } catch (Exception ex) {
-    LogHelper.LogError($"Error shutting down IntercomEventService: {ex.Message}");
-  }
+    builder.Services.AddSession(o => {
+      o.IdleTimeout = TimeSpan.FromMinutes(120);
+      o.Cookie.HttpOnly = true;
+      o.Cookie.IsEssential = true;
+      o.Cookie.SameSite = SameSiteMode.Strict;
+    });
 
-  try {
-    ServiceLocator.Instance.GetService<IIntercomJwtService>()?.Shutdown();
-  } catch (Exception ex) {
-    LogHelper.LogError($"Error shutting down IntercomJwtService: {ex.Message}");
-  }
+    builder.Services.AddApplicationInsightsTelemetry(options => {
+      // Connection string priority: env var APPLICATIONINSIGHTS_CONNECTION_STRING (read by default),
+      // then ApplicationInsights:ConnectionString in IConfiguration, then the legacy flat key.
+      if (string.IsNullOrWhiteSpace(options.ConnectionString)) {
+        options.ConnectionString = builder.Configuration["ApplicationInsightsConnectionString"];
+      }
+    });
 
-  try {
-    ServiceLocator.Instance.GetService<ITelemetryService>()?.Shutdown();
-  } catch (Exception ex) {
-    LogHelper.LogError($"Error shutting down ApplicationInsights: {ex.Message}");
-  }
+    builder.Services.Configure<RequestLocalizationOptions>(o => {
+      var au = new CultureInfo("en-AU");
+      o.DefaultRequestCulture = new RequestCulture(au, au);
+      o.SupportedCultures = new[] { au };
+      o.SupportedUICultures = new[] { au };
+    });
 
-  try {
-    ServiceLocator.Instance.GetService<IAmplitudeService>()?.Shutdown();
-  } catch (Exception ex) {
-    LogHelper.LogError($"Error shutting down Amplitude: {ex.Message}");
-  }
-});
+    var app = builder.Build();
 
-// Canonical-host redirect: legacy hostnames 301 to app.helloable.co. Placed before any
-// other middleware so the redirect short-circuits all downstream work.
-// Ports IIS rewrite rule "Redirect to app.helloable.co".
-var canonicalHostRedirectFrom = new[] {
-  "albert.integralsurveys.com",
-  "integral-able-live.azurewebsites.net",
-};
-app.Use(async (context, next) => {
-
-  var host = context.Request.Host.Host;
-  if (Array.Exists(canonicalHostRedirectFrom, h => string.Equals(h, host, StringComparison.OrdinalIgnoreCase))) {
-    var target = "https://app.helloable.co" + context.Request.PathBase + context.Request.Path + context.Request.QueryString;
-    context.Response.StatusCode = StatusCodes.Status301MovedPermanently;
-    context.Response.Headers["Location"] = target;
-    return;
-  }
-
-  await next();
-});
-
-// BeginRequest equivalent: capture request start time, HSTS header, HTTP->HTTPS redirect.
-// Placed before UseStaticFiles so static files are also covered.
-app.Use(async (context, next) => {
-
-  AppHelper.SetRequestStartTimeUtcNow();
-
-  if (!ConfigHelper.IsDevServer) {
-    if (string.Equals(context.Request.Scheme, "https", StringComparison.OrdinalIgnoreCase)) {
-      context.Response.Headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains; preload";
-    } else if (string.Equals(context.Request.Scheme, "http", StringComparison.OrdinalIgnoreCase)) {
-      var target = "https://" + context.Request.Host + context.Request.PathBase + context.Request.Path + context.Request.QueryString;
-      context.Response.StatusCode = StatusCodes.Status301MovedPermanently;
-      context.Response.Headers["Location"] = target;
-      return;
+    if (app.Environment.IsDevelopment()) {
+      if (LaunchUrl != null) {
+        app.UseForwardedHeaders();
+      }
+    } else {
+      app.UseExceptionHandler("/Error");
+      app.UseHsts();
     }
-  }
 
-  await next();
-});
+    app.UseHttpsRedirection();
 
-// Catch 4xx/5xx responses from downstream middleware and re-execute /error/{status}
-// to render the matching Razor Page. Placed here so it covers static-file 404s, the
-// notfound block below, and Razor Pages "no route matched" responses.
-app.UseStatusCodePagesWithReExecute("/error/{0}");
+    // Wire legacy ServiceLocator -> DI so existing call sites
+    // (ServiceLocator.Instance.GetService<T>) keep working unchanged.
+    ServiceLocator.Instance.Register(() => app.Services.GetRequiredService<ISystemWeb>());
+    ServiceLocator.Instance.Register(() => app.Services.GetRequiredService<IAppCache>());
+    ServiceLocator.Instance.Register(() => app.Services.GetRequiredService<IConfigSource>());
 
-// Cache-busting filename rewrite: "/foo__v1.2.3.css" -> "/foo.css". Mirrors IIS rule
-// "CachedResourceVersioning". Must run before UseStaticFiles so static files are served
-// from the rewritten path.
-app.UseRewriter(new RewriteOptions()
-  .AddRewrite(@"^(.*)__v[0-9.]+\.(css|js|gif|jpg|png|ico)$", "$1.$2", skipRemainingRules: true));
+    // One-time DI registration formerly performed by IHttpModule.Init implementations.
+    // Order: ApplicationInsights first so other modules can use ITelemetryService in their error paths.
+    ApplicationInsightsBootstrap.Initialize();
+    IntercomBootstrap.Initialize();
+    AmplitudeBootstrap.Initialize();
 
-// Block direct access to internal-only top-level paths. Mirrors IIS rule "notfound".
-// Placed before UseStaticFiles so a stray static file under /templates/ etc. is still 404'd.
-// Razor Pages serves "/Foo" from "Pages/Foo.cshtml", so it never serves "/Pages/Foo" itself —
-// no need to whitelist any Razor route here.
-var blockedInternalSegments = new HashSet<string>(StringComparer.OrdinalIgnoreCase) {
-  "templates", "appcode", "bin", "docs", "MasterPages", "obj",
-  "Pages", "Partials", "Properties", "UserControls",
-};
-app.Use(async (context, next) => {
+    AppHelper.SetAppStartTime(DateTime.UtcNow);
 
-  var path = context.Request.Path.Value;
-  if (!string.IsNullOrEmpty(path) && path.Length > 1) {
-    var slash = path.IndexOf('/', 1);
-    var head = slash > 0 ? path.Substring(1, slash - 1) : path.Substring(1);
-    if (blockedInternalSegments.Contains(head)) {
-      context.Response.StatusCode = StatusCodes.Status404NotFound;
-      return;
+    // Graceful shutdown — invoke the same Shutdown() calls the .NET Framework Application_End did.
+    app.Lifetime.ApplicationStopping.Register(() => {
+
+      try {
+        ServiceLocator.Instance.GetService<IIntercomEventService>()?.Shutdown();
+      } catch (Exception ex) {
+        LogHelper.LogError($"Error shutting down IntercomEventService: {ex.Message}");
+      }
+
+      try {
+        ServiceLocator.Instance.GetService<IIntercomJwtService>()?.Shutdown();
+      } catch (Exception ex) {
+        LogHelper.LogError($"Error shutting down IntercomJwtService: {ex.Message}");
+      }
+
+      try {
+        ServiceLocator.Instance.GetService<ITelemetryService>()?.Shutdown();
+      } catch (Exception ex) {
+        LogHelper.LogError($"Error shutting down ApplicationInsights: {ex.Message}");
+      }
+
+      try {
+        ServiceLocator.Instance.GetService<IAmplitudeService>()?.Shutdown();
+      } catch (Exception ex) {
+        LogHelper.LogError($"Error shutting down Amplitude: {ex.Message}");
+      }
+    });
+
+    // Apply LaunchUrl
+    if (LaunchUrl != null) {
+      app.Use(async (context, next) => {
+        if (!context.Request.Host.Host.Equals(LaunchUrl.Host)) {
+          context.Response.Redirect(LaunchUrl.ToString());
+          return;
+        }
+        await next();
+      });
     }
+
+    app.Use(async (context, next) => {
+      AppHelper.SetRequestStartTimeUtcNow();
+      await next();
+    });
+
+    // Cache-busting filename rewrite: "/foo__v1.2.3.css" -> "/foo.css". Mirrors IIS rule
+    // "CachedResourceVersioning". Must run before UseStaticFiles so static files are served
+    // from the rewritten path.
+    app.UseRewriter(new RewriteOptions()
+      .AddRewrite(@"^(.*)__v[0-9.]+\.(css|js|gif|jpg|png|ico)$", "$1.$2", skipRemainingRules: true));
+
+    app.UseRequestLocalization();
+    app.UseStaticFiles();
+    app.UseRouting();
+    app.UseSession();
+
+    // EndRequest equivalent: runs after the endpoint executes. Needs session to be available,
+    // hence placed after UseSession.
+    app.Use(async (context, next) => {
+
+      await next();
+
+      if (PathHelper.IsCurrentUrlPartial()
+        && SessionHelper.CanShowDebugMessages
+        && !SystemWeb.IsResponseContentTypeJson) {
+        try {
+          SystemWeb.ResponseWriteLine("<script>" + LogHelper.GetResponseLogJS() + "\n</script>");
+        } catch (Exception) {
+          // ignore — response may already be flushed
+        }
+      }
+
+      AmplitudeBootstrap.OnEndRequest();
+    });
+
+    app.MapRazorPages();
+
+    AjaxEndpoints.MapEndpoints(app);
+    ApiEndpoints.MapEndpoints(app);
+
+    app.MapGet("/health", () => "ok");
+
+    app.Run();
   }
-
-  await next();
-});
-
-app.UseRequestLocalization();
-app.UseStaticFiles();
-app.UseRouting();
-app.UseSession();
-
-// EndRequest equivalent: runs after the endpoint executes. Needs session to be available,
-// hence placed after UseSession.
-app.Use(async (context, next) => {
-
-  await next();
-
-  if (PathHelper.IsCurrentUrlPartial()
-    && SessionHelper.CanShowDebugMessages
-    && !SystemWeb.IsResponseContentTypeJson) {
-    try {
-      SystemWeb.ResponseWriteLine("<script>" + LogHelper.GetResponseLogJS() + "\n</script>");
-    } catch (Exception) {
-      // ignore — response may already be flushed
-    }
-  }
-
-  AmplitudeBootstrap.OnEndRequest();
-});
-
-app.MapRazorPages();
-
-AjaxEndpoints.MapEndpoints(app);
-ApiEndpoints.MapEndpoints(app);
-
-app.MapGet("/health", () => "ok");
-
-app.Run();
+}

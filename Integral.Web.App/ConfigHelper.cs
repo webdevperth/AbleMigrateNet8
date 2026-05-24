@@ -409,6 +409,7 @@ namespace Integral.Web {
 
     // General settings.
 
+    public static string LaunchUrl { get; private set; }
     public static int AnonymousSessionTimeoutDays { get; private set; }
     public static int LoginSessionTimeoutDays { get; private set; }
     public static string IntegralDbConnectionString { get; private set; }
@@ -667,6 +668,8 @@ namespace Integral.Web {
       IsLiveServer = IsUnitTestRunning ? false : bool.Parse(GetAppSettingRequired("IsLive"));
       IsStagingServer = IsUnitTestRunning ? false : bool.Parse(GetAppSettingRequired("IsStaging"));
       IsDevServer = IsUnitTestRunning || (!IsLiveServer && !IsStagingServer);
+
+      LaunchUrl = GetAppSettingOrDefault("LaunchUrl", "");
 
       AnonymousSessionTimeoutDays = GetAppSettingOrDefault("LoginSessionTimeoutDays", "").ToIntOrDefault(DefaultAnonymousSessionTimeoutDays);
       LoginSessionTimeoutDays = GetAppSettingOrDefault("LoginSessionTimeoutDays", "").ToIntOrDefault(DefaultLoginSessionTimeoutDays);

@@ -1,4 +1,4 @@
-using Integral.Integrations.Amplitude;
+﻿using Integral.Integrations.Amplitude;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using static Integral.Web.AmplitudeHelper;
@@ -62,7 +62,10 @@ namespace Integral.Web.PortalSite.Pages_Albert {
 
     public IActionResult OnPost() {
 
-      AjaxSubmitHelper.Process(ajax => {
+      AjaxSubmitHelper.Process(ajax => OnAjax(ajax));
+      return new EmptyResult();
+
+      void OnAjax(AjaxSubmitHelper ajax) {
 
         string loginRedirectUrl = SessionHelper.GetLoginRedirectUrl();
         string loginEmail = ajax.CheckFieldRegex(FormFields.EmailAddress, "Email", AppHelper.Regex.Email, true, "Please enter a valid email address.");
@@ -104,9 +107,8 @@ namespace Integral.Web.PortalSite.Pages_Albert {
         } else {
           ajax.SetRedirectUrl(PathHelper.GetDefaultPostLoginURL(SessionHelper.GetUserInfoOrNull()));
         }
-      });
+      }
 
-      return new EmptyResult();
     }
 
     public string GetInitialEmailAddr() {
