@@ -1,4 +1,4 @@
-using Integral.Web;
+﻿using Integral.Web;
 using Integral.Web.Services;
 using Newtonsoft.Json;
 using System;
@@ -1371,7 +1371,7 @@ namespace Integral.Web.PortalSite.Pages_Albert {
           optionsHtml.Append(" value=\"" + quoteItem + "\"");
           optionsHtml.Append(" data-" + SubscriptionsDataAttr.SubscriptionId + " =\"" + qi.SubscriptionId + "\"");
           optionsHtml.Append(" data-" + SubscriptionsDataAttr.QuoteItemId + " =\"" + qi.QuoteItemId + "\">");
-          optionsHtml.Append(string.Join(" - ", $"({qi.AvailableSubscriptions} available)", qi.ItemDescription));
+          optionsHtml.Append(string.Join(" - ", $"({qi.AvailableSubscriptions} available)", qi.ItemDescriptionHtml));
           optionsHtml.AppendLine("</option>");
         }
 

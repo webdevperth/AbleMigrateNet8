@@ -105,7 +105,7 @@
                     <div class="quoteNotes">
                       <table class="tblQuoteItem table compressed">
                         <tr>
-                          <td class="qiDescr">@quoteItem.ItemDescription</td>
+                          <td class="qiDescr">@Html.Raw(quoteItem.ItemDescriptionHtml)</td>
                           <td class="type-components-money">@quoteItem.PriceXQty(null).ToString("C", "-")</td>
                           <td class="type-components-chart"><div class="components-chart" data-percent="@Model.GetQuoteItemPercentage(components, quoteItem)"><canvas></canvas></div></td>
                         </tr>

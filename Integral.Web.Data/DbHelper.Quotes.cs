@@ -539,7 +539,7 @@ namespace Integral.Web {
               categoryName: dr.GetString("CategoryName"),
               productCategoryId: dr.GetIntOrNull("ProductCategoryId"),
               productName: string.Join(" - ", dr.GetString("SubCategory"), dr.GetString("ProductTitle")),
-              itemDescription: dr.GetString("ItemDescription"),
+              itemDescriptionHtml: dr.GetString("ItemDescription"),
               quoteComponentWarningMessage: dr.GetString("QuoteComponentWarningMessage"),
               unitPrice: dr.GetDecimalOrNull("UnitPrice"),
               quantity: dr.GetDecimalOrNull("Quantity"),
@@ -1128,7 +1128,7 @@ namespace Integral.Web {
           dr => {
             result.Add(new QuoteItemForSubscription(
               quoteItemId: dr.GetInt("QuoteItemId"),
-              description: dr.GetString("ItemDescription"),
+              itemDescriptionHtml: dr.GetString("ItemDescription"),
               displayOrder: dr.GetInt("DisplayOrder"),
               unitPrice: dr.GetDecimalOrNull("UnitPrice") ?? 0,
               subscriptionId: dr.GetInt("SubscriptionId"),
@@ -1146,7 +1146,7 @@ namespace Integral.Web {
 
       public class QuoteItemForSubscription {
         public int QuoteItemId { get; private set; }
-        public string ItemDescription { get; private set; }
+        public string ItemDescriptionHtml { get; private set; }
         public int DisplayOrder { get; private set; }
         public decimal UnitPrice { get; private set; }
         public int SubscriptionId { get; private set; }
@@ -1155,7 +1155,7 @@ namespace Integral.Web {
 
         public QuoteItemForSubscription(
           int quoteItemId,
-          string description,
+          string itemDescriptionHtml,
           int displayOrder,
           decimal unitPrice,
           int subscriptionId,
@@ -1164,7 +1164,7 @@ namespace Integral.Web {
           int assignedSubscriptions
         ) {
           this.QuoteItemId = quoteItemId;
-          this.ItemDescription = description;
+          this.ItemDescriptionHtml = itemDescriptionHtml;
           this.DisplayOrder = displayOrder;
           this.UnitPrice = unitPrice;
           this.SubscriptionId = subscriptionId;
@@ -1368,7 +1368,7 @@ namespace Integral.Web {
           public string CategoryName { get; set; }
           public int? ProductCategoryId { get; set; }
           public string ProductName { get; set; }
-          public string ItemDescription { get; set; }
+          public string ItemDescriptionHtml { get; set; }
           public string QuoteComponentWarningMessage { get; set; }
           public decimal? UnitPrice { get; set; }
           public decimal? Quantity { get; set; }
@@ -1386,7 +1386,7 @@ namespace Integral.Web {
           public decimal? MinAllowedQuotePrice { get; private set; }
 
           public QuoteItemInfo(
-            int quoteItemId, int? productId, string categoryName, int? productCategoryId, string productName, string itemDescription, string quoteComponentWarningMessage,
+            int quoteItemId, int? productId, string categoryName, int? productCategoryId, string productName, string itemDescriptionHtml, string quoteComponentWarningMessage,
             decimal? unitPrice, decimal? quantity, string quantityDescr, int optionalId, bool qtySelectable, bool? isAccepted,
             bool hasLockedComponents, bool hasUnallocatedComponentsToInvoice, int? subscriptionId, bool requiresSubscription, bool isQuantityPerPerson, decimal? minAllowedQuotePrice
           ) {
@@ -1395,7 +1395,7 @@ namespace Integral.Web {
             this.CategoryName = categoryName;
             this.ProductCategoryId = productCategoryId;
             this.ProductName = productName;
-            this.ItemDescription = itemDescription;
+            this.ItemDescriptionHtml = itemDescriptionHtml;
             this.QuoteComponentWarningMessage = quoteComponentWarningMessage;
             this.UnitPrice = unitPrice;
             this.Quantity = quantity;

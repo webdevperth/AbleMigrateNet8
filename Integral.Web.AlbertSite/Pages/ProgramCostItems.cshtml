@@ -100,7 +100,7 @@
 
     @if (SessionHelper.AppAccess.Programs.CanSetQuoteItem(Model.ProgramInfo)) {
       @Html.Raw(WebHelper.GetSelectRow("Quote Item:", Integral.Web.PortalSite.Pages_Albert.ProgramCostItems.FormFields.QuoteItemId, 7, Model.GetQuoteItemOptions(), Model.IsNewCostItem ? "" :
-            WebHelper.GetComponentQuoteTooltipAndLink(Model.CostItemInfo?.ComponentQuoteInfo.QuotePublicGuid, Model.CostItemInfo?.ComponentQuoteInfo?.QuoteItemDescription), !Model.CanEditCostItem))
+            WebHelper.GetComponentQuoteTooltipAndLink(Model.CostItemInfo?.ComponentQuoteInfo.QuotePublicGuid, Model.CostItemInfo?.ComponentQuoteInfo?.QuoteItemDescriptionHtml), !Model.CanEditCostItem))
     }
 
     @if (!Model.IsNewCostItem && SessionHelper.AppAccess.Programs.CanMoveToProgram(Model.ProgramInfo)) {

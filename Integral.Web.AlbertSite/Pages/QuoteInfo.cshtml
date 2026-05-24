@@ -603,7 +603,7 @@
         @foreach(var qi in Model.QuoteInfo.QuoteItems) {
           @:AddProductRow(new ProductRowInfo(
           @:  @qi.ProductId.GetValueOrDefault(0)
-          @:  , "@qi.ItemDescription.ToStringOrEmptyIfNull().RegexReplace("[\r\n]", "").Replace("\"", "\\\"")"
+          @:  , "@qi.ItemDescriptionHtml.ToStringOrEmptyIfNull().RegexReplace("[\r\n]", "").Replace("\"", "\\\"")"
           @:  , @qi.OptionalId
           @:  , @qi.UnitPrice.GetValueOrDefault(0)
           @:  , @qi.Quantity.GetValueOrDefault(0)

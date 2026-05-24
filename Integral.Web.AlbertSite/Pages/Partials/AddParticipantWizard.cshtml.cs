@@ -1,4 +1,4 @@
-using Integral.Integrations;
+﻿using Integral.Integrations;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using System;
@@ -966,7 +966,7 @@ namespace Integral.Web.PortalSite.Page_Partials {
         // Create QuoteItemForSubscription object to link created QuoteItem to subscription
         quoteItemForSubscription = new DbHelper.AbleQuotes.QuoteItemForSubscription(
           quoteItemId: subscriptionQuoteItemId,
-          description: subscriptionProductInfo.ProductDescription,
+          itemDescriptionHtml: subscriptionProductInfo.ProductDescription,
           displayOrder: 1,
           unitPrice: 0,
           subscriptionId: formValues.SelectedOrgSubscriptionItem.SubscriptionId.Value,

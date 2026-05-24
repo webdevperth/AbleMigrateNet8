@@ -1571,7 +1571,7 @@ namespace Integral.Web {
           Label = labelText,
           LabelCols = BootstrapCols.FormLabel_Legacy,
           ContentCols = inputCols,
-          RightHtml = isNewItem ? "" : GetComponentQuoteTooltipAndLink(componentQuoteInfo?.QuotePublicGuid, componentQuoteInfo?.QuoteItemDescription)
+          RightHtml = isNewItem ? "" : GetComponentQuoteTooltipAndLink(componentQuoteInfo?.QuotePublicGuid, componentQuoteInfo?.QuoteItemDescriptionHtml)
         },
         new WebHelper.SelectInfo() {
           InputName = fieldName,
@@ -2148,10 +2148,10 @@ namespace Integral.Web {
         + $@">{GetIconHtml(action)}<span>{linkText.HTMLEncode()}</span></a>";
     }
 
-    public static string GetComponentQuoteTooltipAndLink(Guid? quotePublicGuid, string quoteItemDescription) {
+    public static string GetComponentQuoteTooltipAndLink(Guid? quotePublicGuid, string quoteItemDescriptionHtml) {
       return $@"
         <a class=""mt5"" href=""{PathHelper.Pages.QuoteDetails(quotePublicGuid, PathHelper.QuoteTabEnum.components)}"" target=""_blank"">
-          {GetIconTooltip(ActionButtonTypeEnum.view, "Click to view details", $"Item description: {quoteItemDescription}")}
+          {GetIconTooltip(ActionButtonTypeEnum.view, "Click to view details", $"Item description: {quoteItemDescriptionHtml}")}
         </a>";
     }
 

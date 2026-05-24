@@ -26,7 +26,7 @@
     <tbody>
       @foreach (var quoteItem in Model.QuoteInfo.QuoteItems) {
         <tr class="item-row @(quoteItem.OptionalInfo.IsOptional ? "item-opt-yes" : "item-opt-no") @(quoteItem.ProductId == null ? "item-heading" : "")" data-item="@quoteItem.QuoteItemId">
-          <td class="item-td-des">@Html.Raw(quoteItem.ItemDescription)</td>
+          <td class="item-td-des">@Html.Raw(quoteItem.ItemDescriptionHtml)</td>
           @if (Model.HasOptionals) { @Html.Raw("<td class=\"item-td-opt align-right pl0 pr0\">") }
           @Html.Raw(Model.GetOptionOrHidden(quoteItem))
           @if (Model.HasOptionals) { @Html.Raw("</td>") }

@@ -66,7 +66,7 @@
           @foreach (var QuoteItem in Model.QuoteInfo.QuoteItems) {
             <tr class="item-row" data-item="@QuoteItem.QuoteItemId">
               <td class="item-td-cat">@QuoteItem.CategoryName</td>
-              <td class="item-td-des">@Html.Raw(QuoteItem.ItemDescription)</td>
+              <td class="item-td-des">@Html.Raw(QuoteItem.ItemDescriptionHtml)</td>
               <td class="item-td-opt align-center pl0 pr0">@Model.GetOptional(QuoteItem)</td>
               <td class="item-td-qty align-center pl0 pr0">@(QuoteItem.Quantity == null ? "" : (((decimal)QuoteItem.Quantity).ToString("0.##")) + QuoteItem.QuantityDescr.HTMLEncode().EnsureStartsWith(" ", true))</td>
               <td class="item-td-amt align-right pl0 pr0">@(QuoteItem.UnitPrice == null ? "" : ((decimal)QuoteItem.UnitPrice).ToString("C"))</td>

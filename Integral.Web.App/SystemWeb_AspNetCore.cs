@@ -23,15 +23,15 @@ namespace Integral.Web {
       _env = env;
     }
 
-    private HttpContext  RequestContext => _accessor.HttpContext;
-    private HttpRequest  Request        => RequestContext?.Request;
-    private HttpResponse Response       => RequestContext?.Response;
+    private HttpContext RequestContext => _accessor.HttpContext;
+    private HttpRequest Request => RequestContext?.Request;
+    private HttpResponse Response => RequestContext?.Response;
 
     public bool HasRequest => RequestContext != null;
 
     // Method & content shape
 
-    public bool IsHttpGet  => HttpMethods.IsGet (Request?.Method ?? string.Empty);
+    public bool IsHttpGet => HttpMethods.IsGet(Request?.Method ?? string.Empty);
     public bool IsHttpPost => HttpMethods.IsPost(Request?.Method ?? string.Empty);
     public bool IsAjaxPost => IsHttpPost && RequestHeaderHasValue(AppHelper.HttpHeaders.IsAjax);
     public bool IsTabulator => RequestHeaderHasValue(AppHelper.HttpHeaders.IsTabulator);
@@ -62,10 +62,10 @@ namespace Integral.Web {
       return new Uri(full).GetLeftPart(partial);
     }
 
-    public string RequestUserAgent    => GetRequestHeader("User-Agent");
-    public string RequestMethod       => Request?.Method;
+    public string RequestUserAgent => GetRequestHeader("User-Agent");
+    public string RequestMethod => Request?.Method;
     public string RequestPhysicalPath => Request == null ? null : ServerMapPath(Request.Path.Value);
-    public string RequestUrlHost      => Request?.Host.Host;
+    public string RequestUrlHost => Request?.Host.Host;
     public string JavaScriptStringEncode(string content) => System.Web.HttpUtility.JavaScriptStringEncode(content);
     public Dictionary<string, StringValues> ParseQueryString(string query) => QueryHelpers.ParseQuery(query);
     public string HtmlEncode(string content) => WebUtility.HtmlEncode(content);
@@ -83,7 +83,7 @@ namespace Integral.Web {
       Request?.Query?.Keys.Any(k => string.Equals(k, key, StringComparison.OrdinalIgnoreCase)) ?? false;
 
     public string RequestQueryStringValue(string key) =>
-      Request?.Query[key].ToString();
+      Request?.Query[key];
 
     public Uri GetReferrerUri() {
       if (AppHelper.GetRequestItemOrNull(AppHelper.RequestItemKey.ReferrerUri) is Uri cached) return cached;
@@ -152,11 +152,11 @@ namespace Integral.Web {
     public void AddResponseCookie(SessionCookieDescriptor descr) {
       if (Response == null) return;
       Response.Cookies.Append(descr.Name, descr.Value ?? string.Empty, new CookieOptions {
-        HttpOnly  = descr.HttpOnly,
-        Secure    = descr.Secure,
-        SameSite  = descr.SameSite,
-        Expires   = descr.Expires,
-        Path      = descr.Path,
+        HttpOnly = descr.HttpOnly,
+        Secure = descr.Secure,
+        SameSite = descr.SameSite,
+        Expires = descr.Expires,
+        Path = descr.Path,
         IsEssential = true,
       });
     }
@@ -164,8 +164,8 @@ namespace Integral.Web {
     // Session — values stored as JSON strings under the hood; existing callers
     // already coerce results via ToStringOrEmptyIfNull / ToIntOrNull etc.
 
-    public bool   HasSession => RequestContext?.Session?.IsAvailable == true;
-    public string SessionID  => RequestContext?.Session?.Id;
+    public bool HasSession => RequestContext?.Session?.IsAvailable == true;
+    public string SessionID => RequestContext?.Session?.Id;
 
     public object GetSessionValue(string key) =>
       RequestContext?.Session?.GetString(key);
@@ -182,13 +182,13 @@ namespace Integral.Web {
 
     // Per-request items — HttpContext.Items uses object keys; standardise on string.
 
-    public bool   RequestItemExists(string key) => RequestContext?.Items.ContainsKey(key) ?? false;
+    public bool RequestItemExists(string key) => RequestContext?.Items.ContainsKey(key) ?? false;
     public object GetRequestItemValue(string key) =>
       RequestContext != null && RequestContext.Items.TryGetValue(key, out var v) ? v : null;
-    public void   SetRequestItemValue<T>(string key, T value) {
+    public void SetRequestItemValue<T>(string key, T value) {
       if (RequestContext != null) RequestContext.Items[key] = value;
     }
-    public void   RequestItemRemove(string key) => RequestContext?.Items.Remove(key);
+    public void RequestItemRemove(string key) => RequestContext?.Items.Remove(key);
 
     // Misc
 
@@ -218,32 +218,32 @@ namespace Integral.Web {
         _env.ContentRootPath,
         (virtualPath ?? string.Empty).TrimStart('/', '\\').Replace('/', Path.DirectorySeparatorChar));
 
-    public void ResponseWrite(string s)     => Response?.WriteAsync(s).GetAwaiter().GetResult();
+    public void ResponseWrite(string s) => Response?.WriteAsync(s).GetAwaiter().GetResult();
     public void ResponseWriteLine(string s) => Response?.WriteAsync(s + "\n").GetAwaiter().GetResult();
-    public void SetContentType(string ct)   { if (Response != null) Response.ContentType = ct; }
-    public void SetStatusCode(int sc)       { if (Response != null) Response.StatusCode = sc; }
-    public void ClearResponseContent()      => Response?.Clear();
-    public Stream RequestInputStream        => Request?.Body;
+    public void SetContentType(string ct) { if (Response != null) Response.ContentType = ct; }
+    public void SetStatusCode(int sc) { if (Response != null) Response.StatusCode = sc; }
+    public void ClearResponseContent() => Response?.Clear();
+    public Stream RequestInputStream => Request?.Body;
 
     private sealed class AspNetCoreUploadedFile : IUploadedFile {
       private readonly IFormFile _f;
       public AspNetCoreUploadedFile(IFormFile f) => _f = f;
-      public string FileName    => _f.FileName;
+      public string FileName => _f.FileName;
       public string ContentType => _f.ContentType;
-      public long   Length      => _f.Length;
+      public long Length => _f.Length;
       public Stream OpenReadStream() => _f.OpenReadStream();
     }
   }
 
   // SessionCookieDescriptor lives once for the .NET 10 build.
   public sealed class SessionCookieDescriptor {
-    public string       Name      { get; set; }
-    public string       Value     { get; set; }
-    public bool         HttpOnly  { get; set; }
-    public SameSiteMode SameSite  { get; set; } = SameSiteMode.Strict;
-    public bool         Secure    { get; set; }
-    public DateTime?    Expires   { get; set; }
-    public string       Path      { get; set; }
-    public bool         Shareable { get; set; }
+    public string Name { get; set; }
+    public string Value { get; set; }
+    public bool HttpOnly { get; set; }
+    public SameSiteMode SameSite { get; set; } = SameSiteMode.Strict;
+    public bool Secure { get; set; }
+    public DateTime? Expires { get; set; }
+    public string Path { get; set; }
+    public bool Shareable { get; set; }
   }
 }

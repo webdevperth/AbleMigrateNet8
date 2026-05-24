@@ -155,7 +155,7 @@
                   <td class="item-td-des">
                     <div class="item-des-body">
                       <div class="visible-xs visible-sm"><div class="cat-title">@quoteItem.CategoryName</div></div>
-                      @Html.Raw(quoteItem.ItemDescription)
+                      @Html.Raw(quoteItem.ItemDescriptionHtml)
                     </div>
                   </td>
                   <td class="item-td-qty align-center pl0 pr0">@quoteItem.Quantity.ToString("0.##", "")</td>

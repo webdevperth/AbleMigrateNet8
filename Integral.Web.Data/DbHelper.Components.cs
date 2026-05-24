@@ -728,13 +728,13 @@ namespace Integral.Web {
         public int? QuoteItemId { get; set; }
         public bool IsComponentLocked { get; internal set; }
         public Guid? QuotePublicGuid { get; internal set; }
-        public string QuoteItemDescription { get; internal set; }
+        public string QuoteItemDescriptionHtml { get; internal set; }
         public ComponentQuoteInfo() { }
         public ComponentQuoteInfo(SqlDataReader dr) {
           this.QuoteItemId = dr.GetIntOrNull("QuoteItemId");
           this.IsComponentLocked = dr.GetDateTimeOrNull("LockedDateUtc") != null;
           this.QuotePublicGuid = dr.GetGuidOrNull("QuotePublicGuid");
-          this.QuoteItemDescription = dr.GetString("QuoteItemDescription");
+          this.QuoteItemDescriptionHtml = dr.GetString("QuoteItemDescription");
         }
       }
 
