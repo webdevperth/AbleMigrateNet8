@@ -2809,7 +2809,11 @@ namespace Integral.Web {
       } else if (!destinationUrl.IsNullOrEmpty()) {
 
         SystemWeb.AddResponseHeader("Location", destinationUrl);
-        EndRequest(HttpStatusEnum.TemporaryRedirect);
+        if (SystemWeb.IsHttpPost) {
+          SystemWeb.SetStatusCode(GetHttpStatusCode(HttpStatusEnum.SeeOther));
+        } else {
+          SystemWeb.SetStatusCode(GetHttpStatusCode(HttpStatusEnum.TemporaryRedirect));
+        }
         return;
 
       } else {
@@ -2832,6 +2836,10 @@ namespace Integral.Web {
     public static void WriteAndEnd(string output, HttpContentType contentType, HttpStatusEnum httpStatus = HttpStatusEnum.Ok) {
       if (SystemWeb.HasRequest) {
         SystemWeb.ClearResponseContent();
+        if (contentType != HttpContentType.None) {
+          SystemWeb.SetContentType(ContentTypeStr[contentType]);
+        }
+        SystemWeb.SetStatusCode(GetHttpStatusCode(httpStatus));
         SystemWeb.ResponseWrite(output);
       }
       EndRequest(contentType, httpStatus);
@@ -2847,7 +2855,7 @@ namespace Integral.Web {
       EndRequest(forceResponseEnd, HttpContentType.None, httpStatus);
     }
     public static void EndRequest(bool forceResponseEnd, HttpContentType contentType, HttpStatusEnum httpStatus = HttpStatusEnum.Ok) {
-      FlushAndComplete(forceResponseEnd, contentType, httpStatus);
+      //FlushAndComplete(forceResponseEnd, contentType, httpStatus);
     }
 
     /// <summary>
@@ -2860,20 +2868,6 @@ namespace Integral.Web {
       SetRequestExiting(true);
 
       if (!SystemWeb.HasRequest) throw new InvalidOperationException("Http Context is null.");
-
-      // Automatically change response status if we are redirecting but haven't chosen a 3xx status.
-      if (!SystemWeb.GetRequestHeader("location").IsNullOrEmpty() && httpStatus == HttpStatusEnum.Ok) {
-        httpStatus = HttpStatusEnum.SeeOther;
-      }
-
-      if (contentType != HttpContentType.None) {
-        SystemWeb.SetContentType(ContentTypeStr[contentType]);
-      }
-      if (httpStatus != HttpStatusEnum.None) {
-        SystemWeb.SetStatusCode(GetHttpStatusCode(httpStatus));
-      }
-      // context.Response.Flush();
-      // context.ApplicationInstance.CompleteRequest();
 
       if (forceResponseEnd) {
         throw new NotImplementedException("Need Core handler for response.end.");
