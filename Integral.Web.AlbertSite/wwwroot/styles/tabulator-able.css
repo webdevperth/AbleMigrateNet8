@@ -1,0 +1,184 @@
+﻿
+.tabulator {
+  --row-collapseToggle-holder-width: 60px;
+  --row-branchIcon-holder-width: 80px;
+}
+
+.tabulator {
+  background-color: transparent;
+  border: var(--table-border);
+  font-size: inherit;
+  color: var(--table-color);
+  box-shadow: var(--table-box-shadow);
+  border-radius: var(--table-border-radius);
+}
+.tabulator .tabulator-tableholder .tabulator-table {
+  color: var(--table-color);
+  background-color: var(--table-bg-color);
+}
+
+.tabulator .tabulator-header {
+  background-color: var(--table-head-bg-color);
+  border-bottom: var(--table-head-border-bottom);
+}
+.tabulator .tabulator-header .tabulator-col {
+  background: var(--table-head-bg-color);
+  border-right: var(--table-head-col-border-right);
+}
+.tabulator .tabulator-header .tabulator-col .tabulator-col-title {
+  color: var(--body-bold-color);
+  font-weight: 700;
+  font-size: 12px;
+  margin-left: 2px;
+  user-select: none !important;
+}
+.tabulator .tabulator-header .tabulator-frozen.tabulator-frozen-left {
+  border-right: var(--table-col-frozen-border);
+}
+.tabulator-row .tabulator-cell.tabulator-frozen.tabulator-frozen-left {
+  border-right: var(--table-col-frozen-border);
+  background-color: var(--table-col-frozen-bg-color);
+}
+@media (hover: hover) and (pointer: fine) {
+  .tabulator .tabulator-header .tabulator-col.tabulator-sortable.tabulator-col-sorter-element:hover {
+    background-color: var(--table-head-hover-bg-color);
+  }
+}
+.tabulator .tabulator-header .tabulator-col .tabulator-header-filter input,
+.tabulator .tabulator-header .tabulator-col .tabulator-header-filter select {
+  background-color: var(--body-bg-color);
+  outline: none;
+  border: var(--control-border);
+  border-radius: 5px;
+  font-weight: normal;
+  line-height: normal;
+  padding: 4px !important;
+}
+
+.tabulator .tabulator-header .tabulator-col .tabulator-col-content .tabulator-col-sorter { font-size: 10px; }
+.tabulator .tabulator-header .tabulator-col.tabulator-sortable[aria-sort="none"] .tabulator-col-content .tabulator-col-sorter { color: #ADB2BD; }
+.tabulator .tabulator-header .tabulator-col.tabulator-sortable[aria-sort="ascending"] .tabulator-col-content .tabulator-col-sorter { color: var(--brand-color); }
+.tabulator .tabulator-header .tabulator-col.tabulator-sortable[aria-sort="descending"] .tabulator-col-content .tabulator-col-sorter { color: var(--brand-color); }
+
+.tabulator .tabulator-header .tabulator-col .tabulator-col-content {
+  padding: 4px 8px;
+}
+
+.tabulator-row {
+  background-color: transparent;
+  border-bottom: var(--table-row-border-bottom);
+}
+.tabulator-row.tabulator-row-even {
+  background-color: transparent;
+}
+.tabulator-row.tabulator-selectable:hover {
+  background-color: var(--table-row-hover-bg-color) !important;
+}
+
+.tabulator .tabulator-col { border-right: none; }
+
+.tabulator-row .tabulator-cell {
+  border-right: none; padding: 4px 12px;
+}
+.tabulator-row .tabulator-cell .tabulator-data-tree-control,
+.tabulator-row .tabulator-cell .tabulator-data-tree-control .tabulator-data-tree-control-collapse,
+.tabulator-row .tabulator-cell .tabulator-data-tree-control .tabulator-data-tree-control-collapse::after,
+.tabulator-row .tabulator-cell .tabulator-data-tree-control .tabulator-data-tree-control-expand,
+.tabulator-row .tabulator-cell .tabulator-data-tree-control .tabulator-data-tree-control-expand::after  {
+  border: none; background: none;
+}
+.tabulator-row .tabulator-cell .font-caret {
+  display: inline-flex;
+  flex: 0;
+  min-width: var(--row-collapseToggle-holder-width);
+  max-width: var(--row-collapseToggle-holder-width);
+  align-items: center;
+  justify-content: start;
+  margin-left: -5px;
+}
+.tabulator-row .tabulator-cell .font-caret::before {
+  width: 25px;
+  text-align: left;
+  font-size: 20px;
+  line-height: 100%;
+  padding-left: 5px;
+}
+.tabulator-row .tabulator-cell .font-caret.fa-caret-down::before {
+  font-size: 18px;
+  transform: scale(1, 1.4);
+  line-height: 100%;
+  text-align: left;
+  padding-left: 5px;
+}
+.tabulator-row .tabulator-cell .font-caret::after {
+  content: '';
+  background-image: url('/images/icons/icon-tablerow-project.svg');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-color: #E6B7FF;
+  border-radius: 4px;
+  display: block;
+  width: 26px;
+  height: 26px;
+}
+.tabulator-row .tabulator-cell .tabulator-data-tree-branch {
+  border: none;
+  flex: 0;
+  min-width: var(--row-branchIcon-holder-width);
+  max-width: var(--row-branchIcon-holder-width);
+  margin: 0 !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+.tabulator-row .tabulator-cell .tabulator-data-tree-branch::before {
+  content: '';
+  background-image: url('/images/icons/icon-tablerow-program.svg');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-color: #F4E0FF;
+  border-radius: 4px;
+  display: block;
+  width: 26px;
+  height: 26px;
+  margin-right: 5px;
+}
+.tabulator-alert {
+  background-color: var(--table-curtain-background-color) !important;
+}
+
+.tabulator-cell .progress-holder .progress-label {
+  font-size: 12px; text-align: left;
+}
+.tabulator-cell .font-weight-bold {
+  color: var(--body-bold-color);
+}
+.tabulator-cell.col-format-date {
+  padding-right: 35px;
+}
+.tabulator-cell.col-format-money {
+  padding-right: 15px;
+}
+.tabulator-cell a.tabulator-cell-link {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  align-items: inherit;
+  align-content: inherit;
+  justify-content: inherit;
+  color: inherit !important;
+  text-decoration: inherit !important;
+  font-style: inherit !important;
+}
+.tabulator-cell > .tabulator-data-tree-root + div,
+.tabulator-cell > .tabulator-data-tree-root + a.tabulator-cell-link
+{
+  min-width: calc(100% - var(--row-collapseToggle-holder-width));
+  max-width: calc(100% - var(--row-collapseToggle-holder-width));
+}
+.tabulator-cell > .tabulator-data-tree-branch + div,
+.tabulator-cell > .tabulator-data-tree-branch + a.tabulator-cell-link
+{
+  flex: 1;
+  max-width: calc(100% - var(--row-branchIcon-holder-width));
+}

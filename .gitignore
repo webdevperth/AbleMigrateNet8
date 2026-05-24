@@ -3,11 +3,11 @@
 .claude/settings.local.json
 appsettings.[Ll]ocal.json
 *.user
-fonts
-Uploads
-images
-scripts
-styles
+**/wwwroot/fonts/
+**/wwwroot/logs
+**/wwwroot/uploads
+**/wwwroot/images
+**/wwwroot/scripts/**/
 *.jar
 *.zip
 *.bat

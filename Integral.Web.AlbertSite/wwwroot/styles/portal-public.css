@@ -1,0 +1,68 @@
+﻿body { padding-top: 20px; }
+body .main-header.vh100 { margin-top: -90px; }
+
+#div-login-msg,
+#div-lost-msg,
+#div-register-msg { xborder: 1px solid #dadfe1; height: 30px; line-height: 28px; transition: all ease-in-out 500ms; }
+
+#icon-login-msg,
+#icon-lost-msg,
+#icon-register-msg { width: 30px; float: left; line-height: 28px; text-align: center;
+    background-color: #dadfe1; margin-right: 5px; transition: all ease-in-out 500ms; }
+
+#img_logo { max-height: 100px; max-width: 100px; }
+
+form .validation-error { color: #C24F52; font-weight: bold; }
+
+.dropdown, .dropup { display: inline-block; } /* fix */
+
+/* vvv portal public top nav bar vvv */
+.portal-public-navbar { height: 60px; background: #eee; border: 0; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
+.portal-public-navbar .container-fluid, .navbar-header { background: inherit; }
+.portal-public-navbar .navbar-nav li a { font: normal 13pt 'normal',arial,helvetica,sans-serif; line-height: 30px;
+                   color: #2b2c2d; text-transform: uppercase; transition: all .2s ease-in-out; height: 60px; }
+@media only screen and (max-width: 767px) {
+  .portal-public-navbar .navbar-mainmenu { padding-right: 0px; }
+  .portal-public-navbar .navbar-nav li a { line-height: 40px; width: 240px; }
+}
+.portal-public-navbar .nav li a:focus,
+.portal-public-navbar .nav li a:hover { background: #217dbb; color: #fff; }
+.portal-public-navbar .navbar { transition: all .4s ease-in-out }
+.portal-public-navbar .navbar-header, .nav { position: relative; z-index: 1; }
+.portal-public-navbar .navbar-brand { height: 60px; padding: 7px 15px 0; }
+.portal-public-navbar .navbar-brand img { height: 45px; }
+.portal-public-navbar .nav-btn { margin-top:10px; display: inline-block }
+.portal-public-navbar .navbar-toggle { padding: 12px 10px; }
+.portal-public-navbar .navbar-toggle .icon-bar { background: #2b2c2d }
+/* ^^^ portal public top nav bar ^^^ */
+
+.page-default .se-feature { text-align: center; }
+.page-default .se-feature h5 { line-height: 1em; }
+.page-default .se-steps h4:before { color: #D6F0F6; top: -10px; }
+
+.page-default .se-section { padding: 60px 0; }
+.page-default .se-section.features-section { }
+.page-default .se-section.intro-section { padding: 20px 0; }
+.page-default .se-section.feature-dashboard { }
+.page-default .se-section.section-register { padding: 0 0 40px; background: #6FD0F6; }
+.page-default .se-section.section-register .input-group { border: 1px solid #666; }
+
+.page-default .intro-section .h1 { line-height: 50px; margin-top: 15px; font-family: heading,sans-serif; color: #1F9BD9; font-weight: bold; font-size: 3em; }
+.page-default .intro-section .h3 { line-height: 35px; margin: 0; }
+.page-default footer { padding: 40px 0px 90px; }
+
+.page-default .main-header { background: url(../images/home/home1.jpg) no-repeat; background-size: 100% 100%; position: relative; }
+@media only screen and (min-width: 992px) {
+  /* for newer browsers on large screens, right-align image and stretch vertically keeping aspect ratio */
+  .page-default .main-header { background-position: right top; background-size: auto 100%; background-color: #071a28; }
+}
+.page-default .main-header .primary-trans-bg { background: url(../images/bg-img-id.png); background-color: rgba(31, 156, 217, 0.2); }
+.page-default .main-header .primary-trans-bg .container {  }
+.page-default .main-header h1 { font: bold 50pt heading,sans-serif; line-height: 75px; letter-spacing: 2px;
+                                color: #64C3FF; text-shadow: 0 0 7px rgba(0,0,0,0.7); position: absolute; top: 10%;
+                                text-shadow: 0 0 10px rgba(0, 0, 0, 0.9); }
+.page-default .main-header h1.visible-xs { font-size: 40px; line-height: 50px; text-align: center; width: 100%; margin-left: -15px; }
+.page-default .single-feature .feature-desc h2 { width: auto; margin: 20px 0; text-align: center; }
+.page-default .single-feature .feature-desc h3 { margin: 20px 0; text-align: center }
+.page-default .single-feature .feature-desc p { text-align: center; padding: 0 3em; line-height: 1.9em; color: #666; }
+
