@@ -418,3 +418,14 @@ dotnet_diagnostic.IDE0306.severity = silent
 
 # CS0108: Member hides inherited member; missing new keyword
 dotnet_diagnostic.CS0108.severity = error
+
+#### Razor (ASP.NET Core) ####
+
+[*.{cshtml,razor}]
+indent_style = space
+indent_size = 2
+tab_width = 2
+end_of_line = crlf
+charset = utf-8
+insert_final_newline = true
+trim_trailing_whitespace = true

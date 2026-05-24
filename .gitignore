@@ -1,6 +1,7 @@
 
 .vs
 .claude/settings.local.json
+.claude/*.lock
 appsettings.[Ll]ocal.json
 *.user
 **/wwwroot/fonts/

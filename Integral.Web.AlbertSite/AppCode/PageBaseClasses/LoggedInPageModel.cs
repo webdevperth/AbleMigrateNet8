@@ -1,7 +1,6 @@
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using System;
 using System.Threading.Tasks;
 
 namespace Integral.Web.PortalSite.AppCode.PageBaseClasses {

@@ -29,9 +29,9 @@
 
 <div class="wrapper">
 
-  <partial name="_AdminLTEHeaderNav" model="@Model" />
+  @await Component.InvokeAsync("AdminLTEHeaderNav")
 
-  <partial name="_AdminLTESidebarNav" model="@Model" />
+  @await Component.InvokeAsync("AdminLTESidebarNav")
 
   <div class="content-wrapper">
     <a name="tpl_body_top" id="tpl_body_top" tabindex="0"></a>
