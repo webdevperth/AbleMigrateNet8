@@ -416,7 +416,7 @@ namespace Integral.Web {
             .WithProperty(DalApplicationInsightsConstants.IsClient, coachUserRoles?.IsClient)
             .WithProperty(DalApplicationInsightsConstants.IsParticipant, coachUserRoles?.IsParticipant)
             .Track();
-          throw ex;
+          throw;
         }
       }
 
@@ -446,7 +446,7 @@ namespace Integral.Web {
             .WithProperty(DalApplicationInsightsConstants.DisableNudges, coachInfo?.LatestCoacheeInfo?.DisableNudges)
             .WithProperty(DalApplicationInsightsConstants.PulseSurveyEnabled, coachInfo?.LatestCoacheeInfo?.PulseSurveyEnabled)
             .Track();
-          throw ex;
+          throw;
         }
       }
 
@@ -585,7 +585,7 @@ namespace Integral.Web {
             .WithOperation(nameof(UpdatePartnerBio))
             .WithProperty(DalApplicationInsightsConstants.PartnerBioId, coachInfo?.PartnerBioId)
             .Track();
-          throw ex;
+          throw;
         }
       }
 

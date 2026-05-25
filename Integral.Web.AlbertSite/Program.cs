@@ -68,7 +68,7 @@ internal class Program {
 
     builder.Services.AddSingleton<IConfigSource>(sp => new ConfigSource_AspNetCore(builder.Configuration));
 
-    builder.Services.AddRazorPages().AddNewtonsoftJson();
+    builder.Services.AddRazorPages();
 
     // Antiforgery tokens are validated by Razor Pages on every unsafe HTTP verb (POST/PUT/DELETE/PATCH).
     // Allow AJAX callers to supply the token in a header instead of a hidden form field — the layout
@@ -86,13 +86,13 @@ internal class Program {
       o.Cookie.SameSite = SameSiteMode.Strict;
     });
 
-    builder.Services.AddApplicationInsightsTelemetry(options => {
-      // Connection string priority: env var APPLICATIONINSIGHTS_CONNECTION_STRING (read by default),
-      // then ApplicationInsights:ConnectionString in IConfiguration, then the legacy flat key.
-      if (string.IsNullOrWhiteSpace(options.ConnectionString)) {
-        options.ConnectionString = builder.Configuration["ApplicationInsightsConnectionString"];
-      }
-    });
+    // builder.Services.AddApplicationInsightsTelemetry(options => {
+    //   // Connection string priority: env var APPLICATIONINSIGHTS_CONNECTION_STRING (read by default),
+    //   // then ApplicationInsights:ConnectionString in IConfiguration, then the legacy flat key.
+    //   if (string.IsNullOrWhiteSpace(options.ConnectionString)) {
+    //     options.ConnectionString = builder.Configuration["ApplicationInsightsConnectionString"];
+    //   }
+    // });
 
     builder.Services.Configure<RequestLocalizationOptions>(o => {
       var au = new CultureInfo("en-AU");

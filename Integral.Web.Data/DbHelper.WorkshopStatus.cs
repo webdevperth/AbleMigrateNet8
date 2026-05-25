@@ -99,7 +99,7 @@ namespace Integral.Web {
                 .WithOperationContext("WorkshopStatus")
                 .Track();
 
-              throw ex;
+              throw;
             }
           }
         }

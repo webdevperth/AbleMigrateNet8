@@ -98,8 +98,7 @@ namespace Integral.Web {
               .WithProperty(DalApplicationInsightsConstants.InviteeLastName, inviteeLastName)
               .WithProperty(DalApplicationInsightsConstants.IsDuplicateKey, IsDuplicateKeyError(ex))
               .Track();
-
-            if (!IsDuplicateKeyError(ex)) throw ex; // Anything other than unique key violation.
+            if (!IsDuplicateKeyError(ex)) throw; // Anything other than unique key violation.
           }
         }
         return newReferralGuid;

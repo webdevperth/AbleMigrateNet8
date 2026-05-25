@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Data;
 using Microsoft.Data.SqlClient;
 using System.Text.RegularExpressions;
@@ -68,14 +67,14 @@ namespace Integral.Web {
         SurveyTypes = new TableInfo("sv_SurveyTypes");
         User = new TableInfo("sv_User");
       }
-      
+
       public class TableInfo {
 
         string tableName;
         string columnNamesWithoutIdentity = ""; // Column names except the identity column.
         string identityColumnName = ""; // Just the identity column name.
 
-        public TableInfo(string TableName) { 
+        public TableInfo(string TableName) {
           this.tableName = TableName;
           CreateColumnCache();
         }
@@ -112,7 +111,7 @@ namespace Integral.Web {
                   .Track();
 
                 LogHelper.ResponseLog("Error creating column cache for table '" + tableName + "' : " + ex.Message);
-                throw ex;
+                throw;
               } // try
             } // cmd
           } // conn

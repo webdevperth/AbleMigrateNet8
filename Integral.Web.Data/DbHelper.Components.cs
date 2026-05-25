@@ -388,7 +388,7 @@ namespace Integral.Web {
               .Track();
 
             if (trans != null && trans.Connection != null) trans.Rollback(); // Ensure rollback if any problem.
-            throw ex;
+            throw;
           }
         }
         // Remove excess components if any.

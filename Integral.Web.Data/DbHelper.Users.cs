@@ -1123,7 +1123,7 @@ namespace Integral.Web {
               .WithProperty(DalApplicationInsightsConstants.IsDuplicateKey, IsDuplicateKeyError(ex))
               .Track();
 
-            if (!IsDuplicateKeyError(ex)) throw ex; // Anything other than unique key violation.
+            if (!IsDuplicateKeyError(ex)) throw; // Anything other than unique key violation.
           }
         }
       }
@@ -1178,7 +1178,7 @@ namespace Integral.Web {
                 .WithProperty(DalApplicationInsightsConstants.IsDuplicateKey, IsDuplicateKeyError(ex))
                 .Track();
 
-              if (!IsDuplicateKeyError(ex)) throw ex; // Throw anything other than dup key error.
+              if (!IsDuplicateKeyError(ex)) throw; // Throw anything other than dup key error.
               setInviteCode = GenerateInviteCode(); // Try new code.
             }
           }
@@ -1313,12 +1313,18 @@ namespace Integral.Web {
         int iterations = PASSWORD_HASH_ITERATIONS * PASSWORD_HASH_ITERATION_DEFAULT_MULTIPLIER;
 
         // Generate a random salt.
-        var salt = new byte[PASSWORD_SALT_SIZE];
-        new RNGCryptoServiceProvider().GetBytes(salt);
+        byte[] salt = RandomNumberGenerator.GetBytes(PASSWORD_SALT_SIZE);
 
         // Hash password given salt and iterations.
-        var pbkdf2 = new Rfc2898DeriveBytes(password, salt, iterations);
-        byte[] hash = pbkdf2.GetBytes(PASSWORD_HASH_SIZE);
+        // SHA1 is specified explicitly to remain compatible with existing hashes,
+        // which were produced by the old Rfc2898DeriveBytes default (SHA1).
+        // TODO: When users log in, upgrade to OWASP 600k iterations with PBKDF2-HMAC-SHA256.
+        byte[] hash = Rfc2898DeriveBytes.Pbkdf2(
+            password,
+            salt,
+            iterations,
+            HashAlgorithmName.SHA1,
+            PASSWORD_HASH_SIZE);
 
         return new PasswordHashInfo(salt, PASSWORD_HASH_ITERATION_DEFAULT_MULTIPLIER, hash);
       }
@@ -1330,10 +1336,18 @@ namespace Integral.Web {
         var passwordHashInfo = new PasswordHashInfo(saltEncoded, combinedHashString);
 
         // Generate hash from test password, salt and iterations.
+        // SHA1 specified explicitly to match the existing stored hashes.
+        // TODO: Upgrade as above.
+        byte[] testHash = Rfc2898DeriveBytes.Pbkdf2(
+            testPassword,
+            passwordHashInfo.Salt,
+            PASSWORD_HASH_ITERATIONS * passwordHashInfo.IterationMultiplier,
+            HashAlgorithmName.SHA1,
+            PASSWORD_HASH_SIZE);
 
-        var pbkdf2 = new Rfc2898DeriveBytes(testPassword, passwordHashInfo.Salt, PASSWORD_HASH_ITERATIONS * passwordHashInfo.IterationMultiplier);
-        byte[] testHash = pbkdf2.GetBytes(PASSWORD_HASH_SIZE);
-        return Convert.ToBase64String(testHash) == passwordHashInfo.HashEncoded ? true : false;
+        // Compare in a fixed-time manner to avoid leaking information via timing.
+        byte[] storedHash = Convert.FromBase64String(passwordHashInfo.HashEncoded);
+        return CryptographicOperations.FixedTimeEquals(testHash, storedHash);
       }
 
       public static bool UpdatePassword(SqlTransaction trans, AbleUserBasicInfo userBasicInfo, string passwordPlainText) {

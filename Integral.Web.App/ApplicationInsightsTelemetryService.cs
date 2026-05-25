@@ -172,12 +172,12 @@ namespace Integral.Web {
           }
 
           // Add metrics (if supported)
-          var metricsSupport = telemetry as Microsoft.ApplicationInsights.DataContracts.ISupportMetrics;
-          if (metricsSupport != null) {
-            foreach (var metric in Metrics) {
-              metricsSupport.Metrics[metric.Key] = metric.Value;
-            }
-          }
+          // var metricsSupport = telemetry as Microsoft.ApplicationInsights.DataContracts.ISupportMetrics;
+          // if (metricsSupport != null) {
+          //   foreach (var metric in Metrics) {
+          //     metricsSupport.Metrics[metric.Key] = metric.Value;
+          //   }
+          // }
 
           if (UserKeys.ContainsKey(ExternalUserKind.Coach)) {
             telemetry.Properties[ApplicationInsightsConstants.CoachId] = UserKeys[ExternalUserKind.Coach].ToString();

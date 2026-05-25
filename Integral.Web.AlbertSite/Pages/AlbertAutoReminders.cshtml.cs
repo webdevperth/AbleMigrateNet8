@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using Microsoft.Data.SqlClient;
 using System.Diagnostics;
@@ -953,7 +953,7 @@ namespace Integral.Web.PortalSite.Pages_Albert {
         if (userSurvey.IsSelf) { // It's self item
 
           if (!userSurvey.IsRatersOnly // Ignore self if this is a pulse survey (self does not participate).
-              && (userSurvey.CloseDateSelfLocal == null || userSurvey.CloseDateSelfLocal > DateTime.UtcNow)) {
+              && (userSurvey.CloseDateSelfLocal > DateTime.UtcNow)) {
 
             closingDateDisplay += WebHelper.DisplayDate(userSurvey.CloseDateSelfLocal);
 

@@ -67,8 +67,7 @@ namespace Integral.Web {
                 .WithOperation(nameof(AddReportTypesFromDb))
                 .WithOperationContext("ReportTypes")
                 .Track();
-
-              throw ex;
+              throw;
             }
           }
         }

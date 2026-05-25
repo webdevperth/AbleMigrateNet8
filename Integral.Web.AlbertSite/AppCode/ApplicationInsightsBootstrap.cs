@@ -1,5 +1,6 @@
-using System;
+﻿using System;
 using Integral.Web.Services;
+using Microsoft.ApplicationInsights.Extensibility;
 
 namespace Integral.Web.PortalSite.AppCode {
 
@@ -29,7 +30,7 @@ namespace Integral.Web.PortalSite.AppCode {
       try {
 
         // Connection string priority: Environment variable > ConfigHelper > ApplicationInsights.config
-        var config = Microsoft.ApplicationInsights.Extensibility.TelemetryConfiguration.Active;
+        var config = TelemetryConfiguration.CreateDefault();
 
         // If no connection string yet, try ConfigHelper (for local dev when env var isn't set)
         if (string.IsNullOrWhiteSpace(config.ConnectionString)) {

@@ -2026,7 +2026,7 @@ namespace Integral.Web {
 
       string raterHtml = GetSurveyCloseDateRaters(surveyInfo);
       // Add span with class for rater completion or incompletion
-      if (surveyInfo.IsSelfOnly || surveyInfo.CloseDateRatersLocal == null) {
+      if (surveyInfo.IsSelfOnly) {
         raterHtml = raterHtml.EnsureStartsWith("<span class=\"survey-not-completed\">").EnsureEndsWith("</span>", StringExt.Ensure.IfNotBlank);
       }
       string surveyRatersInfo = $"{raterHtml}<br />{GetSurveyRatersCompleted(surveyInfo)}";

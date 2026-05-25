@@ -69,8 +69,7 @@ namespace Integral.Web {
                 .WithOperation(nameof(ReadRows))
                 .WithOperationContext("AlbertNudgeType")
                 .Track();
-
-              throw ex;
+              throw;
             }
           }
         }
@@ -90,7 +89,7 @@ namespace Integral.Web {
         public int NudgeTypeId { get; private set; }
         public string NudgeTypeName { get; private set; }
 
-        public NudgeTypeInfo (
+        public NudgeTypeInfo(
           int nudgeTypeId,
           string nudgeTypeName
         ) {

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
 using static Integral.Web.PortalSite.AppCode.IntercomHelpers;
@@ -169,7 +169,7 @@ namespace Integral.Web.PortalSite.Page_Partials {
           CoacheeInfo.CompanyName, false);
       } catch (Exception e) {
         if (!ConfigHelper.IsDevServer) EmailHelper.SendInternalSupportEmail(e, "Error Sending Coachee Invite Email.");
-        throw e;
+        throw;
       }
       if (emailSent) DbHelper.Participants.UpdateFirstInvitationSent(partInfo.NewPartId, DateTime.UtcNow);
 

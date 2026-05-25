@@ -819,7 +819,7 @@ namespace Integral.Web {
 
             if (!e.Message.ToLower().Contains("unique")) {
               // Not a "violation of unique key" error, must be something serious.
-              throw e;
+              throw;
             }
             // Continue the loop to try again with a new UID
           }

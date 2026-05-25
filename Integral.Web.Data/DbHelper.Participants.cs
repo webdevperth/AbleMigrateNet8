@@ -816,7 +816,7 @@ namespace Integral.Web {
               .WithProperty(DalApplicationInsightsConstants.IntakeCode, addPartInfo?.IntakeCode)
               .WithProperty(DalApplicationInsightsConstants.RaterForParticipantId, addPartInfo?.RaterForParticipantId)
               .Track();
-            throw e;
+            throw;
           }
         }
       }

@@ -1,4 +1,4 @@
-using Integral.Web.Services;
+﻿using Integral.Web.Services;
 using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
@@ -180,7 +180,7 @@ namespace Integral.Web.PortalSite.Pages_Albert {
           ProgramInfo.CompanyName, false);
       } catch (Exception e) {
         if (!ConfigHelper.IsDevServer) EmailHelper.SendInternalSupportEmail(e, "Error Sending Program Email.");
-        throw e;
+        throw;
       }
       if (emailSent) DbHelper.Participants.UpdateFirstInvitationSent(partInfo.NewPartId, DateTime.UtcNow);
 

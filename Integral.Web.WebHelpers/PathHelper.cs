@@ -1,14 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
-using System.Drawing.Drawing2D;
-using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using static Integral.Web.PathHelper.Content;
 using static Integral.Web.PathHelper.Images;
 using Integral.Web.Services;
+using Imageflow.Fluent;
+using System.Threading.Tasks;
 
 namespace Integral.Web {
 
@@ -1264,8 +1263,6 @@ namespace Integral.Web {
 
       public const string CoverImageFileTypeExt = "png";
 
-
-
       public static void SaveStreamToUserPhoto(Stream imageStream, string firstName, string lastName) {
 
         // Save original uploaded image.
@@ -1275,9 +1272,18 @@ namespace Integral.Web {
         }
 
         // Save resized images.
-        var encoderParamsForJpgQuality = GetEncoderParamsForJpgQuality(95);
-        SaveResizedImage(originalImagePath, UserPhotoServerPath(firstName, lastName, UserPhotoSize.Thumbnail), UserPhotoSizes[UserPhotoSize.Thumbnail].Height, encoderParamsForJpgQuality);
-        SaveResizedImage(originalImagePath, UserPhotoServerPath(firstName, lastName, UserPhotoSize.Large), UserPhotoSizes[UserPhotoSize.Large].Height, encoderParamsForJpgQuality);
+        var jpgQuality = 95;
+        SaveResizedImage(
+          originalImagePath,
+          UserPhotoServerPath(firstName, lastName, UserPhotoSize.Thumbnail),
+          UserPhotoSizes[UserPhotoSize.Thumbnail].Height,
+          jpgQuality).GetAwaiter().GetResult();
+
+        SaveResizedImage(
+          originalImagePath,
+          UserPhotoServerPath(firstName, lastName, UserPhotoSize.Large),
+          UserPhotoSizes[UserPhotoSize.Large].Height,
+          jpgQuality).GetAwaiter().GetResult();
       }
 
       public static void SaveStreamToContentImage(Stream imageStream, Guid? contentGuid, ContentFileType contentFileType) {
@@ -1289,51 +1295,47 @@ namespace Integral.Web {
         }
 
         // Save resized images.
-        var encoderParamsForJpgQuality = GetEncoderParamsForJpgQuality(95);
-        SaveResizedImage(contentImagePath, ContentPhotoServerPath(contentGuid, contentFileType, ContentCoverImageSize.Card), GetContentImageHeight(ContentCoverImageSize.Card), encoderParamsForJpgQuality);
-        SaveResizedImage(contentImagePath, ContentPhotoServerPath(contentGuid, contentFileType, ContentCoverImageSize.DetailPage), GetContentImageHeight(ContentCoverImageSize.DetailPage), encoderParamsForJpgQuality);
+        int jpgQuality = 95;
+        SaveResizedImage(contentImagePath,
+          ContentPhotoServerPath(contentGuid, contentFileType, ContentCoverImageSize.Card),
+          GetContentImageHeight(ContentCoverImageSize.Card), jpgQuality).GetAwaiter().GetResult();
+
+        SaveResizedImage(contentImagePath,
+          ContentPhotoServerPath(contentGuid, contentFileType, ContentCoverImageSize.DetailPage),
+          GetContentImageHeight(ContentCoverImageSize.DetailPage),
+          jpgQuality).GetAwaiter().GetResult();
 
         if (contentFileType == ContentFileType.Image) {
-          SaveResizedImage(contentImagePath, ContentPhotoServerPath(contentGuid, contentFileType, ContentCoverImageSize.Thumbnail), GetContentImageHeight(ContentCoverImageSize.Thumbnail), encoderParamsForJpgQuality);
+          SaveResizedImage(
+            contentImagePath,
+            ContentPhotoServerPath(contentGuid, contentFileType, ContentCoverImageSize.Thumbnail),
+            GetContentImageHeight(ContentCoverImageSize.Thumbnail),
+            jpgQuality).GetAwaiter().GetResult();
         }
       }
 
-      private static void SaveResizedImage(string sourceImagePath, string outputImageFileName, int photoSizeHeight, EncoderParameters encoderParamsForJpgQuality) {
+      private static async Task SaveResizedImage(
+        string sourceImagePath, string outputImageFileName,
+        int photoSizeHeight, int jpegQuality) {
 
-        using (Image sourceImage = Image.FromFile(sourceImagePath)) {
-          var newHeight = photoSizeHeight;
-          var newWidth = GetResizedWidth(sourceImage, newHeight);
-          using (var newImage = new Bitmap(newWidth, newHeight))
-          using (var graphics = Graphics.FromImage(newImage)) {
-            graphics.SmoothingMode = SmoothingMode.AntiAlias;
-            graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
-            graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
-            graphics.DrawImage(sourceImage, new Rectangle(0, 0, newWidth, newHeight));
-            newImage.Save(outputImageFileName, GetImageEncoder(ImageFormat.Jpeg), encoderParamsForJpgQuality);
-          }
+        byte[] sourceBytes = await File.ReadAllBytesAsync(sourceImagePath);
+
+        using (var job = new ImageJob()) {
+          var result = await job
+            .Decode(new MemorySource(sourceBytes))
+            .Constrain(new Constraint(ConstraintMode.Fit, null, (uint)photoSizeHeight)) // null width => proportional
+            .EncodeToBytes(new MozJpegEncoder(jpegQuality, true)) // true => progressive
+            .Finish()
+            .InProcessAsync();
+
+          var encoded = result.First.TryGetBytes();
+          if (!encoded.HasValue)
+            throw new InvalidOperationException("Imageflow returned no encoded output.");
+
+          var segment = encoded.Value;
+          using (var output = File.Create(outputImageFileName))
+            await output.WriteAsync(segment.Array.AsMemory(segment.Offset, segment.Count));
         }
-      }
-
-      // From: https://learn.microsoft.com/en-us/dotnet/api/system.drawing.imaging.encoderparameter?view=netframework-4.8.1
-      private static EncoderParameters GetEncoderParamsForJpgQuality(long quality1to100) {
-        if (quality1to100 < 1 || quality1to100 > 100) throw new ArgumentException(nameof(quality1to100), "Must be from 1 to 100");
-        EncoderParameters encoderParameters = new EncoderParameters(1); // There is only one.
-        encoderParameters.Param[0] = new EncoderParameter(Encoder.Quality, quality1to100);
-        return encoderParameters;
-      }
-
-      private static ImageCodecInfo GetImageEncoder(ImageFormat format) {
-        ImageCodecInfo[] codecs = ImageCodecInfo.GetImageEncoders();
-        foreach (ImageCodecInfo codec in codecs) {
-          if (codec.FormatID == format.Guid) {
-            return codec;
-          }
-        }
-        return null;
-      }
-
-      private static int GetResizedWidth(Image sourceImage, int requiredHeight) {
-        return ((double)requiredHeight / sourceImage.Height * sourceImage.Width).RoundAwayFromZero();
       }
 
       public static string UserPhotoFileName(string firstName, string lastName, UserPhotoSize photoSize) {

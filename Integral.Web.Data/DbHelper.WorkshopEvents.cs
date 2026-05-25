@@ -350,7 +350,7 @@ namespace Integral.Web {
                   .WithProperty(DalApplicationInsightsConstants.IsDuplicateKey, IsDuplicateKeyError(ex))
                   .Track();
 
-                if (!IsDuplicateKeyError(ex)) throw ex;
+                if (!IsDuplicateKeyError(ex)) throw;
                 retryCount++;
                 if (retryCount > 10) {
                   // If this exception occurs, check that all FriendlyWorkshopId values in the table are the correct format.
