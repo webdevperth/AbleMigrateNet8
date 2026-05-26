@@ -12,12 +12,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Imageflow.AllPlatforms" Version="0.15.1" />
     <PackageReference Include="MailKit" Version="4.16.0" />
     <PackageReference Include="Mandrill.net" Version="9.0.2" />
     <PackageReference Include="Markdig" Version="1.2.0" />
     <PackageReference Include="Microsoft.Data.SqlClient" Version="7.0.1" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+    <PackageReference Include="SixLabors.ImageSharp" Version="2.*" />
   </ItemGroup>
 
   <ItemGroup>

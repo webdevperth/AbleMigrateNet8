@@ -6,8 +6,9 @@ using System.Text.RegularExpressions;
 using static Integral.Web.PathHelper.Content;
 using static Integral.Web.PathHelper.Images;
 using Integral.Web.Services;
-using Imageflow.Fluent;
-using System.Threading.Tasks;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Formats.Jpeg;
+using SixLabors.ImageSharp.Processing;
 
 namespace Integral.Web {
 
@@ -1277,13 +1278,13 @@ namespace Integral.Web {
           originalImagePath,
           UserPhotoServerPath(firstName, lastName, UserPhotoSize.Thumbnail),
           UserPhotoSizes[UserPhotoSize.Thumbnail].Height,
-          jpgQuality).GetAwaiter().GetResult();
+          jpgQuality);
 
         SaveResizedImage(
           originalImagePath,
           UserPhotoServerPath(firstName, lastName, UserPhotoSize.Large),
           UserPhotoSizes[UserPhotoSize.Large].Height,
-          jpgQuality).GetAwaiter().GetResult();
+          jpgQuality);
       }
 
       public static void SaveStreamToContentImage(Stream imageStream, Guid? contentGuid, ContentFileType contentFileType) {
@@ -1298,43 +1299,31 @@ namespace Integral.Web {
         int jpgQuality = 95;
         SaveResizedImage(contentImagePath,
           ContentPhotoServerPath(contentGuid, contentFileType, ContentCoverImageSize.Card),
-          GetContentImageHeight(ContentCoverImageSize.Card), jpgQuality).GetAwaiter().GetResult();
+          GetContentImageHeight(ContentCoverImageSize.Card), jpgQuality);
 
         SaveResizedImage(contentImagePath,
           ContentPhotoServerPath(contentGuid, contentFileType, ContentCoverImageSize.DetailPage),
           GetContentImageHeight(ContentCoverImageSize.DetailPage),
-          jpgQuality).GetAwaiter().GetResult();
+          jpgQuality);
 
         if (contentFileType == ContentFileType.Image) {
           SaveResizedImage(
             contentImagePath,
             ContentPhotoServerPath(contentGuid, contentFileType, ContentCoverImageSize.Thumbnail),
             GetContentImageHeight(ContentCoverImageSize.Thumbnail),
-            jpgQuality).GetAwaiter().GetResult();
+            jpgQuality);
         }
       }
 
-      private static async Task SaveResizedImage(
-        string sourceImagePath, string outputImageFileName,
-        int photoSizeHeight, int jpegQuality) {
-
-        byte[] sourceBytes = await File.ReadAllBytesAsync(sourceImagePath);
-
-        using (var job = new ImageJob()) {
-          var result = await job
-            .Decode(new MemorySource(sourceBytes))
-            .Constrain(new Constraint(ConstraintMode.Fit, null, (uint)photoSizeHeight)) // null width => proportional
-            .EncodeToBytes(new MozJpegEncoder(jpegQuality, true)) // true => progressive
-            .Finish()
-            .InProcessAsync();
-
-          var encoded = result.First.TryGetBytes();
-          if (!encoded.HasValue)
-            throw new InvalidOperationException("Imageflow returned no encoded output.");
-
-          var segment = encoded.Value;
-          using (var output = File.Create(outputImageFileName))
-            await output.WriteAsync(segment.Array.AsMemory(segment.Offset, segment.Count));
+      private static void SaveResizedImage(string sourceImagePath, string outputImageFileName,
+                                           int photoSizeHeight, int jpegQuality) {
+        using (Image sourceImage = Image.Load(sourceImagePath)) {
+          sourceImage.Mutate(x => x.Resize(new ResizeOptions {
+            Size = new Size(0, photoSizeHeight),   // width 0 => keep aspect ratio
+            Mode = ResizeMode.Max,
+            Sampler = KnownResamplers.Bicubic         // equivalent of HighQualityBicubic
+          }));
+          sourceImage.Save(outputImageFileName, new JpegEncoder { Quality = jpegQuality });
         }
       }
 
