@@ -17,6 +17,7 @@
     <PackageReference Include="Markdig" Version="1.2.0" />
     <PackageReference Include="Microsoft.Data.SqlClient" Version="7.0.1" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+    <!-- SixLabors.ImageSharp" pinned to Version="2.*" as it's the last free verion before commercial licensing -->
     <PackageReference Include="SixLabors.ImageSharp" Version="2.*" />
   </ItemGroup>
 
