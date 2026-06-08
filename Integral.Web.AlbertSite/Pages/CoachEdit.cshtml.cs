@@ -1,4 +1,4 @@
-using Integral.Web.Services;
+﻿using Integral.Web.Services;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -63,11 +63,11 @@ namespace Integral.Web.PortalSite.Pages_Albert {
       public const string GenericSenderEmailName = "GenericSenderEmailName";
       public const string GenericSenderEmailAddress = "GenericSenderEmailAddress";
       public const string HideProfile = "HideProfile";
-      public const string PartnerBio_Personal_Background = "PartnerBio_Personal_Background";
-      public const string PartnerBio_Personal_MyWhy = "PartnerBio_Personal_MyWhy";
-      public const string PartnerBio_Personal_HowIWork = "PartnerBio_Personal_HowIWork";
-      public const string PartnerBio_Personal_WhatIDo = "PartnerBio_Personal_WhatIDo";
-      public const string PartnerBio_Personal_WhatILove = "PartnerBio_Personal_WhatILove";
+      public const string PartnerBio_PersonalBackgroundHtml = "PartnerBio_PersonalBackgroundHtml";
+      public const string PartnerBio_MyWhyHtml = "PartnerBio_MyWhyHtml";
+      public const string PartnerBio_HowIWorkHtml = "PartnerBio_HowIWorkHtml";
+      public const string PartnerBio_WhatIDoHtml = "PartnerBio_WhatIDoHtml";
+      public const string PartnerBio_WhatILoveHtml = "PartnerBio_WhatILoveHtml";
       public const string PartnerBio_Professional_Introduction = "PartnerBio_Professional_Introduction";
       public const string PartnerBio_Professional_Background = "PartnerBio_Professional_Background";
       public const string PartnerBio_Professional_Strengths = "PartnerBio_Professional_Strengths";
@@ -814,19 +814,19 @@ namespace Integral.Web.PortalSite.Pages_Albert {
       }
 
       CoachInfo.BioShort = WebHelper.GetFormValue(FormFields.BioShort);
-      CoachInfo.PartnerBio_CoachCardBio = WebHelper.GetFormValue(FormFields.CoachCardBio);
+      CoachInfo.PartnerBio_CoachCardBioHtml = WebHelper.GetFormValue(FormFields.CoachCardBio);
       if (CanViewIntegralBio) {
-        CoachInfo.PartnerBio_Personal_Background = WebHelper.GetFormValue(FormFields.PartnerBio_Personal_Background);
-        CoachInfo.PartnerBio_Personal_MyWhy = WebHelper.GetFormValue(FormFields.PartnerBio_Personal_MyWhy);
-        CoachInfo.PartnerBio_Personal_HowIWork = WebHelper.GetFormValue(FormFields.PartnerBio_Personal_HowIWork);
-        CoachInfo.PartnerBio_Personal_WhatIDo = WebHelper.GetFormValue(FormFields.PartnerBio_Personal_WhatIDo);
-        CoachInfo.PartnerBio_Personal_WhatILove = WebHelper.GetFormValue(FormFields.PartnerBio_Personal_WhatILove);
-        CoachInfo.PartnerBio_Professional_Introduction = WebHelper.GetFormValue(FormFields.PartnerBio_Professional_Introduction);
-        CoachInfo.PartnerBio_Professional_Background = WebHelper.GetFormValue(FormFields.PartnerBio_Professional_Background);
-        CoachInfo.PartnerBio_Professional_Strengths = WebHelper.GetFormValue(FormFields.PartnerBio_Professional_Strengths);
-        CoachInfo.PartnerBio_Professional_RecentWork = WebHelper.GetFormValue(FormFields.PartnerBio_Professional_RecentWork);
-        CoachInfo.PartnerBio_Professional_Impact = WebHelper.GetFormValue(FormFields.PartnerBio_Professional_Impact);
-        CoachInfo.PartnerBio_Professional_Credentials = WebHelper.GetFormValue(FormFields.PartnerBio_Professional_Credentials);
+        CoachInfo.PartnerBio_PersonalBackgroundHtml = WebHelper.GetFormValue(FormFields.PartnerBio_PersonalBackgroundHtml);
+        CoachInfo.PartnerBio_MyWhyHtml = WebHelper.GetFormValue(FormFields.PartnerBio_MyWhyHtml);
+        CoachInfo.PartnerBio_HowIWorkHtml = WebHelper.GetFormValue(FormFields.PartnerBio_HowIWorkHtml);
+        CoachInfo.PartnerBio_WhatIDoHtml = WebHelper.GetFormValue(FormFields.PartnerBio_WhatIDoHtml);
+        CoachInfo.PartnerBio_WhatILoveHtml = WebHelper.GetFormValue(FormFields.PartnerBio_WhatILoveHtml);
+        CoachInfo.PartnerBio_ProfessionalIntroductionHtml = WebHelper.GetFormValue(FormFields.PartnerBio_Professional_Introduction);
+        CoachInfo.PartnerBio_ProfessionalBackgroundHtml = WebHelper.GetFormValue(FormFields.PartnerBio_Professional_Background);
+        CoachInfo.PartnerBio_ProfessionalStrengthsHtml = WebHelper.GetFormValue(FormFields.PartnerBio_Professional_Strengths);
+        CoachInfo.PartnerBio_ProfessionalRecentWorkHtml = WebHelper.GetFormValue(FormFields.PartnerBio_Professional_RecentWork);
+        CoachInfo.PartnerBio_ProfessionalImpactHtml = WebHelper.GetFormValue(FormFields.PartnerBio_Professional_Impact);
+        CoachInfo.PartnerBio_ProfessionalCredentialsHtml = WebHelper.GetFormValue(FormFields.PartnerBio_Professional_Credentials);
       }
 
       if (ajax.BadFieldCount > 0) return;

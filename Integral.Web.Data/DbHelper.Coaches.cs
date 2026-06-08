@@ -101,17 +101,17 @@ namespace Integral.Web {
               OR o.OrgName LIKE '%' + @SearchTerm + '%'
               OR u.AbleBioShort LIKE '%' + @SearchTerm + '%'
               OR tag.TagNames LIKE '%' + @SearchTerm + '%'
-              OR pb.Personal_Background LIKE '%' + @SearchTerm + '%'
-              OR pb.Personal_MyWhy LIKE '%' + @SearchTerm + '%'
-              OR pb.Personal_HowIWork LIKE '%' + @SearchTerm + '%'
-              OR pb.Personal_WhatIDo LIKE '%' + @SearchTerm + '%'
-              OR pb.Personal_WhatILove LIKE '%' + @SearchTerm + '%'
-              OR pb.Professional_Introduction LIKE '%' + @SearchTerm + '%'
-              OR pb.Professional_Background LIKE '%' + @SearchTerm + '%'
-              OR pb.Professional_Strengths LIKE '%' + @SearchTerm + '%'
-              OR pb.Professional_RecentWork LIKE '%' + @SearchTerm + '%'
-              OR pb.Professional_Impact LIKE '%' + @SearchTerm + '%'
-              OR pb.Professional_Credentials LIKE '%' + @SearchTerm + '%'
+              OR pb.PersonalBackgroundHtml LIKE '%' + @SearchTerm + '%'
+              OR pb.MyWhyHtml LIKE '%' + @SearchTerm + '%'
+              OR pb.HowIWorkHtml LIKE '%' + @SearchTerm + '%'
+              OR pb.WhatIDoHtml LIKE '%' + @SearchTerm + '%'
+              OR pb.WhatILoveHtml LIKE '%' + @SearchTerm + '%'
+              OR pb.ProfessionalIntroductionHtml LIKE '%' + @SearchTerm + '%'
+              OR pb.ProfessionalBackgroundHtml LIKE '%' + @SearchTerm + '%'
+              OR pb.ProfessionalStrengthsHtml LIKE '%' + @SearchTerm + '%'
+              OR pb.ProfessionalRecentWorkHtml LIKE '%' + @SearchTerm + '%'
+              OR pb.ProfessionalImpactHtml LIKE '%' + @SearchTerm + '%'
+              OR pb.ProfessionalCredentialsHtml LIKE '%' + @SearchTerm + '%'
             )";
         }
 
@@ -251,9 +251,9 @@ namespace Integral.Web {
             u.RoleTitle, u.City, u.Country, u.OrgRoleId,
             u.UserContractTypeId, u.XeroContactId,
             ui.FirstName as InvitedByFirstName, ui.LastName as InvitedByLastName,
-            pb.PartnerBioId, pb.LastUpdatedUtc, pb.Personal_Background, pb.Personal_MyWhy, pb.Personal_HowIWork,
-            pb.Personal_WhatIDo, pb.Personal_WhatILove, pb.Professional_Introduction, pb.Professional_Background, pb.CoachCardBio,
-            pb.Professional_Strengths, pb.Professional_RecentWork, pb.Professional_Impact, pb.Professional_Credentials,
+            pb.PartnerBioId, pb.LastUpdatedUtc, pb.PersonalBackgroundHtml, pb.MyWhyHtml, pb.HowIWorkHtml,
+            pb.WhatIDoHtml, pb.WhatILoveHtml, pb.ProfessionalIntroductionHtml, pb.ProfessionalBackgroundHtml, pb.CoachCardBioHtml,
+            pb.ProfessionalStrengthsHtml, pb.ProfessionalRecentWorkHtml, pb.ProfessionalImpactHtml, pb.ProfessionalCredentialsHtml,
             ac.Coachees,
             tag.TagIdStr, tag.TagNames,
             uct.IncludeInPayRuns,
@@ -508,31 +508,31 @@ namespace Integral.Web {
 
         coachInfo.PartnerBioId = Common.GetScalarQueryInt(@"
           INSERT INTO al_PartnerBio (
-            PartnerUserId, LastUpdatedUtc, Personal_Background, Personal_MyWhy, Personal_HowIWork, Personal_WhatIDo,
-            Personal_WhatILove, Professional_Introduction, Professional_Background, Professional_Strengths, Professional_RecentWork,
-            Professional_Impact, Professional_Credentials, CoachCardBio
+            PartnerUserId, LastUpdatedUtc, PersonalBackgroundHtml, MyWhyHtml, HowIWorkHtml, WhatIDoHtml,
+            WhatILoveHtml, ProfessionalIntroductionHtml, ProfessionalBackgroundHtml, ProfessionalStrengthsHtml, ProfessionalRecentWorkHtml,
+            ProfessionalImpactHtml, ProfessionalCredentialsHtml, CoachCardBioHtml
           )
           OUTPUT INSERTED.PartnerBioId
           VALUES (
-            @PartnerUserId, @LastUpdatedUtc, @Personal_Background, @Personal_MyWhy, @Personal_HowIWork, @Personal_WhatIDo,
-            @Personal_WhatILove, @Professional_Introduction, @Professional_Background, @Professional_Strengths, @Professional_RecentWork,
-            @Professional_Impact, @Professional_Credentials, @CoachCardBio
+            @PartnerUserId, @LastUpdatedUtc, @PersonalBackgroundHtml, @MyWhyHtml, @HowIWorkHtml, @WhatIDoHtml,
+            @WhatILoveHtml, @ProfessionalIntroductionHtml, @ProfessionalBackgroundHtml, @ProfessionalStrengthsHtml, @ProfessionalRecentWorkHtml,
+            @ProfessionalImpactHtml, @ProfessionalCredentialsHtml, @CoachCardBioHtml
           )",
           Common.NewSqlParameter("PartnerUserId", coachInfo.UserId),
           Common.NewSqlParameter("PartnerBioId", coachInfo.PartnerBioId),
           Common.NewSqlParameter("LastUpdatedUtc", DateTime.UtcNow),
-          Common.NewSqlParameter("Personal_Background", coachInfo.PartnerBio_Personal_Background),
-          Common.NewSqlParameter("Personal_MyWhy", coachInfo.PartnerBio_Personal_MyWhy),
-          Common.NewSqlParameter("Personal_HowIWork", coachInfo.PartnerBio_Personal_HowIWork),
-          Common.NewSqlParameter("Personal_WhatIDo", coachInfo.PartnerBio_Personal_WhatIDo),
-          Common.NewSqlParameter("Personal_WhatILove", coachInfo.PartnerBio_Personal_WhatILove),
-          Common.NewSqlParameter("Professional_Introduction", coachInfo.PartnerBio_Professional_Introduction),
-          Common.NewSqlParameter("Professional_Background", coachInfo.PartnerBio_Professional_Background),
-          Common.NewSqlParameter("Professional_Strengths", coachInfo.PartnerBio_Professional_Strengths),
-          Common.NewSqlParameter("Professional_RecentWork", coachInfo.PartnerBio_Professional_RecentWork),
-          Common.NewSqlParameter("Professional_Impact", coachInfo.PartnerBio_Professional_Impact),
-          Common.NewSqlParameter("Professional_Credentials", coachInfo.PartnerBio_Professional_Credentials),
-          Common.NewSqlParameter("CoachCardBio", coachInfo.PartnerBio_CoachCardBio)
+          Common.NewSqlParameter("PersonalBackgroundHtml", coachInfo.PartnerBio_PersonalBackgroundHtml),
+          Common.NewSqlParameter("MyWhyHtml", coachInfo.PartnerBio_MyWhyHtml),
+          Common.NewSqlParameter("HowIWorkHtml", coachInfo.PartnerBio_HowIWorkHtml),
+          Common.NewSqlParameter("WhatIDoHtml", coachInfo.PartnerBio_WhatIDoHtml),
+          Common.NewSqlParameter("WhatILoveHtml", coachInfo.PartnerBio_WhatILoveHtml),
+          Common.NewSqlParameter("ProfessionalIntroductionHtml", coachInfo.PartnerBio_ProfessionalIntroductionHtml),
+          Common.NewSqlParameter("ProfessionalBackgroundHtml", coachInfo.PartnerBio_ProfessionalBackgroundHtml),
+          Common.NewSqlParameter("ProfessionalStrengthsHtml", coachInfo.PartnerBio_ProfessionalStrengthsHtml),
+          Common.NewSqlParameter("ProfessionalRecentWorkHtml", coachInfo.PartnerBio_ProfessionalRecentWorkHtml),
+          Common.NewSqlParameter("ProfessionalImpactHtml", coachInfo.PartnerBio_ProfessionalImpactHtml),
+          Common.NewSqlParameter("ProfessionalCredentialsHtml", coachInfo.PartnerBio_ProfessionalCredentialsHtml),
+          Common.NewSqlParameter("CoachCardBioHtml", coachInfo.PartnerBio_CoachCardBioHtml)
         );
 
         UpdatePartnerShortBio(null, coachInfo.UserId, coachInfo.BioShort);
@@ -545,35 +545,35 @@ namespace Integral.Web {
             string sql = @"
               UPDATE al_PartnerBio SET
                 LastUpdatedUtc = @LastUpdatedUtc,
-                Personal_Background = @Personal_Background,
-                Personal_MyWhy = @Personal_MyWhy,
-                Personal_HowIWork = @Personal_HowIWork,
-                Personal_WhatIDo = @Personal_WhatIDo,
-                Personal_WhatILove = @Personal_WhatILove,
-                Professional_Introduction = @Professional_Introduction,
-                Professional_Background = @Professional_Background,
-                Professional_Strengths = @Professional_Strengths,
-                Professional_RecentWork = @Professional_RecentWork,
-                Professional_Impact = @Professional_Impact,
-                Professional_Credentials = @Professional_Credentials,
-                CoachCardBio = @CoachCardBio
+                PersonalBackgroundHtml = @PersonalBackgroundHtml,
+                MyWhyHtml = @MyWhyHtml,
+                HowIWorkHtml = @HowIWorkHtml,
+                WhatIDoHtml = @WhatIDoHtml,
+                WhatILoveHtml = @WhatILoveHtml,
+                ProfessionalIntroductionHtml = @ProfessionalIntroductionHtml,
+                ProfessionalBackgroundHtml = @ProfessionalBackgroundHtml,
+                ProfessionalStrengthsHtml = @ProfessionalStrengthsHtml,
+                ProfessionalRecentWorkHtml = @ProfessionalRecentWorkHtml,
+                ProfessionalImpactHtml = @ProfessionalImpactHtml,
+                ProfessionalCredentialsHtml = @ProfessionalCredentialsHtml,
+                CoachCardBioHtml = @CoachCardBioHtml
               WHERE
                 PartnerBioId = @PartnerBioId";
             using (var cmd = new SqlCommand(sql, conn)) {
               cmd.Parameters.AddInt("@PartnerBioId", coachInfo.PartnerBioId);
               cmd.Parameters.AddDateTime("@LastUpdatedUtc", DateTime.UtcNow);
-              cmd.Parameters.AddVarCharMax("@Personal_Background", coachInfo.PartnerBio_Personal_Background);
-              cmd.Parameters.AddVarCharMax("@Personal_MyWhy", coachInfo.PartnerBio_Personal_MyWhy);
-              cmd.Parameters.AddVarCharMax("@Personal_HowIWork", coachInfo.PartnerBio_Personal_HowIWork);
-              cmd.Parameters.AddVarCharMax("@Personal_WhatIDo", coachInfo.PartnerBio_Personal_WhatIDo);
-              cmd.Parameters.AddVarCharMax("@Personal_WhatILove", coachInfo.PartnerBio_Personal_WhatILove);
-              cmd.Parameters.AddVarCharMax("@Professional_Introduction", coachInfo.PartnerBio_Professional_Introduction);
-              cmd.Parameters.AddVarCharMax("@Professional_Background", coachInfo.PartnerBio_Professional_Background);
-              cmd.Parameters.AddVarCharMax("@Professional_Strengths", coachInfo.PartnerBio_Professional_Strengths);
-              cmd.Parameters.AddVarCharMax("@Professional_RecentWork", coachInfo.PartnerBio_Professional_RecentWork);
-              cmd.Parameters.AddVarCharMax("@Professional_Impact", coachInfo.PartnerBio_Professional_Impact);
-              cmd.Parameters.AddVarCharMax("@Professional_Credentials", coachInfo.PartnerBio_Professional_Credentials);
-              cmd.Parameters.AddVarCharMax("@CoachCardBio", coachInfo.PartnerBio_CoachCardBio);
+              cmd.Parameters.AddVarCharMax("@PersonalBackgroundHtml", coachInfo.PartnerBio_PersonalBackgroundHtml);
+              cmd.Parameters.AddVarCharMax("@MyWhyHtml", coachInfo.PartnerBio_MyWhyHtml);
+              cmd.Parameters.AddVarCharMax("@HowIWorkHtml", coachInfo.PartnerBio_HowIWorkHtml);
+              cmd.Parameters.AddVarCharMax("@WhatIDoHtml", coachInfo.PartnerBio_WhatIDoHtml);
+              cmd.Parameters.AddVarCharMax("@WhatILoveHtml", coachInfo.PartnerBio_WhatILoveHtml);
+              cmd.Parameters.AddVarCharMax("@ProfessionalIntroductionHtml", coachInfo.PartnerBio_ProfessionalIntroductionHtml);
+              cmd.Parameters.AddVarCharMax("@ProfessionalBackgroundHtml", coachInfo.PartnerBio_ProfessionalBackgroundHtml);
+              cmd.Parameters.AddVarCharMax("@ProfessionalStrengthsHtml", coachInfo.PartnerBio_ProfessionalStrengthsHtml);
+              cmd.Parameters.AddVarCharMax("@ProfessionalRecentWorkHtml", coachInfo.PartnerBio_ProfessionalRecentWorkHtml);
+              cmd.Parameters.AddVarCharMax("@ProfessionalImpactHtml", coachInfo.PartnerBio_ProfessionalImpactHtml);
+              cmd.Parameters.AddVarCharMax("@ProfessionalCredentialsHtml", coachInfo.PartnerBio_ProfessionalCredentialsHtml);
+              cmd.Parameters.AddVarCharMax("@CoachCardBioHtml", coachInfo.PartnerBio_CoachCardBioHtml);
               conn.Open();
               cmd.ExecuteNonQuery();
               UpdatePartnerShortBio(cmd.Transaction, coachInfo.UserId, coachInfo.BioShort);
@@ -917,18 +917,18 @@ namespace Integral.Web {
         public string InvitedByLastName { get; private set; }
         public int? PartnerBioId { get; internal set; }
         public DateTime? PartnerBio_LastUpdatedUtc { get; internal set; }
-        public string PartnerBio_Personal_Background { get; set; }
-        public string PartnerBio_Personal_MyWhy { get; set; }
-        public string PartnerBio_Personal_HowIWork { get; set; }
-        public string PartnerBio_Personal_WhatIDo { get; set; }
-        public string PartnerBio_Personal_WhatILove { get; set; }
-        public string PartnerBio_Professional_Introduction { get; set; }
-        public string PartnerBio_Professional_Background { get; set; }
-        public string PartnerBio_Professional_Strengths { get; set; }
-        public string PartnerBio_Professional_RecentWork { get; set; }
-        public string PartnerBio_Professional_Impact { get; set; }
-        public string PartnerBio_Professional_Credentials { get; set; }
-        public string PartnerBio_CoachCardBio { get; set; }
+        public string PartnerBio_PersonalBackgroundHtml { get; set; }
+        public string PartnerBio_MyWhyHtml { get; set; }
+        public string PartnerBio_HowIWorkHtml { get; set; }
+        public string PartnerBio_WhatIDoHtml { get; set; }
+        public string PartnerBio_WhatILoveHtml { get; set; }
+        public string PartnerBio_ProfessionalIntroductionHtml { get; set; }
+        public string PartnerBio_ProfessionalBackgroundHtml { get; set; }
+        public string PartnerBio_ProfessionalStrengthsHtml { get; set; }
+        public string PartnerBio_ProfessionalRecentWorkHtml { get; set; }
+        public string PartnerBio_ProfessionalImpactHtml { get; set; }
+        public string PartnerBio_ProfessionalCredentialsHtml { get; set; }
+        public string PartnerBio_CoachCardBioHtml { get; set; }
         public int? XeroContactId { get; set; }
         public DateTime? DateOfBirth { get; set; }
         public string Country { get; set; }
@@ -959,18 +959,18 @@ namespace Integral.Web {
           this.PartnerBioId = dr.GetIntOrNull("PartnerBioId");
           this.BioShort = dr.GetString("AbleBioShort");
           this.PartnerBio_LastUpdatedUtc = dr.GetDateTimeOrNull("LastUpdatedUtc");
-          this.PartnerBio_Personal_Background = dr.GetString("Personal_Background");
-          this.PartnerBio_Personal_MyWhy = dr.GetString("Personal_MyWhy");
-          this.PartnerBio_Personal_HowIWork = dr.GetString("Personal_HowIWork");
-          this.PartnerBio_Personal_WhatIDo = dr.GetString("Personal_WhatIDo");
-          this.PartnerBio_Personal_WhatILove = dr.GetString("Personal_WhatILove");
-          this.PartnerBio_Professional_Introduction = dr.GetString("Professional_Introduction");
-          this.PartnerBio_Professional_Background = dr.GetString("Professional_Background");
-          this.PartnerBio_Professional_Strengths = dr.GetString("Professional_Strengths");
-          this.PartnerBio_Professional_RecentWork = dr.GetString("Professional_RecentWork");
-          this.PartnerBio_Professional_Impact = dr.GetString("Professional_Impact");
-          this.PartnerBio_Professional_Credentials = dr.GetString("Professional_Credentials");
-          this.PartnerBio_CoachCardBio = dr.GetString("CoachCardBio");
+          this.PartnerBio_PersonalBackgroundHtml = dr.GetString("PersonalBackgroundHtml");
+          this.PartnerBio_MyWhyHtml = dr.GetString("MyWhyHtml");
+          this.PartnerBio_HowIWorkHtml = dr.GetString("HowIWorkHtml");
+          this.PartnerBio_WhatIDoHtml = dr.GetString("WhatIDoHtml");
+          this.PartnerBio_WhatILoveHtml = dr.GetString("WhatILoveHtml");
+          this.PartnerBio_ProfessionalIntroductionHtml = dr.GetString("ProfessionalIntroductionHtml");
+          this.PartnerBio_ProfessionalBackgroundHtml = dr.GetString("ProfessionalBackgroundHtml");
+          this.PartnerBio_ProfessionalStrengthsHtml = dr.GetString("ProfessionalStrengthsHtml");
+          this.PartnerBio_ProfessionalRecentWorkHtml = dr.GetString("ProfessionalRecentWorkHtml");
+          this.PartnerBio_ProfessionalImpactHtml = dr.GetString("ProfessionalImpactHtml");
+          this.PartnerBio_ProfessionalCredentialsHtml = dr.GetString("ProfessionalCredentialsHtml");
+          this.PartnerBio_CoachCardBioHtml = dr.GetString("CoachCardBioHtml");
 
           this.XeroContactId = dr.GetIntOrNull("XeroContactId");
           this.DateOfBirth = dr.GetDateTimeOrNull("DateOfBirth", true);

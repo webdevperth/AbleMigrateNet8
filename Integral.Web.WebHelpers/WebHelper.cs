@@ -3287,7 +3287,7 @@ namespace Integral.Web {
         </div>
         <button class=""btn btn-primary w100p"">See more</button>";
 
-      string coachBio = coachInfo.PartnerBio_CoachCardBio.ToStringOrDefaultIfNull(coachInfo.BioShort).LimitLengthTo(ConfigHelper.Coach_ShortBio_MaxLength, "...");
+      string coachBio = coachInfo.PartnerBio_CoachCardBioHtml.ToStringOrDefaultIfNull(coachInfo.BioShort).LimitLengthTo(ConfigHelper.Coach_ShortBio_MaxLength, "...");
 
       return GetCoachInfoCard(coachInfo.UserId, coachInfo.FirstName, coachInfo.LastName, coachBio, cardFooter);
     }
