@@ -83,6 +83,7 @@ namespace Integral.Web {
     void SetContentType(string contentType);
     void SetStatusCode(int statusCode);
     void ClearResponseContent();
+    void ResponseComplete();
     Stream RequestInputStream { get; }
   }
 

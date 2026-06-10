@@ -223,6 +223,8 @@ namespace Integral.Web {
     public void SetContentType(string ct) { if (Response != null) Response.ContentType = ct; }
     public void SetStatusCode(int sc) { if (Response != null) Response.StatusCode = sc; }
     public void ClearResponseContent() => Response?.Clear();
+    public void ResponseComplete() => Response?.CompleteAsync().GetAwaiter().GetResult();
+
     public Stream RequestInputStream => Request?.Body;
 
     private sealed class AspNetCoreUploadedFile : IUploadedFile {

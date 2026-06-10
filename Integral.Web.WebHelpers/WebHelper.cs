@@ -2855,7 +2855,7 @@ namespace Integral.Web {
       EndRequest(forceResponseEnd, HttpContentType.None, httpStatus);
     }
     public static void EndRequest(bool forceResponseEnd, HttpContentType contentType, HttpStatusEnum httpStatus = HttpStatusEnum.Ok) {
-      //FlushAndComplete(forceResponseEnd, contentType, httpStatus);
+      FlushAndComplete(forceResponseEnd, contentType, httpStatus);
     }
 
     /// <summary>
@@ -2867,7 +2867,7 @@ namespace Integral.Web {
       if (IsRequestExiting()) return; // throw new InvalidOperationException("Method should only be called once in a request.");
       SetRequestExiting(true);
 
-      if (!SystemWeb.HasRequest) throw new InvalidOperationException("Http Context is null.");
+      SystemWeb.ResponseComplete();
 
       if (forceResponseEnd) {
         throw new NotImplementedException("Need Core handler for response.end.");

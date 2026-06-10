@@ -86,6 +86,7 @@ namespace Integral.Web {
     public static void SetContentType(string contentType) => Impl.SetContentType(contentType);
     public static void SetStatusCode(int statusCode) => Impl.SetStatusCode(statusCode);
     public static void ClearResponseContent() => Impl.ClearResponseContent();
+    public static void ResponseComplete() => Impl.ResponseComplete();
     public static Stream RequestInputStream => Impl.RequestInputStream;
   }
 }
