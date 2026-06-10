@@ -17,11 +17,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="ExcelDataReader" Version="3.8.0" />
-    <PackageReference Include="Mandrill.net" Version="9.0.2" />
-    <PackageReference Include="Microsoft.Data.SqlClient" Version="7.0.1" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
-    <PackageReference Include="Select.HtmlToPdf.NetCore" Version="26.2.0" />
+    <PackageReference Include="ExcelDataReader" />
+    <PackageReference Include="Mandrill.net" />
+    <PackageReference Include="Microsoft.Data.SqlClient" />
+    <PackageReference Include="Newtonsoft.Json" />
+    <PackageReference Include="Select.HtmlToPdf.NetCore" />
   </ItemGroup>
 
   <ItemGroup>

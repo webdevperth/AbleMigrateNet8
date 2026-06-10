@@ -12,13 +12,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="MailKit" Version="4.16.0" />
-    <PackageReference Include="Mandrill.net" Version="9.0.2" />
-    <PackageReference Include="Markdig" Version="1.2.0" />
-    <PackageReference Include="Microsoft.Data.SqlClient" Version="7.0.1" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
-    <!-- SixLabors.ImageSharp" pinned to Version="2.*" as it's the last free verion before commercial licensing -->
-    <PackageReference Include="SixLabors.ImageSharp" Version="2.*" />
+    <PackageReference Include="MailKit" />
+    <PackageReference Include="Mandrill.net" />
+    <PackageReference Include="Markdig" />
+    <PackageReference Include="Microsoft.Data.SqlClient" />
+    <PackageReference Include="Newtonsoft.Json" />
+    <PackageReference Include="SixLabors.ImageSharp" />
   </ItemGroup>
 
   <ItemGroup>

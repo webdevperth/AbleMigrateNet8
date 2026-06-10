@@ -1,0 +1,29 @@
+<Project>
+
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageVersion Include="ExcelDataReader" Version="3.8.0" />
+    <PackageVersion Include="Intercom.Dotnet.Client" Version="2.1.1" />
+    <PackageVersion Include="MailKit" Version="4.16.0" />
+    <PackageVersion Include="Mandrill.net" Version="9.0.2" />
+    <PackageVersion Include="Markdig" Version="1.2.0" />
+    <PackageVersion Include="Microsoft.ApplicationInsights" Version="3.1.1" />
+    <PackageVersion Include="Microsoft.Data.SqlClient" Version="7.0.1" />
+    <PackageVersion Include="Microsoft.Extensions.Caching.Memory" Version="10.0.8" />
+    <PackageVersion Include="Nanoid" Version="3.1.0" />
+    <PackageVersion Include="Newtonsoft.Json" Version="13.0.4" />
+    <PackageVersion Include="Polly" Version="8.6.6" />
+    <PackageVersion Include="RestSharp" Version="114.0.0" />
+    <PackageVersion Include="Select.HtmlToPdf.NetCore" Version="26.2.0" />
+    <!-- SixLabors.ImageSharp" pinned to Version="2.*" as it's the last Apache-2.0 release before commercial licensing -->
+    <PackageVersion Include="SixLabors.ImageSharp" Version="2.1.13" />
+    <PackageVersion Include="Stripe.net" Version="51.1.0" />
+    <PackageVersion Include="System.Text.Json" Version="10.0.8" />
+    <PackageVersion Include="TimeZoneConverter" Version="7.2.0" />
+    <PackageVersion Include="TimeZoneNames" Version="7.0.0" />
+  </ItemGroup>
+
+</Project>

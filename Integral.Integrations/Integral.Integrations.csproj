@@ -12,13 +12,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Intercom.Dotnet.Client" Version="2.1.1" />
-    <PackageReference Include="Mandrill.net" Version="9.0.2" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
-    <PackageReference Include="Polly" Version="8.6.6" />
-    <PackageReference Include="RestSharp" Version="114.0.0" />
-    <PackageReference Include="Stripe.net" Version="51.1.0" />
-    <PackageReference Include="TimeZoneConverter" Version="7.2.0" />
+    <PackageReference Include="Intercom.Dotnet.Client" />
+    <PackageReference Include="Mandrill.net" />
+    <PackageReference Include="Newtonsoft.Json" />
+    <PackageReference Include="Polly" />
+    <PackageReference Include="RestSharp" />
+    <PackageReference Include="Stripe.net" />
+    <PackageReference Include="TimeZoneConverter" />
   </ItemGroup>
 
   <ItemGroup>
