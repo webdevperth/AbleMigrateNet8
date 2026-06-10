@@ -1,8 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-    <LangVersion>7.3</LangVersion>
+    <TargetFramework>net10.0</TargetFramework>
     <RootNamespace>Integral.Web.WebHelpers</RootNamespace>
     <AssemblyName>Integral.Web.WebHelpers</AssemblyName>
     <ProjectGuid>{12663A76-5190-4953-996A-5DD05553FE73}</ProjectGuid>

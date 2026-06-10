@@ -1,8 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-    <LangVersion>12.0</LangVersion>
+    <TargetFramework>net10.0</TargetFramework>
     <RootNamespace>Integral.Web.IDDAL</RootNamespace>
     <AssemblyName>Integral.Web.IDDAL</AssemblyName>
     <ProjectGuid>{6C3999B8-46EA-416D-ACED-0B1EBE9A671A}</ProjectGuid>

@@ -20,8 +20,6 @@ using Microsoft.AspNetCore.Antiforgery;
 
 internal class Program {
 
-  private static Uri LaunchUrl;
-
   private static void Main(string[] args) {
 
     // Force TLS 1.2 / 1.3 for all outbound HTTPS — required for modern API integrations.
@@ -38,7 +36,8 @@ internal class Program {
     var applicationUrls = builder.Configuration.GetValue<string>("ApplicationUrl");
     if (!applicationUrls.IsNullOrEmpty()) builder.WebHost.UseUrls(applicationUrls);
 
-    LaunchUrl = builder.Configuration.GetValue<Uri>("LaunchUrl");
+    // LaunchUrl is set when the browser domain is different to the default "localhost:xxxxx//"
+    var launchUrl = builder.Configuration.GetValue<Uri>("LaunchUrl");
 
     // For localhost, this ensures that the domain in X-Forwarded-Host (like when using Cloudflare tunnel forwarding)
     // is recoggnised as the actual domain in the app request context, instead of localhost.
@@ -104,7 +103,7 @@ internal class Program {
     var app = builder.Build();
 
     if (app.Environment.IsDevelopment()) {
-      if (LaunchUrl != null) {
+      if (launchUrl != null) {
         app.UseForwardedHeaders();
       }
     } else {
@@ -157,10 +156,10 @@ internal class Program {
     });
 
     // Apply LaunchUrl
-    if (LaunchUrl != null) {
+    if (launchUrl != null) {
       app.Use(async (context, next) => {
-        if (!context.Request.Host.Host.Equals(LaunchUrl.Host)) {
-          context.Response.Redirect(LaunchUrl.ToString());
+        if (!context.Request.Host.Host.Equals(launchUrl.Host)) {
+          context.Response.Redirect(launchUrl.ToString());
           return;
         }
         await next();
