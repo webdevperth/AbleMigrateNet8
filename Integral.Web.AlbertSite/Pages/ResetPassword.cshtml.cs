@@ -77,13 +77,8 @@ namespace Integral.Web.PortalSite.Pages_Albert {
       // Find user.
       var userInfo = DbHelper.AbleUser.GetUserByEmailOrNull(userEmail.TrimWhitespace(), DbHelper.AbleUser.RegisteredFilter.Any);
 
-      if (userInfo == null) {
+      if (userInfo == null || userInfo.IsSoftDeleted) {
         ajax.AddBadField(FormFields.EmailAddress, "No account with that email address.");
-        return;
-      }
-
-      if (userInfo.IsSoftDeleted) {
-        ajax.SetRedirectUrl(PathHelper.Pages.Home());
         return;
       }
 

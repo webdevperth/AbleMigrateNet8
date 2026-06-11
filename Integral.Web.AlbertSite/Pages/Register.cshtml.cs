@@ -1,4 +1,4 @@
-using Integral.Integrations.Amplitude;
+﻿using Integral.Integrations.Amplitude;
 using Integral.Web;
 using Integral.Web.PortalSite.AppCode;
 using Integral.Web.Services;
@@ -59,12 +59,7 @@ namespace Integral.Web.PortalSite.Pages_Albert {
 
       // If user logged in, redirect to the page shown after logging in.
       if (user != null) {
-        if (user.IsSoftDeleted) {
-          WebHelper.Redirect(PathHelper.Pages.Home());
-          return new EmptyResult();
-        }
-        WebHelper.Redirect(PathHelper.GetDefaultPostLoginURL(user));
-        return new EmptyResult();
+        return new RedirectResult(PathHelper.GetDefaultPostLoginURL(user));
       }
 
       if (!SetupForm()) return new EmptyResult();
@@ -78,10 +73,6 @@ namespace Integral.Web.PortalSite.Pages_Albert {
 
       // If user logged in, redirect to the page shown after logging in.
       if (user != null) {
-        if (user.IsSoftDeleted) {
-          WebHelper.Redirect(PathHelper.Pages.Home());
-          return new EmptyResult();
-        }
         AjaxSubmitHelper.Process(ajax => {
           ajax.SetRedirectUrl(PathHelper.GetDefaultPostLoginURL(user));
         });

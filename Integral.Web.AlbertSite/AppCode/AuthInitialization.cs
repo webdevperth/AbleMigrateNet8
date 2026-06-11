@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 
 namespace Integral.Web.PortalSite.AppCode {
 
@@ -18,10 +18,6 @@ namespace Integral.Web.PortalSite.AppCode {
             && SessionHelper.PublicReport.GetIsLoggedIn(coacheeGuid)) {
           return true;
         }
-      } else if (userInfo.IsSoftDeleted) {
-        SessionHelper.LogOut();
-        WebHelper.Redirect(PathHelper.WebRoot);
-        return false;
       }
 
       if (SessionHelper.RedirectIfNotLoggedIn(PathHelper.WebRoot)) {

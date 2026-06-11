@@ -419,6 +419,9 @@ dotnet_diagnostic.IDE0306.severity = silent
 # CS0108: Member hides inherited member; missing new keyword
 dotnet_diagnostic.CS0108.severity = error
 
+# CA1822: Mark members as static
+dotnet_diagnostic.CA1822.severity = none
+
 #### Razor (ASP.NET Core) ####
 
 [*.{cshtml,razor}]

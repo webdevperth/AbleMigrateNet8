@@ -170,7 +170,7 @@ namespace Integral.Web.PortalSite.Pages_Albert {
       CanViewInactivePartners = SessionHelper.AppAccess.Coaches.CanViewInactivePartners();
       CanUpdateCoachXeroContact = SessionHelper.AppAccess.Coaches.CanUpdateCoachXeroContact(CoachInfo);
       CanUpdateCoachRoleFlags = SessionHelper.AppAccess.Coaches.CanUpdateCoachRoleFlags();
-      CanDeleteUser = SessionHelper.AppAccess.Coaches.CanDeleteUser() && !IsNewCoach;
+      CanDeleteUser = SessionHelper.AppAccess.Coaches.CanDeleteUser(CoachInfo) && !IsNewCoach;
 
       OrgRolesInfo = DbHelper.OrgRoles.GetOrgRolesList();
 

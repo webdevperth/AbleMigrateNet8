@@ -209,7 +209,7 @@
     @if (Model.CanEditProfile) {
       <div class="row mt30">
         <div class="col-lg-8 col-md-12">
-          @if (Model.CanDeleteUser && !Model.CoachInfo.IsSoftDeleted) {
+          @if (Model.CanDeleteUser) {
             <button type="button" class="btn btn-warning btnDelete floatleft" id="btnBlockLogin">Block Login</button>
           } else if (Model.CoachInfo.IsSoftDeleted) {
             @Html.Raw(WebHelper.GetStatusBadge("Login Blocked"))

@@ -98,8 +98,6 @@ namespace Integral.Web.PortalSite.AppCode.PageBaseClasses {
           return;
         }
       }
-
-
     }
 
     protected void GetSharedSurveyInfo() {

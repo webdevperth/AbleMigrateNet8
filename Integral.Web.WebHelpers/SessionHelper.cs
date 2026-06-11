@@ -65,7 +65,19 @@ namespace Integral.Web {
 
       // First check if session info stored in request collection (i.e. it's been obtained previously in this same request).
       var requestItemSession = GetSessionFromRequestItem();
-      if (requestItemSession != null) return requestItemSession;
+      if (requestItemSession == null) requestItemSession = GetNewSession();
+
+      // Ensure a user can't be logged in if they have been soft-deleted.
+      // Checking it here ensures if a user is soft-deleted they will be
+      // immediately logged out on their next request.
+      if (requestItemSession.UserInfo?.IsSoftDeleted == true) {
+        LogOut();
+      }
+
+      return requestItemSession;
+    }
+
+    private static SessionInfo GetNewSession() {
 
       // First time getting session info for this request. Check for session Guid in cookie,
       bool sessionGuidExists = Guid.TryParse(GetSessionCookieGuidString() ?? "", out var sessionGuid);
@@ -112,7 +124,7 @@ namespace Integral.Web {
       // If user is in Integral tenant, allow access to Jarvis Org survey templates.
       if (sessionUserInfo?.OrgId == ConfigHelper.IntegralTenantOrgId) sessionUserInfo.AddSurveyTemplateOrgId(ConfigHelper.JarvisOrgId);
 
-      requestItemSession = new SessionInfo(dbSessionInfo, sessionUserInfo, sessionSettings);
+      var requestItemSession = new SessionInfo(dbSessionInfo, sessionUserInfo, sessionSettings);
       SaveSessionInRequestItem(requestItemSession); // Store for the rest of this request.
 
       return requestItemSession;
@@ -144,7 +156,7 @@ namespace Integral.Web {
 
       if (userInfo == null) return false; // User not found.
 
-      if (userInfo.IsSoftDeleted) return false; // Do not allow to log int blocked users.
+      if (userInfo.IsSoftDeleted) return false;
 
       // Only these user types can log in at the moment.
       if (!userInfo.IsAbleAdmin && !userInfo.IsAbleCoach && !userInfo.IsAbleClient && !userInfo.IsParticipant) return false;
@@ -313,22 +325,16 @@ namespace Integral.Web {
         throw new InvalidOperationException($"Invalid user state - logged in but role not set.");
       }
 
-      switch (userRole) {
-        case ConfigHelper.UserRole.Admin:
-          return user.IsAbleAdmin;
-        case ConfigHelper.UserRole.TenantOrgAdmin:
-          return user.IsTenantOrgAdmin;
-        case ConfigHelper.UserRole.Client:
-          return user.IsAbleClient;
-        case ConfigHelper.UserRole.Coach:
-          return user.IsAbleCoach;
-        case ConfigHelper.UserRole.Leader:
-          return user.IsParticipant;
-        case ConfigHelper.UserRole.OrgReportViewer:
-          return user.IsIOSReportViewer;
-        default:
-          throw new InvalidOperationException($"Unhandled {nameof(userRole)}: {userRole}.");
-      }
+      return userRole switch {
+        ConfigHelper.UserRole.Admin => user.IsAbleAdmin,
+        ConfigHelper.UserRole.TenantOrgAdmin => user.IsTenantOrgAdmin,
+        ConfigHelper.UserRole.Client => user.IsAbleClient,
+        ConfigHelper.UserRole.Coach => user.IsAbleCoach,
+        ConfigHelper.UserRole.Leader => user.IsParticipant,
+        ConfigHelper.UserRole.OrgReportViewer => user.IsIOSReportViewer,
+        ConfigHelper.UserRole.Unset => false,
+        _ => throw new InvalidOperationException($"Unhandled {nameof(userRole)}: {userRole}."),
+      };
     }
 
     public static ConfigHelper.UserRole GetDefaultUserRole() {
@@ -375,8 +381,8 @@ namespace Integral.Web {
     }
 
     public static string GetUserRoleDisplayName(ConfigHelper.UserRole userRole) {
-      if (ConfigHelper.UserRoleDisplayNames.ContainsKey(userRole)) {
-        return ConfigHelper.UserRoleDisplayNames[userRole];
+      if (ConfigHelper.UserRoleDisplayNames.TryGetValue(userRole, out var value)) {
+        return value;
       } else {
         throw new InvalidOperationException($"Display name not found for role: {userRole}");
       }
@@ -386,8 +392,8 @@ namespace Integral.Web {
 
       if (userRole == ConfigHelper.UserRole.Unset) return null;
 
-      if (ConfigHelper.UserRoleId.ContainsKey(userRole)) {
-        return ConfigHelper.UserRoleId[userRole];
+      if (ConfigHelper.UserRoleId.TryGetValue(userRole, out var value)) {
+        return value;
       } else {
         throw new InvalidOperationException($"UserRoleId not found for role: {userRole}");
       }

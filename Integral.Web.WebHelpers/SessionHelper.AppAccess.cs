@@ -1135,7 +1135,7 @@ namespace Integral.Web {
         public static bool CanViewInactivePartners() => IsUserRoleAdmin;
         public static bool CanViewAllUsers() => IsUserRoleAdmin;
         public static bool CanUpdateCoachRoleFlags() => IsUserRoleAdmin;
-        public static bool CanDeleteUser() => IsUserRoleAdmin;
+        public static bool CanDeleteUser(DbHelper.AbleUser.AbleUserBasicInfo forUser) => IsUserRoleAdmin && !forUser.IsSoftDeleted;
       }
 
       public class Surveys {
