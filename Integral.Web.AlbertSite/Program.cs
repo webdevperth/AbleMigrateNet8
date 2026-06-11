@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Globalization;
-using System.Net;
 using Integral.Integrations.Amplitude;
 using Integral.Integrations.Intercom;
 using Integral.Web;
@@ -21,10 +20,6 @@ using Microsoft.AspNetCore.Antiforgery;
 internal class Program {
 
   private static void Main(string[] args) {
-
-    // Force TLS 1.2 / 1.3 for all outbound HTTPS — required for modern API integrations.
-    ServicePointManager.SecurityProtocol =
-      SecurityProtocolType.Tls12 | SecurityProtocolType.Tls13;
 
     var builder = WebApplication.CreateBuilder(args);
 
@@ -48,7 +43,7 @@ internal class Program {
           ForwardedHeaders.XForwardedProto |
           ForwardedHeaders.XForwardedFor;
       // Optional for local development
-      options.KnownNetworks.Clear();
+      options.KnownIPNetworks.Clear();
       options.KnownProxies.Clear();
     });
 

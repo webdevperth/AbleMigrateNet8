@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Net;
 using System.Net.Http;
 using System.Text;
 using Newtonsoft.Json;
@@ -13,10 +12,6 @@ namespace Integral.Integrations {
     internal class EndPoints {
       internal const string Search = "https://mandrillapp.com/api/1.0/messages/search";
       internal const string Content = "https://mandrillapp.com/api/1.0/messages/content";
-    }
-
-    static Mandrill() {
-      System.Net.ServicePointManager.SecurityProtocol |= SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
     }
 
     public static string SendHttpPost(string endpointAddr, Dictionary<string, string> httpHeaders, string payload, string contentType = "application/json") {
