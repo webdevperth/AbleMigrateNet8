@@ -1,6 +1,7 @@
 ﻿using Integral.Web.Services;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Primitives;
 using Newtonsoft.Json;
@@ -18,10 +19,25 @@ namespace Integral.Web {
     private readonly IHttpContextAccessor _accessor;
     private readonly IWebHostEnvironment _env;
 
+    private Endpoint _requestEndpoint = null;
+    private CompiledPageActionDescriptor _requestPageDescriptor = null;
+
     public SystemWeb_AspNetCore(IHttpContextAccessor accessor, IWebHostEnvironment env) {
       _accessor = accessor;
       _env = env;
     }
+
+    private CompiledPageActionDescriptor RequestPageDescriptor {
+      get {
+        if (_requestEndpoint == null) {
+          _requestEndpoint = _accessor?.HttpContext?.GetEndpoint();
+          _requestPageDescriptor = _requestEndpoint?.Metadata?.GetMetadata<Microsoft.AspNetCore.Mvc.RazorPages.CompiledPageActionDescriptor>();
+        }
+        return _requestPageDescriptor;
+      }
+    }
+
+    public string WebRootPhysicalPath => _env.WebRootPath.EnsureEndsWith("\\", StringExt.Ensure.IfNotBlank);
 
     private HttpContext RequestContext => _accessor.HttpContext;
     private HttpRequest Request => RequestContext?.Request;
@@ -49,22 +65,17 @@ namespace Integral.Web {
 
     // URL
 
-    public string RequestRawUrl =>
-      Request == null ? null
-        : Request.PathBase + Request.Path + Request.QueryString;
-
-    public string RequestRawUrlNoQuery =>
-      Request == null ? null : Request.PathBase + Request.Path;
+    public string RequestRawUrl => Request?.Path + Request.QueryString;
+    public string RequestRawUrlNoQuery => Request?.Path;
 
     public string RequestUrlLeftPart(UriPartial partial) {
       if (Request == null) return null;
-      var full = $"{Request.Scheme}://{Request.Host}{Request.PathBase}{Request.Path}{Request.QueryString}";
-      return new Uri(full).GetLeftPart(partial);
+      var url = $"{Request.Scheme}://{Request.Host}{Request.Path}{Request.QueryString}";
+      return new Uri(url).GetLeftPart(partial);
     }
 
-    public string RequestUserAgent => GetRequestHeader("User-Agent");
     public string RequestMethod => Request?.Method;
-    public string RequestPhysicalPath => Request == null ? null : ServerMapPath(Request.Path.Value);
+    public string RequestRealRelativePath => RequestPageDescriptor.RelativePath;
     public string RequestUrlHost => Request?.Host.Host;
     public string JavaScriptStringEncode(string content) => System.Web.HttpUtility.JavaScriptStringEncode(content);
     public Dictionary<string, StringValues> ParseQueryString(string query) => QueryHelpers.ParseQuery(query);
@@ -74,10 +85,14 @@ namespace Integral.Web {
 
     // Querystring
 
-    public string RequestQueryString =>
-      Request == null ? null : Request.QueryString.HasValue
-        ? Request.QueryString.Value.TrimStart('?')
-        : string.Empty;
+    public string RequestQueryString {
+      get {
+        if (Request == null) return null;
+        return Request.QueryString.HasValue
+          ? Request.QueryString.Value.TrimStart('?')
+          : string.Empty;
+      }
+    }
 
     public bool RequestQueryStringContains(string key) =>
       Request?.Query?.Keys.Any(k => string.Equals(k, key, StringComparison.OrdinalIgnoreCase)) ?? false;
@@ -100,6 +115,8 @@ namespace Integral.Web {
     public string ReferrerAbsolutePath => GetReferrerUri()?.AbsolutePath;
 
     // Headers
+
+    public string RequestUserAgent => GetRequestHeader("User-Agent");
 
     public string GetRequestHeader(string name) {
       if (Request == null) return null;
@@ -192,7 +209,7 @@ namespace Integral.Web {
 
     // Misc
 
-    public string ApplicationVirtualPath => Request?.PathBase.Value.EnsureEndsWith("/", StringExt.Ensure.IfNotBlank);
+    public string ApplicationVirtualPath => Request?.PathBase.Value.EnsureStartsWith("/", StringExt.Ensure.Always);
 
     public string GetRequestBody() {
       try {
@@ -212,11 +229,6 @@ namespace Integral.Web {
         return null;
       }
     }
-
-    public string ServerMapPath(string virtualPath) =>
-      Path.Combine(
-        _env.ContentRootPath,
-        (virtualPath ?? string.Empty).TrimStart('/', '\\').Replace('/', Path.DirectorySeparatorChar));
 
     public void ResponseWrite(string s) => Response?.WriteAsync(s).GetAwaiter().GetResult();
     public void ResponseWriteLine(string s) => Response?.WriteAsync(s + "\n").GetAwaiter().GetResult();

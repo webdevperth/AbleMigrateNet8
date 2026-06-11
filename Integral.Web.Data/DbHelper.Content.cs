@@ -43,7 +43,8 @@ namespace Integral.Web {
         return $@"
 
           LEFT JOIN (
-            SELECT ContentId, UserId
+
+            SELECT DISTINCT ContentId, UserId
             FROM (
             SELECT cmd.ContentId, cme.UserId
             FROM al_ContentModuleEnrolment cme
@@ -59,6 +60,7 @@ namespace Integral.Web {
               AND c.DeletedUtc IS NULL
               AND c.CoacheeId IS NOT NULL
             ) AS AccessUnion
+
           ) plci ON plci.ContentId = {TblPfx}.ContentId AND plci.UserId = @UserId";
       }
 

@@ -28,7 +28,7 @@ namespace Integral.Web {
     string RequestUrlLeftPart(UriPartial partial);
     string RequestUserAgent { get; }
     string RequestMethod { get; }
-    string RequestPhysicalPath { get; }
+    string RequestRealRelativePath { get; }
     string RequestUrlHost { get; }
     string HtmlEncode(string content);
     string JavaScriptStringEncode(string content);
@@ -76,8 +76,8 @@ namespace Integral.Web {
 
     // Misc
     string ApplicationVirtualPath { get; }
+    string WebRootPhysicalPath { get; }
     string GetRequestBody();
-    string ServerMapPath(string virtualPath);
     void ResponseWrite(string s);
     void ResponseWriteLine(string s);
     void SetContentType(string contentType);

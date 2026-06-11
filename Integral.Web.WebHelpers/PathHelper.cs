@@ -72,6 +72,10 @@ namespace Integral.Web {
       SurveyInformation
     }
 
+    public static class RealRelativePath {
+      public static readonly string Pages = WebRoot + "Pages/";
+    }
+
     public static class UrlPath {
       public static readonly string Partials = WebRoot + "partials/";
       public static readonly string Ajax = WebRoot + "ajax/";
@@ -92,8 +96,6 @@ namespace Integral.Web {
     }
 
     public static class ServerPaths {
-      public static readonly string Pages = @"~\Pages_Albert\";
-      public static readonly string UserControls = @"~\UserControls\";
       public static readonly string TenantOrgLogos = $@"{ConfigHelper.UploadsFolderPath}{UploadSubfolders.TenantOrgLogos}\";
       public static readonly string PartnerProfilePhotos = $@"{ConfigHelper.UploadsFolderPath}{UploadSubfolders.PartnerProfilePhotos}\";
       public static readonly string UserProfilePhotos = $@"{ConfigHelper.UploadsFolderPath}{UploadSubfolders.UserProfilePhotos}\";
@@ -929,8 +931,7 @@ namespace Integral.Web {
     }
 
     public static bool IsCurrentUrlAPage() {
-      return SystemWeb.RequestPhysicalPath.ContainsIgnoreCase(ServerPaths.Pages)
-        || SystemWeb.RequestPhysicalPath.ContainsIgnoreCase("default.aspx");
+      return SystemWeb.RequestRealRelativePath.ContainsIgnoreCase(RealRelativePath.Pages);
     }
 
     public static bool IsReferrerPageURL(string pageURL) { // where pageURL is one of the PathHelper.Pages strings.

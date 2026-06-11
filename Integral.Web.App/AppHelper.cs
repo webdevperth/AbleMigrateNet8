@@ -124,14 +124,6 @@ namespace Integral.Web {
       }
     }
 
-    public static string MapPath(string httpPath) {
-      if (ConfigHelper.IsUnitTestRunning) {
-        return (ConfigHelper.WebRootPhysicalPath + httpPath.Replace("/", @"\")).Replace(@"\\", @"\");
-      } else {
-        return SystemWeb.ServerMapPath(httpPath);
-      }
-    }
-
     internal class RequestInfo {
       internal DateTime? RequestStartTimeUtc { get; set; }
       internal List<LogHelper.SqlQueryLogInfo> SqlQueryLog { get; set; } = new List<LogHelper.SqlQueryLogInfo>();

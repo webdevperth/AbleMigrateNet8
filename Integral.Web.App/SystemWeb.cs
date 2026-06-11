@@ -30,7 +30,7 @@ namespace Integral.Web {
     public static string RequestUrlLeftPart(UriPartial partial) => Impl.RequestUrlLeftPart(partial);
     public static string RequestUserAgent => Impl.RequestUserAgent;
     public static string RequestMethod => Impl.RequestMethod;
-    public static string RequestPhysicalPath => Impl.RequestPhysicalPath;
+    public static string RequestRealRelativePath => Impl.RequestRealRelativePath;
     public static string RequestUrlHost => Impl.RequestUrlHost;
     public static string JavaScriptStringEncode(string content) => Impl.JavaScriptStringEncode(content);
     public static string HtmlEncode(string content) => Impl.HtmlEncode(content);
@@ -79,8 +79,8 @@ namespace Integral.Web {
 
     // Misc
     public static string ApplicationVirtualPath => Impl.ApplicationVirtualPath;
+    public static string WebRootPhysicalPath => Impl.WebRootPhysicalPath;
     public static string GetRequestBody() => Impl.GetRequestBody();
-    public static string ServerMapPath(string virtualPath) => Impl.ServerMapPath(virtualPath);
     public static void ResponseWrite(string s) => Impl.ResponseWrite(s);
     public static void ResponseWriteLine(string s) => Impl.ResponseWriteLine(s);
     public static void SetContentType(string contentType) => Impl.SetContentType(contentType);
