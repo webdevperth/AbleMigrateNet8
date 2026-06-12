@@ -131,6 +131,11 @@ function AjaxSubmit() { // waitMsg, jqForm, options { url, doScroll }, fnCallbac
     }
   }
 
+  // Urls emitted into script blocks by Razor "@" expressions arrive HTML-encoded
+  // ("&" becomes "&amp;") unless the page used Html.Raw(...JSEncode()). Undo that
+  // here, otherwise PatchQuery parses the querystring keys as "amp;<name>".
+  if (isString(options.url)) options.url = options.url.replace(/&amp;/g, "&");
+
   options.url = AbleJS.Util.PatchQuery({
     url: options.url,
     params: options.urlParams
