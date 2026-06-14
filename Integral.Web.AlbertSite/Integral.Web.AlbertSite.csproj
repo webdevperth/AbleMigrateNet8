@@ -7,6 +7,8 @@
     <RootNamespace>Integral.Web.PortalSite</RootNamespace>
     <AssemblyName>Integral.Web.PortalSite</AssemblyName>
     <UserSecretsId>integral-able-portalsite</UserSecretsId>
+    <RazorCompileOnBuild>true</RazorCompileOnBuild>
+    <RazorCompileOnPublish>true</RazorCompileOnPublish>
   </PropertyGroup>
 
   <ItemGroup>

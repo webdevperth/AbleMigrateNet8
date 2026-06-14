@@ -1,0 +1,10 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path=".editorconfig" />
+  </Folder>
+  <Project Path="Integral.Integrations/Integral.Integrations.csproj" />
+  <Project Path="Integral.Web.AlbertSite/Integral.Web.AlbertSite.csproj" />
+  <Project Path="Integral.Web.App/Integral.Web.App.csproj" />
+  <Project Path="Integral.Web.Data/Integral.Web.DAL.csproj" />
+  <Project Path="Integral.Web.WebHelpers/Integral.Web.WebHelpers.csproj" />
+</Solution>
