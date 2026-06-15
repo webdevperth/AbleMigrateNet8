@@ -37,7 +37,7 @@
 
       @foreach (var quote in Model.InvoiceItemsByQuote.Quotes) {
 
-        <div class="title title-main">Quote: <a href="@PathHelper.Pages.QuoteDetails(quote.QuoteGuid)">@quote.QuoteName.HTMLEncode()</a></div>
+        <div class="title title-main">Quote: <a href="@Html.Raw(PathHelper.Pages.QuoteDetails(quote.QuoteGuid))">@quote.QuoteName.HTMLEncode()</a></div>
 
         <div class="quoteInfo">
 
@@ -395,7 +395,7 @@
                 <div class="align-right">
                   <button class="btn btn-primary @(Model.CanSendInvoiceToXero ? "" : "disabled")" id="btnSubmitInvoice">Submit Invoice To Xero</button>
                   @if (!Model.CanSendInvoiceToXero) {
-                    <p class="fa-sm mt10">Please set the Xero Account in <a href="@PathHelper.Pages.ProjectSettings(Model.ProjectInfo.JobNumber)">Project Settings</a> to enable this function.</p>
+                    <p class="fa-sm mt10">Please set the Xero Account in <a href="@Html.Raw(PathHelper.Pages.ProjectSettings(Model.ProjectInfo.JobNumber))">Project Settings</a> to enable this function.</p>
                   }
                 </div>
               </div>

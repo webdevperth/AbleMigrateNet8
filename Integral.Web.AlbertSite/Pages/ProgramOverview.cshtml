@@ -121,7 +121,7 @@
 @if (!Model.WorkshopList.IsNullOrEmpty()) {
   <div class="table-title type-workshops">Workshops</div>
   <div class="table-responsive">
-    <table class="tblWorkshops table table-bordered table-hover table-rowlink limitateNavigation" data-rowlink-url="@PathHelper.Pages.Workshops_Edit(Model.ProgramInfo.ProgramJobId, null)">
+    <table class="tblWorkshops table table-bordered table-hover table-rowlink limitateNavigation" data-rowlink-url="@Html.Raw(PathHelper.Pages.Workshops_Edit(Model.ProgramInfo.ProgramJobId, null))">
       <thead>
         <tr>
           <th class="">Description</th>
@@ -191,7 +191,7 @@
 @if (!Model.ConsultingItemList.IsNullOrEmpty()) {
   <div class="table-title type-consulting">Consulting Items</div>
   <div class="table-responsive">
-    <table class="tblConsulting table table-bordered table-hover table-rowlink limitateNavigation" data-rowlink-url="@PathHelper.Pages.Consulting_Edit(Model.ProgramInfo.ProgramJobId, null)">
+    <table class="tblConsulting table table-bordered table-hover table-rowlink limitateNavigation" data-rowlink-url="@Html.Raw(PathHelper.Pages.Consulting_Edit(Model.ProgramInfo.ProgramJobId, null))">
       <thead>
         <tr>
           <th class="">Description</th>
@@ -255,7 +255,7 @@
 @if (!Model.CostItemList.IsNullOrEmpty()) {
   <div class="table-title type-costitems">Cost Items</div>
   <div class="table-responsive">
-    <table class="tblCostItems table table-bordered table-hover table-rowlink limitateNavigation" data-rowlink-url="@PathHelper.Pages.ProgramCostItems_Edit(Model.ProgramInfo.ProgramJobId, null)">
+    <table class="tblCostItems table table-bordered table-hover table-rowlink limitateNavigation" data-rowlink-url="@Html.Raw(PathHelper.Pages.ProgramCostItems_Edit(Model.ProgramInfo.ProgramJobId, null))">
       <thead>
         <tr>
           <th class="type-description" colspan="3">Description</th>
@@ -303,7 +303,7 @@
         $("#@Integral.Web.PortalSite.Pages_Albert.ProgramOverview.PrePostLinkButtonID").click(function (ev) {
           ev.preventDefault();
           ev.stopPropagation();
-          location.href = "@PathHelper.Pages.ProgramSendSurvey(Model.ProgramInfo.ProgramJobId, ConfigHelper.TemplateSurveyIds.NewPostProgramSurvey)";
+          location.href = "@Html.Raw(PathHelper.Pages.ProgramSendSurvey(Model.ProgramInfo.ProgramJobId, ConfigHelper.TemplateSurveyIds.NewPostProgramSurvey))";
         });
 
       }); // ready.

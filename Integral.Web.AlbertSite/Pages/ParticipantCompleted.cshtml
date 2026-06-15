@@ -9,7 +9,7 @@
         <h3>Thank you for your participation!</h3>
         @if (Model.CanInviteRaters) {
           <h4>In the next section, you will be able to invite your raters,<br/>who will complete their version of your questionnaire.</h4>
-          <a class="btn btn-primary" href="@PathHelper.Pages.ParticipantRaters(Model.urlSurveyUID, Model.urlPartUID)">Invite Your Raters</a>
+          <a class="btn btn-primary" href="@Html.Raw(PathHelper.Pages.ParticipantRaters(Model.urlSurveyUID, Model.urlPartUID))">Invite Your Raters</a>
         } else {
           <h4>You may now close this browser window.</h4>
         }

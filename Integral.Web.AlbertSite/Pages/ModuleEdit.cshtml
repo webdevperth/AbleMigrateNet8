@@ -52,7 +52,7 @@
           <div class="content-attachment-container">
             <div class="content-attachment">
               <img id="imgCoverImage" class="preview-cover-image"
-                src="@PathHelper.Images.ContentCoverImage(Model.ModuleInfo.ModuleGuid, PathHelper.Images.ContentCoverImageSize.Card)" alt="Cover Image">
+                src="@Html.Raw(PathHelper.Images.ContentCoverImage(Model.ModuleInfo.ModuleGuid, PathHelper.Images.ContentCoverImageSize.Card))" alt="Cover Image">
             </div>
           </div>
           @if (Model.CanEditModule) {
@@ -93,7 +93,7 @@
         @if (Model.CanDeleteModule) {
           <button type="button" class="btn btn-warning btnDeleteModule">Delete</button>
         }
-        <a href="@PathHelper.Pages.Module(Model.ModuleInfo?.ModuleGuid)" target="_blank" class="btn btn-secondary mr10 btnPreview @(Model.IsNewModule ? "display-none" : "")">Preview</a>
+        <a href="@Html.Raw(PathHelper.Pages.Module(Model.ModuleInfo?.ModuleGuid))" target="_blank" class="btn btn-secondary mr10 btnPreview @(Model.IsNewModule ? "display-none" : "")">Preview</a>
         <button type="button" class="btn btn-primary floatright btnSaveModule">Save Module</button>
       </div>
     }
@@ -528,8 +528,8 @@
 
       function ValidateModuleForSaving() {
         // Check that cover Image and attachment aren't missing
-        var coverImagePath = '@PathHelper.Images.ContentCoverImage(Model.ModuleInfo.ModuleGuid, PathHelper.Images.ContentCoverImageSize.Card)';
-        var missingImagePath = '@PathHelper.Images.ContentImage_Missing()';
+        var coverImagePath = '@Html.Raw(PathHelper.Images.ContentCoverImage(Model.ModuleInfo.ModuleGuid, PathHelper.Images.ContentCoverImageSize.Card))';
+        var missingImagePath = '@Html.Raw(PathHelper.Images.ContentImage_Missing())';
 
         if (isNewModule  || (!isNewModule && coverImagePath == missingImagePath)) {
 
@@ -585,7 +585,7 @@
         if (isProgramView) {
           // TODO: When linked to Program, use that url
         } else {
-          window.location.href = '@PathHelper.Pages.ModuleEdit(null)' + moduleGuid;
+          window.location.href = '@Html.Raw(PathHelper.Pages.ModuleEdit(null))' + moduleGuid;
         }
       }
 

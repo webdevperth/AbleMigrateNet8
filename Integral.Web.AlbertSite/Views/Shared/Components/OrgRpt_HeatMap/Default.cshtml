@@ -7,7 +7,7 @@
       @if (Model.HeatMapData.IsNullOrEmpty()) {
 
         <div align="center">
-          <p><img height="140" src="@PathHelper.Images.OrgReportHeatMapEmptyState()" /></p>
+          <p><img height="140" src="@Html.Raw(PathHelper.Images.OrgReportHeatMapEmptyState())" /></p>
           <br />
           <h4>No Departments.</h4>
           <p>Add departments to your staff to see your results by department.</p>

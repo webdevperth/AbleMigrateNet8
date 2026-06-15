@@ -83,7 +83,7 @@
     (function ($) {
 
       $(document).ready(function () {
-        var intakeId = @Html.Raw(Model.ProfileInfo.UserActivity?.Latest360IntakeCodeId.ToStringOrDefaultIfNull("null"));
+        var intakeId = @(Model.ProfileInfo.UserActivity?.Latest360IntakeCodeId.ToStringOrDefaultIfNull("null"));
         if (intakeId != null) LoadReport(intakeId);
       });
 

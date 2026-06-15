@@ -49,9 +49,9 @@
   @if (ConfigHelper.IsDevServer) {
     <div class="flex flex-align-center pl15" data-appendto="PageTabReportLinks">
       @if (Model.HasPreSurvey) {
-        <a class="ml0" href="@PathHelper.Pages.CoacheeEdit(Model.CoacheeInfo.CoacheeId, PathHelper.CoacheeTabEnum.surveys, Model.PreSurveyUId, Model.PreSurveyPartUId)" target="_blank">Pre Survey</a>
+        <a class="ml0" href="@Html.Raw(PathHelper.Pages.CoacheeEdit(Model.CoacheeInfo.CoacheeId, PathHelper.CoacheeTabEnum.surveys, Model.PreSurveyUId, Model.PreSurveyPartUId))" target="_blank">Pre Survey</a>
       }
-      <a class="ml20" href="@PathHelper.Reports.CoacheeSurvey(Model.CoacheeInfo, Model.UrlSelectedSurveyUId, Model.UrlSelectedPartUId)" target="_blank">Coachee Report</a>
+      <a class="ml20" href="@Html.Raw(PathHelper.Reports.CoacheeSurvey(Model.CoacheeInfo, Model.UrlSelectedSurveyUId, Model.UrlSelectedPartUId))" target="_blank">Coachee Report</a>
     </div>
   }
 

@@ -15,7 +15,7 @@
   </div>
   <div class="right">
     @if (Model.CanCreateCompany) {
-      <a class="btn btn-primary floatright ml10" href="@PathHelper.Pages.Organisation_Add()">New Organisation</a>
+      <a class="btn btn-primary floatright ml10" href="@Html.Raw(PathHelper.Pages.Organisation_Add())">New Organisation</a>
     }
   </div>
 </div>

@@ -58,7 +58,7 @@
     if (Model.CanAddWorkshop) {
       <div class="content-action-bar">
         <div class="right">
-          <a href="@PathHelper.Pages.Workshops_Add(Model.ProgramInfo.ProgramJobId)" class="btn btn-primary">Add Workshop</a>
+          <a href="@Html.Raw(PathHelper.Pages.Workshops_Add(Model.ProgramInfo.ProgramJobId))" class="btn btn-primary">Add Workshop</a>
         </div>
       </div>
     }

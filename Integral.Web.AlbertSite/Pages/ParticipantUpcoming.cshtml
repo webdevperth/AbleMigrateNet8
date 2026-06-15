@@ -63,7 +63,7 @@
               modalDialog.data("@WebHelper.DataAttrName.DialogRef", dialogRef);
               var modalBody = dialogRef.getModalBody();
               modalBody.busyLoad("show");
-              modalBody.load("@PathHelper.Partials.PurchaseServices()",
+              modalBody.load("@Html.Raw(PathHelper.Partials.PurchaseServices())",
                 function (data) {
                   modalBody.html(data);
                   modalBody.busyLoad("hide");

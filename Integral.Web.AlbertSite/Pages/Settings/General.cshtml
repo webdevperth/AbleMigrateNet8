@@ -45,7 +45,7 @@
             Use the controls below to rotate and zoom.<br/>
             When zoomed in, use the mouse to move the image in the frame.
           </div>
-          <img class="cropperImage floatleft" src="@PathHelper.Images.TenantOrgLogo(Model.TenantOrgInfo, true)" alt="Project Logo">
+          <img class="cropperImage floatleft" src="@Html.Raw(PathHelper.Images.TenantOrgLogo(Model.TenantOrgInfo, true))" alt="Project Logo">
         </div>
       </div>
       <div class="modal-footer">
@@ -214,7 +214,7 @@
           form: $companyForm,
           action: "@Integral.Web.PortalSite.Pages_Albert.Settings.General.AjaxAction.UpdateCompany",
           onSuccess: function (jqXHR, data) {
-            var logoUrl = "@PathHelper.Images.TenantOrgLogo(Model.TenantOrgInfo, true)";
+            var logoUrl = "@Html.Raw(PathHelper.Images.TenantOrgLogo(Model.TenantOrgInfo, true))";
             SavePhoto("@Integral.Web.PortalSite.Pages_Albert.Settings.General.AjaxAction.TenantOrgLogo", data.CoachId, $imgCompanyLogo, logoUrl);
           }
         });

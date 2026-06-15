@@ -806,7 +806,7 @@
 
             $.busyLoadFull("show");
             location.href
-              = "@PathHelper.Pages.CoachEdit(Model.CoachInfo.UserId, PathHelper.CoachTabEnum.contract)"
+              = "@Html.Raw(PathHelper.Pages.CoachEdit(Model.CoachInfo.UserId, PathHelper.CoachTabEnum.contract))"
               + "&@PathHelper.AbleUrlKeys.UserContract=@PathHelper.AbleUrlValues.IdNew";
           }
 
@@ -1162,8 +1162,8 @@
         form: $clientForm,
         action: "@Integral.Web.PortalSite.Pages_Albert.CoachEdit.AjaxAction.UpdateProfile",
         onSuccess: function (jqXHR, data) {
-          var userPhotoUrl = "@PathHelper.Images.UserPhoto(Model.CoachInfo, PathHelper.Images.UserPhotoSize.Large, false)";
-          var userPlaceholderUrl = "@PathHelper.Images.UserPhoto_Missing()";
+          var userPhotoUrl = "@Html.Raw(PathHelper.Images.UserPhoto(Model.CoachInfo, PathHelper.Images.UserPhotoSize.Large, false))";
+          var userPlaceholderUrl = "@Html.Raw(PathHelper.Images.UserPhoto_Missing())";
           //SavePhoto("@Integral.Web.PortalSite.Pages_Albert.CoachEdit.AjaxAction.PartnerPhoto", data.CoachId, $imgProfilePic, userPhotoUrl, userPlaceholderUrl);
         }
       });
@@ -1211,7 +1211,7 @@
         form: $companyForm,
         action: "@Integral.Web.PortalSite.Pages_Albert.CoachEdit.AjaxAction.UpdateCompany",
         onSuccess: function (jqXHR, data) {
-          var logoUrl = "@PathHelper.Images.TenantOrgLogo(Model.CoachInfo, true)";
+          var logoUrl = "@Html.Raw(PathHelper.Images.TenantOrgLogo(Model.CoachInfo, true))";
           //SavePhoto("@Integral.Web.PortalSite.Pages_Albert.CoachEdit.AjaxAction.TenantOrgLogo", data.CoachId, $imgCompanyLogo, logoUrl);
         }
       });
@@ -1243,7 +1243,7 @@
       if ($imgTarget.data("blob") == null) return;
 
       jQuery.ajax({
-        url: "@PathHelper.Pages.CoachEdit(null)" + coachId,
+        url: "@Html.Raw(PathHelper.Pages.CoachEdit(null))" + coachId,
         data: {
           "CoachId": coachId,
           "image": $imgTarget.data("blob")

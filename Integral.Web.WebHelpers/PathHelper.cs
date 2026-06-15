@@ -27,6 +27,9 @@ namespace Integral.Web {
 
     public enum PageViewAsRole { Default, Participant }
 
+    [GeneratedRegex("[?].*")]
+    private static partial Regex RemoveQuerystringRegex();
+
     static PathHelper() {
 
       WebRoot = GetWebRootPath();
@@ -935,7 +938,7 @@ namespace Integral.Web {
     }
 
     public static bool IsReferrerPageURL(string pageURL) { // where pageURL is one of the PathHelper.Pages strings.
-      pageURL = Regex.Replace(pageURL, "[?].*", "");
+      pageURL = RemoveQuerystringRegex().Replace(pageURL, "");
       var referrerUri = WebHelper.GetReferrerUri();
       if (referrerUri == null) return false;
       return referrerUri.AbsolutePath.Equals(pageURL, StringComparison.OrdinalIgnoreCase);
@@ -1003,7 +1006,7 @@ namespace Integral.Web {
 
       public enum ContentFileType { Document, Image, CoverImage }
 
-      public static Dictionary<ContentFileType, string> ContentFileTypeSuffixes = new Dictionary<ContentFileType, string>() {
+      private static Dictionary<ContentFileType, string> ContentFileTypeSuffixes = new Dictionary<ContentFileType, string>() {
         { ContentFileType.Document, "_document" },
         { ContentFileType.Image, "_image" },
         { ContentFileType.CoverImage, "_coverimage" },
@@ -1518,18 +1521,6 @@ namespace Integral.Web {
         string val = WebHelper.GetQueryStringValue(key);
         if (val.IsNullOrEmpty()) return "";
         else return val;
-      }
-
-      public static int GetSurveyIdOrZero() {
-        int svid = 0;
-        int.TryParse(GetStringOrEmpty(AbleUrlKeys.SurveyId), out svid);
-        return svid;
-      }
-
-      public static int GetQnGroupIdOrZero() {
-        int qgid = 0;
-        int.TryParse(GetStringOrEmpty("qngroupid"), out qgid);
-        return qgid;
       }
     }
 

@@ -9,6 +9,7 @@
     <UserSecretsId>integral-able-portalsite</UserSecretsId>
     <RazorCompileOnBuild>true</RazorCompileOnBuild>
     <RazorCompileOnPublish>true</RazorCompileOnPublish>
+    <HotReloadAutoRestart>true</HotReloadAutoRestart>
   </PropertyGroup>
 
   <ItemGroup>

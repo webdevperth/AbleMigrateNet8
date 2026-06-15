@@ -35,13 +35,13 @@
   if (Model.CanAddCostItem) {
     <div class="content-action-bar mt20">
       <div class="right">
-        <a href="@PathHelper.Pages.ProgramCostItems_Add(Model.ProgramInfo.ProgramJobId)" class="btn btn-primary">Add Cost Item</a>
+        <a href="@Html.Raw(PathHelper.Pages.ProgramCostItems_Add(Model.ProgramInfo.ProgramJobId))" class="btn btn-primary">Add Cost Item</a>
       </div>
     </div>
   }
 
   <div class="table-responsive">
-    <table class="tblProgramCostItems table table-bordered table-rowlink" data-rowlink-url="@PathHelper.Pages.ProgramCostItems_Edit(Model.ProgramInfo.ProgramJobId, null)">
+    <table class="tblProgramCostItems table table-bordered table-rowlink" data-rowlink-url="@Html.Raw(PathHelper.Pages.ProgramCostItems_Edit(Model.ProgramInfo.ProgramJobId, null))">
       <thead>
         <tr>
           @if (Model.CanSubmitPOtoXero) {

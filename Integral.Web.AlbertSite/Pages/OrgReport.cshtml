@@ -22,7 +22,7 @@
         <div class="analytics-icon"></div>
       </div>
       <div class="flex1">
-        <a class="btn btn-secondary floatright" href="@PathHelper.Pages.Logout()">Log Out</a>
+        <a class="btn btn-secondary floatright" href="@Html.Raw(PathHelper.Pages.Logout())">Log Out</a>
         <h4 class="mt0">Analytics</h4>
         <h3>@(Model.surveyInfo == null ? "" : Model.surveyInfo.SurveyName.HTMLEncode())</h3>
       </div>

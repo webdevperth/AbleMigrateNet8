@@ -31,7 +31,7 @@
     <input id="tabulator-search" type="search" name="@PathHelper.AbleUrlKeys.JobSearchTerm" value="" placeholder="Search project number, name, ..." autofocus="autofocus">
   </div>
   @if (Model.CanCreateNewProject) {
-    <a class="btn btn-primary" href="@PathHelper.Pages.Projects_Add()"><i class="fal fa-plus"></i> New Project</a>
+    <a class="btn btn-primary" href="@Html.Raw(PathHelper.Pages.Projects_Add())"><i class="fal fa-plus"></i> New Project</a>
   }
 </div>
 
@@ -193,9 +193,9 @@
                   let $rowEl = $(row.getElement());
                   let url = '';
                   if (rowData.IsProject) {
-                    url = '@PathHelper.Pages.ProjectPrograms("__")'.replace('__', rowData.JobNumber);
+                    url = '@Html.Raw(PathHelper.Pages.ProjectPrograms("__"))'.replace('__', rowData.JobNumber);
                   } else {
-                    url = '@PathHelper.Pages.ProgramOverview(1010)'.replace('1010', rowData.ProgramJobId);
+                    url = '@Html.Raw(PathHelper.Pages.ProgramOverview(1010))'.replace('1010', rowData.ProgramJobId);
                   }
                   $rowEl.attr("data-url", AbleJS.Util.HtmlEncode(url));
                   var html = '';

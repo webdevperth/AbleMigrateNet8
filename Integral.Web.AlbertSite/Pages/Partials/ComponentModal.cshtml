@@ -83,7 +83,7 @@
       AjaxSubmit({
         form: modalForm,
         action: ajaxAction,
-        url: "@PathHelper.Partials.ComponentModal(Model.ProjectInfo.JobNumber, Model.ComponentInfo.ComponentId)",
+        url: "@Html.Raw(PathHelper.Partials.ComponentModal(Model.ProjectInfo.JobNumber, Model.ComponentInfo.ComponentId))",
         onSuccess: function (jqXHR, data) { },
         onFail: function (jqXHR, data) { },
         onError: function (jqXHR, textStatus, errorThrown) { },

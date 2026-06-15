@@ -8,7 +8,7 @@
       @if (SessionHelper.IsUserLoggedIn) {
         @:Find the survey you're looking for in your survey list:<br />
         <br />
-        <a href="@PathHelper.Pages.ParticipantSurveys()" class="btn btn-primary btn-sm">Your Survey List</a>
+        <a href="@Html.Raw(PathHelper.Pages.ParticipantSurveys())" class="btn btn-primary btn-sm">Your Survey List</a>
       } else {
         <p>Please check the link that led you here is correct.</p>
         <p>If you think this may be an error, please <a target="_blank" href="@ConfigHelper.HelpUrls.ContactUs">let us know</a>.</p>

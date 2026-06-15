@@ -259,7 +259,7 @@
             content: 'Checkout some examples to fill your development plan.'
           });
 
-          var intakeId = @Html.Raw(Model.ProfileInfo.UserActivity?.Latest360IntakeCodeId.ToStringOrDefaultIfNull("null"));
+          var intakeId = @(Model.ProfileInfo.UserActivity?.Latest360IntakeCodeId.ToStringOrDefaultIfNull("null"));
           if (intakeId != null) {
             setTimeout(function () {
               LoadPartReport(intakeId);

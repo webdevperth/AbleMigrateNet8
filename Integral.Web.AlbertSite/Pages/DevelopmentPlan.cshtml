@@ -32,7 +32,7 @@
       @if (Model.CurrentPlan == null) {
         <button type="button" class="btn btn-secondary btn-create">Create Your First Plan &rarr;</button>
       } else {
-        <a class="btn btn-secondary btn-review" href="@PathHelper.Pages.DevelopmentPlanForm(Model.CurrentPlan.SurveyUniqueId, Model.CurrentPlan.SurveyPartUniqueId)">Review Your Plan &rarr;</a>
+        <a class="btn btn-secondary btn-review" href="@Html.Raw(PathHelper.Pages.DevelopmentPlanForm(Model.CurrentPlan.SurveyUniqueId, Model.CurrentPlan.SurveyPartUniqueId))">Review Your Plan &rarr;</a>
       }
     </p>
   </div>
@@ -56,7 +56,7 @@
         <tr><td colspan="5">No Plans</td></tr>
       } else {
         foreach (var plan in Model.PlansForUser) {
-          <tr tabindex="0" class="rowData" data-rowlink-url="@PathHelper.Pages.DevelopmentPlanForm(plan.SurveyUniqueId, plan.SurveyPartUniqueId)">
+          <tr tabindex="0" class="rowData" data-rowlink-url="@Html.Raw(PathHelper.Pages.DevelopmentPlanForm(plan.SurveyUniqueId, plan.SurveyPartUniqueId))">
             <td class="type-date-range">@Model.GetPlanDateDisplay(plan.ClosedUtc)</td>
             <td class="">@Model.GetGoalResponseText(plan.GoalText).HTMLEncode()</td>
             <td class="type-progress">@(plan.SurveyPartPercentCompleted ?? 0)%</td>

@@ -11,7 +11,7 @@
   <p>@Html.Raw(WebHelper.GetLink(new WebHelper.LinkInfo(PathHelper.Pages.QuotePublicPDF(Model.QuoteInfo.PublicGuid), "Download PDF", true) { ClickDisableSeconds = 10, ClickSpinnerSeconds = 10 }))</p>
 </div>
 
-<form method="post" action="@PathHelper.Pages.QuoteQwilrSignOff(Model.QuoteInfo.PublicGuid)">
+<form method="post" action="@Html.Raw(PathHelper.Pages.QuoteQwilrSignOff(Model.QuoteInfo.PublicGuid))">
 
   <table class="tblItems w100p">
     <thead>

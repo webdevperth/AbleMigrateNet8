@@ -29,8 +29,8 @@
     <div class="">Benchmark: </div>
     <div class="ml10">
       <select id="selBenchmark" class="w175 noselect2">
-        <option value="@PathHelper.SurveyViewerBenchmarkEnum.Global.ToString()">Global (n=@Model.Global360ResponseCount)</option>
-        <option value="@PathHelper.SurveyViewerBenchmarkEnum.Org.ToString()">Organisation</option>
+        <option value="@(PathHelper.SurveyViewerBenchmarkEnum.Global.ToString())">Global (n=@Model.Global360ResponseCount)</option>
+        <option value="@(PathHelper.SurveyViewerBenchmarkEnum.Org.ToString())">Organisation</option>
       </select>
     </div>
   </div>
@@ -187,7 +187,7 @@
             }),
             action: "@Integral.Web.PortalSite.Pages_Albert.SkillsViewer.AjaxAction.GetPrograms",
             onSuccess: function (jqXHR, data) {
-              selBenchmark.find('option[value="@PathHelper.SurveyViewerBenchmarkEnum.Org.ToString()"]').text("Organisation (n=" + data["@Integral.Web.PortalSite.Pages_Albert.SkillsViewer.ReturnValues.Company360ResponseCount"] + ")");
+              selBenchmark.find('option[value="@(PathHelper.SurveyViewerBenchmarkEnum.Org.ToString())"]').text("Organisation (n=" + data["@Integral.Web.PortalSite.Pages_Albert.SkillsViewer.ReturnValues.Company360ResponseCount"] + ")");
               selPrograms.html(data["@Integral.Web.PortalSite.Pages_Albert.SkillsViewer.ReturnValues.Html"]).prop("disabled", false).trigger("change").busyLoad("hide");
             }
           });

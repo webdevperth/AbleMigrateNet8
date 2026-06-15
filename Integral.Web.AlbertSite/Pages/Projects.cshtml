@@ -26,7 +26,7 @@
     </div>
     <div class="right">
       @if (Model.CanCreateNewProject) {
-        <a class="btn btn-primary floatright ml10" href="@PathHelper.Pages.Projects_Add()">New Project</a>
+        <a class="btn btn-primary floatright ml10" href="@Html.Raw(PathHelper.Pages.Projects_Add())">New Project</a>
       }
     </div>
   </div>

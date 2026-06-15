@@ -15,7 +15,7 @@
 <div class="container quoteView">
 
   <div class="heading flex-wrap-sm">
-    <div class="logo"><img src="@PathHelper.Images.TenantOrgLogo(Model.QuoteInfo, true)" /></div>
+    <div class="logo"><img src="@Html.Raw(PathHelper.Images.TenantOrgLogo(Model.QuoteInfo, true))" /></div>
     <div class="title">
       <h2>@Model.QuoteInfo.QuoteTitle.HTMLEncode()</h2>
     </div>
@@ -53,10 +53,10 @@
           <li role="presentation" class="tab-pdflink dropdown " title="Download PDF">
 
             <a href="#" class="dropdown-toggle pdflink" data-toggle="dropdown" tabindex="-1">
-              @Html.Raw(WebHelper.Icon.PDF_outline.ToString())
+              @(WebHelper.Icon.PDF_outline.ToString())
             </a>
             <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in" aria-labelledby="userDropdown">
-              <a class="dropdown-item" href="@PathHelper.Pages.QuotePublicPDF(Model.QuoteInfo.PublicGuid)" target="_blank">Download Quote PDF</a>
+              <a class="dropdown-item" href="@Html.Raw(PathHelper.Pages.QuotePublicPDF(Model.QuoteInfo.PublicGuid))" target="_blank">Download Quote PDF</a>
 
               @if (!Model.QuoteInfo.QwilrPDFUrl.IsNullOrEmptyOrWhitespace()) {
                 <div class="dropdown-divider"></div>
@@ -68,7 +68,7 @@
         </ul>
       </div>
 
-      <form id="signform" class="form-horizontal" method="post" action="@PathHelper.Pages.QuotePublicView(Model.QuoteInfo.PublicGuid)" onsubmit="return false">
+      <form id="signform" class="form-horizontal" method="post" action="@Html.Raw(PathHelper.Pages.QuotePublicView(Model.QuoteInfo.PublicGuid))" onsubmit="return false">
         <div class="tab-content">
           @if (Model.QuoteHasOverview) {
             <div class="tab-pane tab-quote tab-@Integral.Web.PortalSite.Pages_Albert.QuotePublicView.TabName.Overview fade in tabMargin" id="panel-@Integral.Web.PortalSite.Pages_Albert.QuotePublicView.TabName.Overview" role="tabpanel" aria-labelledby="tab-@Integral.Web.PortalSite.Pages_Albert.QuotePublicView.TabName.Overview">
@@ -118,7 +118,7 @@
             class="proposal-frame quote-pdf"
             title="Proposal PDF"></iframe>
           <!-- Fallback -->
-          <a href="@PathHelper.PDF.QuoteSalesPDFUrl(Model.QuoteInfo)">Download Quote PDF Here</a>
+          <a href="@Html.Raw(PathHelper.PDF.QuoteSalesPDFUrl(Model.QuoteInfo))">Download Quote PDF Here</a>
         </div>
       }
 

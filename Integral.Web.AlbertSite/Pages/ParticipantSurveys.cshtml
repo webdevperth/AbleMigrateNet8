@@ -99,7 +99,7 @@
       }); // ready.
 
       function UpdateUrlAddress(tabName) {
-        window.history.pushState('', '', '@PathHelper.Pages.ParticipantSurveys(null)' + tabName);
+        window.history.pushState('', '', '@Html.Raw(PathHelper.Pages.ParticipantSurveys(null))' + tabName);
       }
 
       function UpdateSurveySharing(surveyShareId, btnUnshare) {

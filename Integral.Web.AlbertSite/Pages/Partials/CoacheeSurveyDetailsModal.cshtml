@@ -114,18 +114,18 @@
                 @Html.Raw(Model.CanEmailSurveyReports ? "" : WebHelper.GetIconTooltip(WebHelper.ActionButtonTypeEnum.info, "The report will be available and able to be sent once it has been closed.", "", "mr15 mt5"))
               </div>
               if (Model.SurveyInfo.FoundParticipantBrief?.IsReportAvailable_Online == true) {
-                <a class="btn btn-sm btn-primary" href="@PathHelper.Reports.CoacheeSurvey(Model.CoacheeInfo, Model.SurveyInfo)">Coachee Online Report</a>
+                <a class="btn btn-sm btn-primary" href="@Html.Raw(PathHelper.Reports.CoacheeSurvey(Model.CoacheeInfo, Model.SurveyInfo))">Coachee Online Report</a>
               }
             }
             if (Model.SurveyInfo.FoundParticipantBrief?.IsReportAvailable_PDF == true) {
-              <a class="btn btn-sm btn-primary" href="@PathHelper.Reports.ParticipantPDFReport(Model.SurveyInfo.ReportType, Model.SurveyInfo.SurveyId, Model.SurveyInfo.FoundParticipantBrief.PartUniqueId)" target="_blank">Coachee PDF Report</a>
+              <a class="btn btn-sm btn-primary" href="@Html.Raw(PathHelper.Reports.ParticipantPDFReport(Model.SurveyInfo.ReportType, Model.SurveyInfo.SurveyId, Model.SurveyInfo.FoundParticipantBrief.PartUniqueId))" target="_blank">Coachee PDF Report</a>
             }
           }
           @if (Model.CanEditSurveyInJarvis) {
-            <a class="btn btn-sm btn-primary" href="@PathHelper.JarvisPages.ParticipantsUrl(Model.SurveyInfo.SurveyId, Model.SurveyInfo.IntakeNumber)" target="_blank">Admin: Edit in Jarvis</a>
+            <a class="btn btn-sm btn-primary" href="@Html.Raw(PathHelper.JarvisPages.ParticipantsUrl(Model.SurveyInfo.SurveyId, Model.SurveyInfo.IntakeNumber))" target="_blank">Admin: Edit in Jarvis</a>
           }
           @if (Model.CanInviteRaters) {
-            <a class="btn btn-sm btn-primary" href="@PathHelper.Pages.ParticipantRaters(Model.SurveyInfo.SurveyUID, Model.SurveyInfo.FoundParticipantBrief.PartUniqueId)" target="_blank">Invite Raters</a>
+            <a class="btn btn-sm btn-primary" href="@Html.Raw(PathHelper.Pages.ParticipantRaters(Model.SurveyInfo.SurveyUID, Model.SurveyInfo.FoundParticipantBrief.PartUniqueId))" target="_blank">Invite Raters</a>
           }
         </div>
 

@@ -16,7 +16,7 @@
   if (Model.CanCreateProgram) {
     <div class="content-action-bar">
       <div class="right">
-        <a class="btn btn-primary" href="@PathHelper.Pages.Programs_Add(Model.ProjectInfo.JobNumber, SystemWeb.RequestRawUrl)">Add New Program</a>
+        <a class="btn btn-primary" href="@Html.Raw(PathHelper.Pages.Programs_Add(Model.ProjectInfo.JobNumber, SystemWeb.RequestRawUrl))">Add New Program</a>
       </div>
     </div>
   }

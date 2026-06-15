@@ -28,12 +28,12 @@
         <div class="form-row">
           <label></label>
           <div class="flex flex-align-center gap20">
-            <div class="flex1"><a class="focus-underline nowrap" tabindex="4" href="@PathHelper.Pages.ResetPassword()">Forgot Password?</a></div>
+            <div class="flex1"><a class="focus-underline nowrap" tabindex="4" href="@Html.Raw(PathHelper.Pages.ResetPassword())">Forgot Password?</a></div>
             <button id="btnLogin" tabindex="3" type="button" class="btn btn-primary flex0">Sign In</button>
           </div>
         </div>
 
-        <span class="form-footer">Don't have an account? <a tabindex="5" class="focus-underline" href="@PathHelper.Pages.Register()">Register</a> for free.</span>
+        <span class="form-footer">Don't have an account? <a tabindex="5" class="focus-underline" href="@Html.Raw(PathHelper.Pages.Register())">Register</a> for free.</span>
 
       </form>
 

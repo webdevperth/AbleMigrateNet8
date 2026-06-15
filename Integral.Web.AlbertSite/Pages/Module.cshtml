@@ -29,7 +29,7 @@
 
       <div class="content-card-mid-section">
         <div class="content-card-creator">
-          <img src="@PathHelper.Images.UserPhoto(Model.ModuleInfo.AuthorFirstName, Model.ModuleInfo.AuthorLastName, PathHelper.Images.UserPhotoSize.Thumbnail, true)" />
+          <img src="@Html.Raw(PathHelper.Images.UserPhoto(Model.ModuleInfo.AuthorFirstName, Model.ModuleInfo.AuthorLastName, PathHelper.Images.UserPhotoSize.Thumbnail, true))" />
           <span class="ml5"> Created by @Model.ModuleInfo.GetAuthorFullName()</span>
         </div>
       </div>
@@ -44,7 +44,7 @@
       </div>
     </div>
     <div class="content-card-coverimage">
-      <img src="@PathHelper.Images.ContentCoverImage(Model.ModuleInfo.ModuleGuid, PathHelper.Images.ContentCoverImageSize.DetailPage)" alt="@Model.ModuleInfo.ModuleTitle">
+      <img src="@Html.Raw(PathHelper.Images.ContentCoverImage(Model.ModuleInfo.ModuleGuid, PathHelper.Images.ContentCoverImageSize.DetailPage))" alt="@Model.ModuleInfo.ModuleTitle">
     </div>
   </div>
   <div class="mt40">

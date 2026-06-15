@@ -497,7 +497,7 @@
             modalDialog.data("@WebHelper.DataAttrName.DialogRef", dialogRef);
             var modalBody = dialogRef.getModalBody();
             modalBody.busyLoad("show");
-            modalBody.load('@PathHelper.Partials.CoachingSessionModal(Model.CoacheeInfo.CoacheeId, null)' + sessionId,
+            modalBody.load('@Html.Raw(PathHelper.Partials.CoachingSessionModal(Model.CoacheeInfo.CoacheeId, null))' + sessionId,
               function (data) {
                 modalBody.html(data);
                 modalBody.busyLoad("hide");
@@ -730,7 +730,7 @@
     (function ($) {
 
       $(document).ready(function () {
-        var intakeId = @Html.Raw(Model.CoacheeInfo.UserActivity.Latest360IntakeCodeId.ToStringOrDefaultIfNull("null"));
+        var intakeId = @(Model.CoacheeInfo.UserActivity.Latest360IntakeCodeId.ToStringOrDefaultIfNull("null"));
         if (intakeId != null) LoadPartReport(intakeId);
       });
 
@@ -785,7 +785,7 @@
 
         $(".btnSendEmailToCoachee").on("click", function (evt) {
           $('a[href="#panel-@PathHelper.CoacheeTabEnum.email"]').click();
-          var modalPath = "@PathHelper.Partials.CoacheeSendEmailModal(Model.CoacheeInfo.CoacheeId)";
+          var modalPath = "@Html.Raw(PathHelper.Partials.CoacheeSendEmailModal(Model.CoacheeInfo.CoacheeId))";
           ShowSurveyModal(modalPath, "Send New Email to Coachee");
         })
 
@@ -822,7 +822,7 @@
     })(jQuery);
 
     function UpdateUrlAddress(tabName) {
-      window.history.pushState('', '', '@PathHelper.Pages.CoacheeEdit(Model.CoacheeInfo.CoacheeId, null)' + tabName);
+      window.history.pushState('', '', '@Html.Raw(PathHelper.Pages.CoacheeEdit(Model.CoacheeInfo.CoacheeId, null))' + tabName);
     }
 
     // Closure for Profile Tab.
@@ -893,7 +893,7 @@
 
       function GetPrograms(cid) {
 
-        $.get("@PathHelper.Endpoints.ProgramsForCompanyId(0)" + cid, function (data) {
+        $.get("@Html.Raw(PathHelper.Endpoints.ProgramsForCompanyId(0))" + cid, function (data) {
           selProgramId.empty();
           if (data && data.Programs && data.Programs.ProgramInfoList) {
             for (var i_program in data.Programs.ProgramInfoList) {

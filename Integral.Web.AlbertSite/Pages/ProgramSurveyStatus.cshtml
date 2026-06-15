@@ -16,7 +16,7 @@
 @if (Model.SurveyInfoVisible) {
 
   if (Model.CanSendSurvey) {
-    <a class="btn btn-primary floatright mt10" href="@PathHelper.Pages.ProgramSendSurvey()">Send New Survey</a>
+    <a class="btn btn-primary floatright mt10" href="@Html.Raw(PathHelper.Pages.ProgramSendSurvey())">Send New Survey</a>
   }
 
   <div class="row-info">
@@ -81,7 +81,7 @@
 
     if (SessionHelper.IsUserRoleAdmin) {
       <div class="row-info">
-        <a href="@PathHelper.JarvisPages.ParticipantsUrl(Model.FoundSurveyInfo.SurveyId, Model.FoundSurveyInfo.IntakeNumber)" target="_blank">Edit Survey in Jarvis</a>
+        <a href="@Html.Raw(PathHelper.JarvisPages.ParticipantsUrl(Model.FoundSurveyInfo.SurveyId, Model.FoundSurveyInfo.IntakeNumber))" target="_blank">Edit Survey in Jarvis</a>
       </div>
     }
 

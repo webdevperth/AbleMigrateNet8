@@ -18,13 +18,13 @@
     if (Model.CanAddConsulting) {
       <div class="content-action-bar">
         <div class="right">
-          <a href="@PathHelper.Pages.Consulting_Add(Model.ProgramInfo.ProgramJobId)" class="btn btn-primary">Add Consulting Item</a>
+          <a href="@Html.Raw(PathHelper.Pages.Consulting_Add(Model.ProgramInfo.ProgramJobId))" class="btn btn-primary">Add Consulting Item</a>
         </div>
       </div>
     }
 
     <div class="table-responsive">
-      <table class="tblConsulting table table-bordered table-hover table-rowlink" data-rowlink-url="@PathHelper.Pages.Consulting_Edit(Model.ProgramInfo.ProgramJobId, null)">
+      <table class="tblConsulting table table-bordered table-hover table-rowlink" data-rowlink-url="@Html.Raw(PathHelper.Pages.Consulting_Edit(Model.ProgramInfo.ProgramJobId, null))">
         <thead>
           <tr>
             <th class="type-date">Completion</th>

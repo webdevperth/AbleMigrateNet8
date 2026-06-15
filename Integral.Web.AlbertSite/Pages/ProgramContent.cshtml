@@ -15,7 +15,7 @@
 
     <div class="right">
       @if (Model.CanAddContentToProgram) {
-        <a class="btn btn-primary float-right" href="@PathHelper.Pages.ContentDetails_AddContent(Model.ProgramInfo.ProgramJobId)">Add Microlearning</a>
+        <a class="btn btn-primary float-right" href="@Html.Raw(PathHelper.Pages.ContentDetails_AddContent(Model.ProgramInfo.ProgramJobId))">Add Microlearning</a>
       }
     </div>
   </div>

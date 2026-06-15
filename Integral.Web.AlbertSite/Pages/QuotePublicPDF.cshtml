@@ -16,7 +16,7 @@
 
 <div class="quoteView">
   <div class="heading heading-pdf w100p">
-    <div class="logo"><img src="@PathHelper.Images.TenantOrgLogo(Model.QuoteInfo, true)" /></div>
+    <div class="logo"><img src="@Html.Raw(PathHelper.Images.TenantOrgLogo(Model.QuoteInfo, true))" /></div>
     <div class="title">
       <h2>@Model.QuoteInfo.QuoteTitle.HTMLEncode()</h2>
       <p>Job Number: @Model.QuoteInfo.JobNumber</p>

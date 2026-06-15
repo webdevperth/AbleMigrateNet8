@@ -21,7 +21,7 @@
     <br />
     <div class="mt15 mb10 flex">
       @if (Model.CanCopyQuote) {
-        <a href="@PathHelper.Pages.QuotePublicView(Model.QuoteInfo.PublicGuid, true)" class="btn btn-primary btn-sm mr20"
+        <a href="@Html.Raw(PathHelper.Pages.QuotePublicView(Model.QuoteInfo.PublicGuid, true))" class="btn btn-primary btn-sm mr20"
           target="_blank"><ion-icon name="eye-outline"></ion-icon>View Client Quote</a>
         <button type="button" id="btnCopy" class="btn btn-info" title="Copy Quote">@Html.Raw(WebHelper.Icon.Copy)</button>
       }
@@ -601,20 +601,22 @@
     <script>
       function AddExistingProducts(ProductRowInfo, AddProductRow) {
         @foreach(var qi in Model.QuoteInfo.QuoteItems) {
-          @:AddProductRow(new ProductRowInfo(
-          @:  @qi.ProductId.GetValueOrDefault(0)
-          @:  , "@qi.ItemDescriptionHtml.ToStringOrEmptyIfNull().RegexReplace("[\r\n]", "").Replace("\"", "\\\"")"
-          @:  , @qi.OptionalId
-          @:  , @qi.UnitPrice.GetValueOrDefault(0)
-          @:  , @qi.Quantity.GetValueOrDefault(0)
-          @:  , "@qi.QuantityDescr.ToStringOrEmptyIfNull()"
-          @:  , @Html.Raw(qi.IsAccepted.ToJSTrueFalseOrNull())
-          @:  , @qi.MinAllowedQuotePrice.GetValueOrDefault(0)
-          @:  , @Html.Raw(qi.RequiresSubscription.ToJSTrueFalse())
-          @:  , @qi.SubscriptionId.GetValueOrDefault(0)
-          @:  , @Html.Raw(qi.IsQuantityPerPerson.ToJSTrueFalse())
-          @:  , @Html.Raw(qi.IsSubscription.ToJSTrueFalse())
-          @:));
+          <text>
+          AddProductRow(new ProductRowInfo(
+            @qi.ProductId.GetValueOrDefault(0)
+            , "@qi.ItemDescriptionHtml.ToStringOrEmptyIfNull().RegexReplace("[\r\n]", "").Replace("\"", "\\\"")"
+            , @qi.OptionalId
+            , @qi.UnitPrice.GetValueOrDefault(0)
+            , @qi.Quantity.GetValueOrDefault(0)
+            , "@qi.QuantityDescr.ToStringOrEmptyIfNull()"
+            , @Html.Raw(qi.IsAccepted.ToJSTrueFalseOrNull())
+            , @qi.MinAllowedQuotePrice.GetValueOrDefault(0)
+            , @Html.Raw(qi.RequiresSubscription.ToJSTrueFalse())
+            , @qi.SubscriptionId.GetValueOrDefault(0)
+            , @Html.Raw(qi.IsQuantityPerPerson.ToJSTrueFalse())
+            , @Html.Raw(qi.IsSubscription.ToJSTrueFalse())
+          ));
+          </text>
         }
       }
     </script>
@@ -623,11 +625,11 @@
   <script type="text/javascript">
     (function($) {
 
-      var isReadOnly = @Html.Raw((!Model.CanEditQuote).ToJSTrueFalse());
-      var isClientView = @Html.Raw((Model.IsClientView).ToJSTrueFalse());
-      var CanEditQuoteProject = @Html.Raw((Model.CanEditQuoteProject).ToJSTrueFalse());
-      var CanEditQuoteSplits = @Html.Raw((Model.CanEditQuoteSplits).ToJSTrueFalse());
-      var canViewQuoteComponentPrice = @Html.Raw((Model.CanViewQuoteComponentPrice).ToJSTrueFalse());
+      var isReadOnly = @((!Model.CanEditQuote).ToJSTrueFalse());
+      var isClientView = @(Model.IsClientView.ToJSTrueFalse());
+      var CanEditQuoteProject = @(Model.CanEditQuoteProject.ToJSTrueFalse());
+      var CanEditQuoteSplits = @(Model.CanEditQuoteSplits.ToJSTrueFalse());
+      var canViewQuoteComponentPrice = @(Model.CanViewQuoteComponentPrice.ToJSTrueFalse());
 
       var $clientForm = $("#clientForm");
       var $formTabs = $("#formTabs");
@@ -641,7 +643,7 @@
       var $newContactInfo = $("#newContactInfo");
       var $selFindUser = $("#selFindUser");
       var $btnSel2AddContact = $('<button class="btn btn-primary btn-xsm">add a new user</button>');
-      var $quoteInfoSaved = @Html.Raw(Model.QuoteInfoSaved.ToJSTrueFalse());
+      var $quoteInfoSaved = @(Model.QuoteInfoSaved.ToJSTrueFalse());
       var $btnAddProduct = $("#btnAddProduct");
       var $selDlgProducts = $("#selProductId");
       var $dlgAddProduct = $("#dlgAddProduct");
@@ -654,7 +656,7 @@
       var $btnUpdate = $("#btnUpdate");
       var $btnCopy = $("#btnCopy");
       var $frmCopyQuote = $("#frmCopyQuote");
-      var $inpCopyQuoteTitle = $frmCopyQuote.find('input[name="@Integral.Web.PortalSite.Pages_Albert.QuoteInfo.FormFields.CopyQuoteTitle"]');
+      var $inpCopyQuoteTitle = $frmCopyQuote.find('input[name="@(Integral.Web.PortalSite.Pages_Albert.QuoteInfo.FormFields.CopyQuoteTitle)"]');
       var $btnDelete = $("#btnDelete");
       var divWarningMessages = $("#WarningMessages");
       var $selSalesContent = $("#selSalesContent");
@@ -663,7 +665,7 @@
 
       var isNewQuote= @(Model.IsNewQuote ? "true" : "false");
       var $rowCurrentlyEditing = null;
-      var isExistingClient = @Html.Raw(Model.IsExistingClient.ToJSTrueFalse());
+      var isExistingClient = @(Model.IsExistingClient.ToJSTrueFalse());
 
       var CalculatePlatformFee_Busy = false;
       var allowQuoteUpdate, countdownTimer, autoSaveCountdownlbl, isLoadingPage, isUpdatingAcceptedQuote;
@@ -678,7 +680,7 @@
           thisObj.IsNote = productId == null || productId == 0 || isNaN(productId);
           thisObj.ProductId = toDecimalInt(productId, 0);
           thisObj.ProductName = productName || "";
-          thisObj.IsOptional = toDecimalInt(isOptional, @DbHelper.AbleQuotes.OptionalEnum.No.Id);
+          thisObj.IsOptional = toDecimalInt(isOptional, @(DbHelper.AbleQuotes.OptionalEnum.No.Id));
           thisObj.UnitPrice = unitPrice || 0;
           thisObj.Quantity = quantity || 0;
           thisObj.QtyDescr = "" + qtyDescr;
@@ -693,10 +695,10 @@
           var selectedVal = $selDlgProducts.val();
           var selectedProduct = $selDlgProducts.find('option[value="' + selectedVal + '"]');
 
-          thisObj.IsNote = $selDlgProducts.val() === "@Integral.Web.PortalSite.Pages_Albert.QuoteInfo.ProductOptionValueForNote";
+          thisObj.IsNote = $selDlgProducts.val() === "@(Integral.Web.PortalSite.Pages_Albert.QuoteInfo.ProductOptionValueForNote)";
           thisObj.ProductId = parseInt($selDlgProducts.val(), 10);
           thisObj.ProductName = $inpDlgItemDescription.val();
-          thisObj.IsOptional = toDecimalInt($inpDlgOptional.val(), @DbHelper.AbleQuotes.OptionalEnum.No.Id);
+          thisObj.IsOptional = toDecimalInt($inpDlgOptional.val(), @(DbHelper.AbleQuotes.OptionalEnum.No.Id));
           thisObj.UnitPrice = parseFloat($inpDlgUnitPrice.val().replace(/[^0-9.-]/g, ""));
           thisObj.Quantity = parseFloat($inpDlgQuantity.val().replace(/[^0-9.-]/g, ""));
           thisObj.QtyDescr = "" + $inpDlgQtyDescr.val();
@@ -930,7 +932,7 @@
 
           jQuery.ajax({
             method: "post",
-            url: "@PathHelper.Pages.QuoteDetails(Model.QuoteInfo.PublicGuid, null)",
+            url: "@Html.Raw(PathHelper.Pages.QuoteDetails(Model.QuoteInfo.PublicGuid, null))",
             data: formData,
             contentType: false,
             processData: false
@@ -1053,7 +1055,7 @@
       }
 
       function UpdateUrlAddress(tabName) {
-        window.history.pushState('', '', '@PathHelper.Pages.QuoteDetails(Model.QuoteInfo.PublicGuid, null)' + tabName);
+        window.history.pushState('', '', '@Html.Raw(PathHelper.Pages.QuoteDetails(Model.QuoteInfo.PublicGuid, null))' + tabName);
       }
 
       function GetClientLeadInfo() {
@@ -1064,7 +1066,7 @@
         $(".@Integral.Web.PortalSite.Pages_Albert.QuoteInfo.DataAttrs.ClientLeadUserInfo_Class span.user-name").text(selectedLeadName);
 
         if (selectedLeadId) {
-          var triggerPanelPath = '@PathHelper.Partials.PartnerSlideoutPanel(null)' + selectedLeadId;
+          var triggerPanelPath = '@Html.Raw(PathHelper.Partials.PartnerSlideoutPanel(null))' + selectedLeadId;
           var avatarLinkHtml = $('.@Integral.Web.PortalSite.Pages_Albert.QuoteInfo.DataAttrs.ClientLeadUserInfo_Class a.user-avatar-horizontal');
           avatarLinkHtml.attr('data-@WebHelper.DataAttrName.SlideoutPartialUrl', triggerPanelPath);
           avatarLinkHtml.attr('data-@WebHelper.DataAttrName.SlideoutTrigger', 'true');
@@ -1490,8 +1492,12 @@
       }
 
       function GetItemOptionalText(optionalId) {
-        @foreach (var option in DbHelper.AbleQuotes.OptionalEnum.Options) {
-          @:if (optionalId === @option.Id) return "@option.Text.HTMLEncode()";
+        @{
+          foreach (var option in DbHelper.AbleQuotes.OptionalEnum.Options) {
+            <text>
+            if (optionalId === @(option.Id)) return "@(option.Text)";
+            </text>
+          }
         }
         return "";
       }
@@ -1601,7 +1607,7 @@
         var selectedValue = $selProjectJobNumber.val() || "@Model.QuoteInfo?.JobNumber";
         var foundSelected = false;
         $selProjectJobNumber.find('option:not([value=""],[value="@PathHelper.AbleUrlValues.IdNew"])').remove();
-        $.get("@PathHelper.Endpoints.ProjectsForCompanyId(null)" + cid, function(data) {
+        $.get("@Html.Raw(PathHelper.Endpoints.ProjectsForCompanyId(null))" + cid, function(data) {
           if (data && data.Projects && data.Projects.InfoList){
             for(var i_project in data.Projects.InfoList) {
               var project = data.Projects.InfoList[i_project];
@@ -1766,22 +1772,22 @@
 
         switch (tabName) {
 
-          case '@PathHelper.QuoteTabEnum.project.ToString()':
+          case '@(PathHelper.QuoteTabEnum.project.ToString())':
             return "@Integral.Web.PortalSite.Pages_Albert.QuoteInfo.AjaxAction.Update_Project_Tab";
 
-          case '@PathHelper.QuoteTabEnum.settings.ToString()':
+          case '@(PathHelper.QuoteTabEnum.settings.ToString())':
             return "@Integral.Web.PortalSite.Pages_Albert.QuoteInfo.AjaxAction.Update_Settings_Tab";
 
-          case '@PathHelper.QuoteTabEnum.splits.ToString()':
+          case '@(PathHelper.QuoteTabEnum.splits.ToString())':
             return "@Integral.Web.PortalSite.Pages_Albert.QuoteInfo.AjaxAction.Update_Splits_Tab";
 
-          case '@PathHelper.QuoteTabEnum.components.ToString()':
+          case '@(PathHelper.QuoteTabEnum.components.ToString())':
             return "@Integral.Web.PortalSite.Pages_Albert.QuoteInfo.AjaxAction.Update_Components_Tab";
 
-          case '@PathHelper.QuoteTabEnum.coverLetter.ToString().ToLower()':
+          case '@(PathHelper.QuoteTabEnum.coverLetter.ToString().ToLower())':
             return "@Integral.Web.PortalSite.Pages_Albert.QuoteInfo.AjaxAction.Update_CoverLetter_Tab";
 
-          case '@PathHelper.QuoteTabEnum.info.ToString()':
+          case '@(PathHelper.QuoteTabEnum.info.ToString())':
             return "@Integral.Web.PortalSite.Pages_Albert.QuoteInfo.AjaxAction.Update_Info_Tab";
 
           default:

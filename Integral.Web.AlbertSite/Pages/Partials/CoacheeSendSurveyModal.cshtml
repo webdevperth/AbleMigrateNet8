@@ -4,7 +4,7 @@
 
 @if (Model.CoacheeInfo.ProgramJobId == null) {
   <div class="alert alert-warning">Participant must belong to a program. Please select a program from the
-    <a href="@PathHelper.Pages.CoacheeEdit(true)">Profile</a> page.</div>
+    <a href="@Html.Raw(PathHelper.Pages.CoacheeEdit(true))">Profile</a> page.</div>
 }
 
 <form class="form-horizontal mb30 mt20" id="clientForm">
@@ -127,7 +127,7 @@
 
       AjaxSubmit({
         form: clientForm,
-        url: "@PathHelper.Partials.CoacheeSendSurveyModal(Model.CoacheeInfo.CoacheeId)",
+        url: "@Html.Raw(PathHelper.Partials.CoacheeSendSurveyModal(Model.CoacheeInfo.CoacheeId))",
         action: "@Integral.Web.PortalSite.Page_Partials.CoacheeSendSurveyModal.AjaxAction.SendSurvey",
         onSuccess: function (jqXHR, data) { },
         onFail: function (jqXHR, data) { },

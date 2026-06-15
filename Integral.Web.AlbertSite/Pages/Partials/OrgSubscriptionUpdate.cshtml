@@ -157,7 +157,7 @@
             elements,
             confirmParams: {
               // After payment method confirmed, redirect back to showing quantity picker.
-              return_url: "@PathHelper.Pages.Settings.BillingsReturnUrl(Model.ViewModel.SelectedSubscription.SubscriptionGuid, Model.ViewModel.SelectedQuantity)",
+              return_url: "@Html.Raw(PathHelper.Pages.Settings.BillingsReturnUrl(Model.ViewModel.SelectedSubscription.SubscriptionGuid, Model.ViewModel.SelectedQuantity))",
             }
           });
 

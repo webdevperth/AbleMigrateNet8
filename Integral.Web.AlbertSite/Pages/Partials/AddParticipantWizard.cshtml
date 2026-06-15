@@ -482,7 +482,7 @@
     function ShowStripePopup($wizElm, stepIndexFrom, stepIndexTo, organisationGuidForPaymentMethod) {
 
       const partialUrl = AbleJS.Util.PatchQuery({
-        url: "@PathHelper.Partials.StripePaymentMethod()",
+        url: "@Html.Raw(PathHelper.Partials.StripePaymentMethod())",
         params: { "@PathHelper.AbleUrlKeys.OrganisationGuid": organisationGuidForPaymentMethod }
       });
 
@@ -576,7 +576,7 @@
       $selProjectJobNumber.find('option:not([value=""],[value="@PathHelper.AbleUrlValues.IdNew"])').remove();
       $selProjectJobNumber.prop('selectedIndex', -1);
 
-      $.get("@PathHelper.Endpoints.ProjectsForCompanyId(null)" + cid, function (responseData) {
+      $.get("@Html.Raw(PathHelper.Endpoints.ProjectsForCompanyId(null))" + cid, function (responseData) {
 
         if (responseData && responseData.Projects && responseData.Projects.InfoList) {
 

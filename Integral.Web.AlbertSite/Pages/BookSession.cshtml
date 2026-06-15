@@ -21,7 +21,7 @@
 
         @if (Model.CanBookSession) {
           <div class="body-sidebar">
-            <div class="project-logo"><img src="@PathHelper.Images.ProjectLogo(Model.ProjectInfo, false, false)" alt="Project Logo"></div>
+            <div class="project-logo"><img src="@Html.Raw(PathHelper.Images.ProjectLogo(Model.ProjectInfo, false, false))" alt="Project Logo"></div>
             <div class="program-name">@(Model.ProjectInfo.FriendlyProjectTitle.ValueIfNullOrEmpty(Model.ProjectInfo.ProjectName))</div>
             <div class="coach-info">
               @Html.Raw(WebHelper.GetProfileImage(PathHelper.Images.UserPhoto(Model.CoachInfo, PathHelper.Images.UserPhotoSize.Large, true)))
@@ -86,7 +86,7 @@
 
       <div class="flex flex-align-end mt15">
         <span>Powered by</span>
-        <img src="@PathHelper.Images.AbleHeaderLogo()" alt="Able" class="h20 ml5 mb2" />
+        <img src="@Html.Raw(PathHelper.Images.AbleHeaderLogo())" alt="Able" class="h20 ml5 mb2" />
       </div>
 
     </div>

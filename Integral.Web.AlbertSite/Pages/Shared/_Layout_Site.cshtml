@@ -226,7 +226,7 @@
         if ($.busyLoadSetup) {
           $.busyLoadSetup({
             background: "rgb(255, 255, 255, 0.4)",
-            image: "@PathHelper.Images.BusyLoadSpinner200()",
+            image: "@Html.Raw(PathHelper.Images.BusyLoadSpinner200())",
             color: "#634CFF",
             maxSize: "70px",
             minSize: "70px"
@@ -250,7 +250,7 @@
       const app_menuHighlightPathPrefix = "@PathHelper.MenuHighlightPathPrefix";
       const app_formKey_UserRole = "@PathHelper.FormKeys.UserRole";
       const app_formKey_AjaxAction = "@PathHelper.FormKeys.AjaxAction";
-      const app_SetUserRoleUrl = "@PathHelper.Endpoints.SetUserRole()";
+      const app_SetUserRoleUrl = "@Html.Raw(PathHelper.Endpoints.SetUserRole())";
       const app_AntiforgeryToken = "@AppHelper.GetRequestAntiForgeryToken()";
       const HttpHeader_IsAjax = "@AppHelper.HttpHeaders.IsAjax";
       const HttpHeader_AjaxAction = "@AppHelper.HttpHeaders.AjaxAction";
@@ -292,8 +292,8 @@
       const JS_AjaxFieldErrorMsg_Class = "@WebHelper.CSSClasses.AjaxFieldErrorMsg";
       const JS_AjaxFieldNamePrefix_Class = "@WebHelper.CSSClasses.AjaxFieldNamePrefix";
       const JS_UpdateUI_Done_Class = "@WebHelper.CSSClasses.UpdateUI_Done";
-      const JS_UserPhotoPathTemplate = "@PathHelper.UserPhotoPathTemplate.HTMLEncode()";
-      const JS_UserPhotoPathTemplateReplaceName = "@PathHelper.UserPhotoPathTemplateReplaceName.HTMLEncode()";
+      const JS_UserPhotoPathTemplate = "@Html.Raw(PathHelper.UserPhotoPathTemplate.HTMLEncode())";
+      const JS_UserPhotoPathTemplateReplaceName = "@Html.Raw(PathHelper.UserPhotoPathTemplateReplaceName.HTMLEncode())";
     </script>
 
     @* Start error logging before loading Able scripts *@
@@ -338,7 +338,7 @@
         if (isStringNullOrEmpty(referrerUrl)) referrerUrl = document.referrer || "";
 
         try {
-          $.post("@PathHelper.Endpoints.JSLogger()", {
+          $.post("@Html.Raw(PathHelper.Endpoints.JSLogger())", {
             "@PathHelper.JSLoggerKeys.RequestUrl": encodeURIComponent(document.location.href),
             "@PathHelper.JSLoggerKeys.RequestQuery": encodeURIComponent(document.location.search),
             "@PathHelper.JSLoggerKeys.ReferrerUrl": encodeURIComponent(referrerUrl),
@@ -452,7 +452,7 @@
 
       @if (SessionHelper.IsUserLoggedIn) {
         @:$(document).ready(function () {
-        @:  setInterval(function () { $.get("@PathHelper.Endpoints.JSLogger()"); }, 600000); // keep-alive
+        @:  setInterval(function () { $.get("@Html.Raw(PathHelper.Endpoints.JSLogger())"); }, 600000); // keep-alive
         @:});
       }
 

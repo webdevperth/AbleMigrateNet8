@@ -141,7 +141,7 @@
               modalDialog.data("dialogref", dialogRef);
               var modalBody = dialogRef.getModalBody();
               modalBody.busyLoad("show");
-              modalBody.load("@PathHelper.Partials.AddParticipantWizard()",
+              modalBody.load("@Html.Raw(PathHelper.Partials.AddParticipantWizard())",
               function (data) {
                 modalBody.html(data);
                 common_UpdateUI(modalBody);

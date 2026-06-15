@@ -278,7 +278,7 @@
         data: {
           "@Integral.Web.PortalSite.Page_Partials.Components_BulkAddInvoiceModal.FormFields.SelectedComponentIds": SelectedComponentIds
         },
-        url: "@PathHelper.Partials.Components_BulkAddInvoiceModal(Model.ProjectInfo.JobNumber, Model.QuoteInfo.PublicGuid)",
+        url: "@Html.Raw(PathHelper.Partials.Components_BulkAddInvoiceModal(Model.ProjectInfo.JobNumber, Model.QuoteInfo.PublicGuid))",
         onSuccess: function (jqXHR, data) { },
         onFail: function (jqXHR, data) { },
         onError: function (jqXHR, textStatus, errorThrown) { },

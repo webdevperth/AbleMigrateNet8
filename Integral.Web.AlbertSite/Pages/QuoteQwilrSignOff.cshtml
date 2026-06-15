@@ -13,7 +13,7 @@
 
 @if (Model.FormVisible) {
 
-  <form id="signform" class="form-horizontal" method="post" action="@PathHelper.Pages.QuoteQwilrSignOff(Model.QuoteInfo.PublicGuid)" onsubmit="return false">
+  <form id="signform" class="form-horizontal" method="post" action="@Html.Raw(PathHelper.Pages.QuoteQwilrSignOff(Model.QuoteInfo.PublicGuid))" onsubmit="return false">
 
     <input type="hidden" name="@PathHelper.FormKeys.AjaxAction" value="complete" />
     <input type="hidden" name="quoteitemid" value="@Model.QuoteItemIds" />

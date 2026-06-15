@@ -69,7 +69,7 @@
   <div class="table-title">Program Summary</div>
 
   <div class="table-responsive">
-    <table class="tblCoachees table table-bordered table-hover table-rowlink tblSessions" data-rowlink-url="@PathHelper.Pages.ProgramOverview(null)">
+    <table class="tblCoachees table table-bordered table-hover table-rowlink tblSessions" data-rowlink-url="@Html.Raw(PathHelper.Pages.ProgramOverview(null))">
       <thead>
         <tr>
           <th class="type-project-name">Project Name</th>
@@ -98,7 +98,7 @@
           </tr>
         }
         @if (Model.ClientProgramSummaryTotalRows > Integral.Web.PortalSite.Pages_Albert.OverviewUpcoming.ClientProgramSummaryMaxRows) {
-          <tr tabindex="0" data-rowlink-url="@PathHelper.Pages.Projects_List()" class="show-more-row"><td class="show-more align-center" colspan="50">Show more</td></tr>
+          <tr tabindex="0" data-rowlink-url="@Html.Raw(PathHelper.Pages.Projects_List())" class="show-more-row"><td class="show-more align-center" colspan="50">Show more</td></tr>
         }
       </tbody>
     </table>
@@ -124,7 +124,7 @@
       </thead>
       <tbody>
         @foreach (var coachingSession in Model.SessionList) {
-          <tr tabindex="0" class="rowData" data-rowlink-id="@PathHelper.Pages.CoacheeEdit(coachingSession.CoacheeId, PathHelper.CoacheeTabEnum.summary)">
+          <tr tabindex="0" class="rowData" data-rowlink-id="@Html.Raw(PathHelper.Pages.CoacheeEdit(coachingSession.CoacheeId, PathHelper.CoacheeTabEnum.summary))">
             <td class="type-datetime">@coachingSession.GetApptDateInCoachTZ().ToString("d MMM yyyy, h:mm tt")</td>
             <td class="type-fullname">
               @Html.Raw(WebHelper.GetAvatarForTable_Participant(PathHelper.Images.UserPhoto(coachingSession.CoacheeFirstName, coachingSession.CoacheeLastName, PathHelper.Images.UserPhotoSize.Thumbnail, true), (coachingSession.CoacheeFirstName + " " + coachingSession.CoacheeLastName).HTMLEncode(), coachingSession.ProgramJobName, coachingSession.CoacheeId))
@@ -161,7 +161,7 @@
       </thead>
       <tbody>
         @foreach(var workshopEvent in Model.WorkshopItemsList) {
-          <tr tabindex="0" class="rowData gotodetailpage" data-href="@PathHelper.Pages.Workshops_Edit(workshopEvent.ProgramJobId, workshopEvent.WorkshopEventId)">
+          <tr tabindex="0" class="rowData gotodetailpage" data-href="@Html.Raw(PathHelper.Pages.Workshops_Edit(workshopEvent.ProgramJobId, workshopEvent.WorkshopEventId))">
             <td class="type-datetime">@Html.Raw(Model.GetStartTime(workshopEvent))</td>
             <td class="type-workshop-title">@Html.Raw(WebHelper.GetListViewMainColumnText(workshopEvent.WorkshopTitle.HTMLEncode(), workshopEvent.ProgramJobName.HTMLEncode()))</td>
             <td class="type-project-name">
@@ -194,7 +194,7 @@
       </thead>
       <tbody>
         @foreach (var consultingItem in Model.ConsultingItemsList) {
-          <tr tabindex="0" class="rowData gotodetailpage" data-href="@PathHelper.Pages.Consulting_Edit(consultingItem.ProgramJobId, consultingItem.ConsultingItemId)">
+          <tr tabindex="0" class="rowData gotodetailpage" data-href="@Html.Raw(PathHelper.Pages.Consulting_Edit(consultingItem.ProgramJobId, consultingItem.ConsultingItemId))">
             <td class="type-datetime">@consultingItem.CompletionDateUtc.UtcToTZOrNull(ConfigHelper.DefaultTimeZoneInfo).ToString("d MMM yyyy")</td>
             <td class="type-description">@Html.Raw(WebHelper.GetListViewMainColumnText(consultingItem.ItemTitle.HTMLEncode(), consultingItem.JobName.HTMLEncode()))</td>
             <td class="type-project-name">
@@ -214,7 +214,7 @@
   <div class="table-title">Sales Revenue</div>
 
   <div class="table-responsive">
-    <table class="tblSales table table-bordered" data-rowlink-url="@PathHelper.Pages.ProgramOverview()">
+    <table class="tblSales table table-bordered" data-rowlink-url="@Html.Raw(PathHelper.Pages.ProgramOverview())">
       <thead>
         <tr>
           <th class="type-datetime">Date</th>
@@ -309,9 +309,9 @@
         selPayRuns.change(function (e) {
           var payRunId = selPayRuns.val();
           if (payRunId == "")
-            location.href = "@PathHelper.Pages.CoachPayRuns(Model.OverviewCoachInfo.UserId)";
+            location.href = "@Html.Raw(PathHelper.Pages.CoachPayRuns(Model.OverviewCoachInfo.UserId))";
           else
-            location.href = "@PathHelper.Pages.CoachPayRuns(Model.OverviewCoachInfo.UserId, null)" + payRunId;
+            location.href = "@Html.Raw(PathHelper.Pages.CoachPayRuns(Model.OverviewCoachInfo.UserId, null))" + payRunId;
         });
 
         $(".gotodetailpage").click(function (evt) {

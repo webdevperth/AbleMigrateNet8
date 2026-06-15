@@ -159,7 +159,7 @@
         <button type="button" class="btn-random btn btn-warning btn-large">Random [dev]</button>
       }
       @if (Model.ShowSurveyDataEntryButton) {
-        <a href="@PathHelper.JarvisPages.DataEntryUrl(Model.PartInfo.SurveyId, Model.PartInfo.PartId)" class="btn btn-secondary btn-large" target="_blank">Data Entry in Jarvis [dev]</a>
+        <a href="@Html.Raw(PathHelper.JarvisPages.DataEntryUrl(Model.PartInfo.SurveyId, Model.PartInfo.PartId))" class="btn btn-secondary btn-large" target="_blank">Data Entry in Jarvis [dev]</a>
       }
     </div>
 

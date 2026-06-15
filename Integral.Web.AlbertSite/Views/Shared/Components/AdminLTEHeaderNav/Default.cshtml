@@ -3,9 +3,9 @@
 <header class="main-header">
 
   <!-- Logo -->
-  <a href="@PathHelper.Pages.Home()" class="logo">
+  <a href="@Html.Raw(PathHelper.Pages.Home())" class="logo">
     <!-- mini logo for sidebar mini 50x50 pixels -->
-    <div class="logo-mini"><img src="@PathHelper.Images.AbleFavicon()" /></div>
+    <div class="logo-mini"><img src="@Html.Raw(PathHelper.Images.AbleFavicon())" /></div>
     <!-- logo for regular state and mobile devices -->
     @Html.Raw(Model.GetNavBarLogoHtml())
   </a>
@@ -45,17 +45,17 @@
 
         <li class="dropdown user user-menu hidden-xs">
           <a href="#" class="dropdown-toggle" data-toggle="dropdown" tabindex="0">
-            <img src="@PathHelper.Images.UserPhoto(Model.UserInfo, PathHelper.Images.UserPhotoSize.Thumbnail, true)" class="user-image" alt="User Image" />
+            <img src="@Html.Raw(PathHelper.Images.UserPhoto(Model.UserInfo, PathHelper.Images.UserPhotoSize.Thumbnail, true))" class="user-image" alt="User Image" />
             <span class="user-name hidden-sm">@Model.UserInfo.GetFullName().HTMLEncode() @Model.GetUserRoleName().HTMLEncode()</span>
           </a>
           <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in" aria-labelledby="userDropdown">
             @if (SessionHelper.AppAccess.PageAccess.CanAccessPartnerProfile()) {
-              <a class="dropdown-item" href="@PathHelper.Pages.CoachEdit(Model.UserInfo.UserId)"><i class="fas fa-user fa-sm fa-fw"></i>Profile</a>
+              <a class="dropdown-item" href="@Html.Raw(PathHelper.Pages.CoachEdit(Model.UserInfo.UserId))"><i class="fas fa-user fa-sm fa-fw"></i>Profile</a>
             }
             <a class="dropdown-item" href="@Model.GetUpcomingPath()"><i class="fas fa-cogs fa-sm fa-fw"></i>Upcoming</a>
             @Html.Raw(Model.GetUserRoleSubmenuHtml())
             <div class="dropdown-divider"></div>
-            <a class="dropdown-item" href="@PathHelper.Pages.Logout()"><i class="fas fa-sign-out-alt fa-sm fa-fw"></i>Logout</a>
+            <a class="dropdown-item" href="@Html.Raw(PathHelper.Pages.Logout())"><i class="fas fa-sign-out-alt fa-sm fa-fw"></i>Logout</a>
           </div>
         </li>
 

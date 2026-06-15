@@ -255,7 +255,7 @@
               // Get componentId from row button clicked
               var componentId = $(this).data('cmp-id');
               if (!isNumber(componentId)) return;
-              var path = '@PathHelper.Partials.ComponentModal(Model.ProjectInfo.JobNumber, null)' + componentId;
+              var path = '@Html.Raw(PathHelper.Partials.ComponentModal(Model.ProjectInfo.JobNumber, null))' + componentId;
               ShowInvoicingModal(path, "Edit Component");
             });
 
@@ -264,7 +264,7 @@
             $(".btnBulkAddInvoice").click(function (evt) {
               var quoteGuid = $(this).data('qguid');
               if (!isGuid(quoteGuid)) return;
-              var path = '@PathHelper.Partials.Components_BulkAddInvoiceModal(Model.ProjectInfo.JobNumber, null)' + quoteGuid;
+              var path = '@Html.Raw(PathHelper.Partials.Components_BulkAddInvoiceModal(Model.ProjectInfo.JobNumber, null))' + quoteGuid;
               ShowInvoicingModal(path, "Bulk Add Invoice");
             });
             </text>

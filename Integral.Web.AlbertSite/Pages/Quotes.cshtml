@@ -23,7 +23,7 @@
     </div>
     <div class="right">
       @if (Model.CanCreateQuote) {
-        <a class="btn btn-primary floatright ml10" href="@PathHelper.Pages.QuoteCreate()">New Quote</a>
+        <a class="btn btn-primary floatright ml10" href="@Html.Raw(PathHelper.Pages.QuoteCreate())">New Quote</a>
       }
       @if (Model.CanRequestQuote) {
         @Html.Raw(Model.GetRequestQuoteButtonHtml())
@@ -133,7 +133,7 @@
             modalDialog.data("@WebHelper.DataAttrName.DialogRef", dialogRef);
             var modalBody = dialogRef.getModalBody();
             modalBody.busyLoad("show");
-            modalBody.load('@PathHelper.Partials.QuoteRequestModal("")',
+            modalBody.load('@Html.Raw(PathHelper.Partials.QuoteRequestModal(""))',
                 function (data) {
                   modalBody.html(data);
                   modalBody.busyLoad("hide");

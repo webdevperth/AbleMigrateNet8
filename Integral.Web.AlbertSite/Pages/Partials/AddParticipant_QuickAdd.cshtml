@@ -292,7 +292,7 @@
       var selectedValue = $selProjectJobNumber.val();
       var foundSelected = false;
       $selProjectJobNumber.find('option:not([value=""],[value="@PathHelper.AbleUrlValues.IdNew"])').remove();
-      $.get("@PathHelper.Endpoints.ProjectsForCompanyId(null)" + cid, function(data) {
+      $.get("@Html.Raw(PathHelper.Endpoints.ProjectsForCompanyId(null))" + cid, function(data) {
         if (data && data.Projects && data.Projects.InfoList){
           for(var i_project in data.Projects.InfoList) {
             var project = data.Projects.InfoList[i_project];

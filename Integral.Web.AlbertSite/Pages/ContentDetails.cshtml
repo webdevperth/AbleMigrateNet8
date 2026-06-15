@@ -46,7 +46,7 @@
 
         <div class="content-card-mid-section">
           <div class="content-card-creator">
-            <img src="@PathHelper.Images.UserPhoto(Model.ContentInfo.AuthorFirstName, Model.ContentInfo.AuthorLastName, PathHelper.Images.UserPhotoSize.Thumbnail, true)" />
+            <img src="@Html.Raw(PathHelper.Images.UserPhoto(Model.ContentInfo.AuthorFirstName, Model.ContentInfo.AuthorLastName, PathHelper.Images.UserPhotoSize.Thumbnail, true))" />
             <span class="ml5"> Created by @Model.ContentInfo.GetAuthorFullName()</span>
           </div>
           @if (Model.ContentInfo.ContentType == DbHelper.Content.ContentTypeEnum.Document && !Model.ContentFilePath.IsNullOrEmpty()) {
@@ -64,7 +64,7 @@
         } else if (Model.ContentInfo.ContentType == DbHelper.Content.ContentTypeEnum.Image && !Model.ContentFilePath.IsNullOrEmpty()) {
 
           <div class="image-hover-container fullImageView">
-            <img src="@PathHelper.Images.ContentImageFile(Model.ContentInfo.ContentGuid, PathHelper.Images.ContentCoverImageSize.Original)" alt="@Model.ContentInfo.ContentTitle" class="content-file-image">
+            <img src="@Html.Raw(PathHelper.Images.ContentImageFile(Model.ContentInfo.ContentGuid, PathHelper.Images.ContentCoverImageSize.Original))" alt="@Model.ContentInfo.ContentTitle" class="content-file-image">
             <div class="overlay">
               <p>Click to view</p>
               @Html.Raw(WebHelper.GetIconHtml(WebHelper.ActionButtonTypeEnum.view, "ml5"))
@@ -93,7 +93,7 @@
 
       <div id="fullImageViewModal" class="displaynone content-image-fullView">
         <div class="image-container">
-          <img src="@PathHelper.Images.ContentImageFile(Model.ContentInfo.ContentGuid, PathHelper.Images.ContentCoverImageSize.Original)" alt="@Model.ContentInfo.ContentTitle" class="content-file-image">
+          <img src="@Html.Raw(PathHelper.Images.ContentImageFile(Model.ContentInfo.ContentGuid, PathHelper.Images.ContentCoverImageSize.Original))" alt="@Model.ContentInfo.ContentTitle" class="content-file-image">
         </div>
       </div>
 
@@ -204,7 +204,7 @@
           <div class="file-selection">
             <div class="content-attachment-container">
               <div class="content-attachment">
-                <img id="imgCoverImage" class="preview-cover-image" src="@PathHelper.Images.ContentCoverImage(Model.ContentInfo.ContentGuid, PathHelper.Images.ContentCoverImageSize.Card)" alt="Cover Image">
+                <img id="imgCoverImage" class="preview-cover-image" src="@Html.Raw(PathHelper.Images.ContentCoverImage(Model.ContentInfo.ContentGuid, PathHelper.Images.ContentCoverImageSize.Card))" alt="Cover Image">
               </div>
             </div>
             @if (Model.CanEditContent) {
@@ -1018,9 +1018,9 @@
       function ValidateContentForSaving() {
 
         // Check that cover Image and attachment aren't missing
-        var coverImagePath = '@PathHelper.Images.ContentCoverImage(Model.ContentInfo.ContentGuid, PathHelper.Images.ContentCoverImageSize.Card)';
+        var coverImagePath = '@Html.Raw(PathHelper.Images.ContentCoverImage(Model.ContentInfo.ContentGuid, PathHelper.Images.ContentCoverImageSize.Card))';
         var contentPath = '@Model.ContentFilePath';
-        var missingImagePath = '@PathHelper.Images.ContentImage_Missing()';
+        var missingImagePath = '@Html.Raw(PathHelper.Images.ContentImage_Missing())';
 
         if (isNewContent
           || (!isNewContent && coverImagePath == missingImagePath)
@@ -1117,9 +1117,9 @@
       function DoPageRedirection() {
         if (isNewContent) {
           if (isProgramView) {
-            window.location.href = '@PathHelper.Pages.ProgramContent(Model.ProgramInfo?.ProgramJobId)';
+            window.location.href = '@Html.Raw(PathHelper.Pages.ProgramContent(Model.ProgramInfo?.ProgramJobId))';
           } else {
-            window.location.href = '@PathHelper.Pages.Content()';
+            window.location.href = '@Html.Raw(PathHelper.Pages.Content())';
           }
         }
       }
